@@ -4,29 +4,66 @@ import { NavigationContainer } from '@react-navigation/native';
 import HomeScreen from '../screens/HomeScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import { FontAwesome } from '@expo/vector-icons';
+import UserCredential from './UserCredential';
+import FavoritePromotions from './FavoritePromotions';
+import AvailablePromotions from './Promotions';
 
 const Tab = createBottomTabNavigator();
 
 const MainAppScreen: React.FC = () => {
+
+  const getIconName = (routeName: string): any => {
+    switch (routeName) {
+      case 'Inicio':
+        return 'home';
+      case 'Perfil':
+        return 'user';
+      case 'Descuentos':
+        return 'ticket';
+      case 'Fav':
+        return 'star';
+      case 'Credencial':
+        return 'address-card';
+      default:
+        return 'circle';
+    }
+  };
+
   return (
-      <Tab.Navigator
+      <Tab.Navigator 
         screenOptions={({ route }) => ({
           tabBarIcon: ({ color, size }) => {
-            let iconName: any;
-
-            if (route.name === 'Home') {
-              iconName = 'home';
-            } else if (route.name === 'Profile') {
-              iconName = 'user';
-            }
-
-            // Return the FontAwesome component with the correct icon name
+            const iconName = getIconName(route.name);
             return <FontAwesome name={iconName} size={size} color={color} />;
+          },
+          tabBarActiveTintColor: '#3179BB', 
+          tabBarInactiveTintColor: '#aaa', 
+          tabBarStyle: {
+            backgroundColor: '#fff',
+            borderTopWidth: 0,
+            elevation: 5, 
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.8,
+            shadowRadius: 2,
+          },
+          tabBarLabelStyle: {
+            fontSize: 10,
+            fontWeight: 'bold',
+          },
+          tabBarIconStyle: {
+            marginTop: 1,
+          },
+          tabBarItemStyle: {
+            padding: 5,
           },
         })}
       >
-        <Tab.Screen name="Home" component={HomeScreen} />
-        <Tab.Screen name="Profile" component={ProfileScreen} />
+        <Tab.Screen name="Inicio" component={HomeScreen} options={{ headerShown: false }} />
+        <Tab.Screen name="Perfil" component={ProfileScreen} options={{ headerShown: false }}/>
+        <Tab.Screen name="Descuentos" component={AvailablePromotions} options={{ headerShown: false }} />
+        <Tab.Screen name="Credencial" component={UserCredential} options={{ headerShown: false }}/>
+        <Tab.Screen name="Fav" component={FavoritePromotions} options={{ headerShown: false }}/>
       </Tab.Navigator>
   );
 };

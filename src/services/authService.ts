@@ -1,59 +1,65 @@
 // import axios from "axios";
-import { UserData } from "../redux/types/types";
+import axios from "axios";
+import { LoginResponse, UserData } from "../redux/types/types";
+import { clearUserData } from "../utils/storage";
+import { logOut } from "../redux/reducers/userReducer";
+import { Dispatch } from "@reduxjs/toolkit";
 
-const mockUser = [
-    { username: 'javierpedernera@gmail.com', password: '123' },
-    { username: 'pablocharras@gmail.com', password: '1234' }
-  ];
-  interface User {
-    firstName: string;
-    lastName: string;
-    email: string;
-    gender: string;
-    password: string;
-  }
+const API_URL = 'http://192.168.100.4:5000';
   
-  const mockUsers: User[] = [];
-
-  interface LoginResponse {
-    success: boolean;
-    message: string;
-  }
-//   export const loginUser = async (username: string, password: string): Promise<LoginResponse> => {
-//     try {
-//       const response = await axios.post<LoginResponse>(`${API_URL}/login`, { username, password });
-//       return response.data;
-//     } catch (error) {
-//       throw new Error('Login failed');
-//     }
-//   };
-  export const login = async (username: string, password: string): Promise<LoginResponse> => {
-    const user = mockUser.find(user => user.username === username && user.password === password);
-    if (user) {
-      return { success: true, message: 'Login successful' };
-    } else {
-      throw new Error('Invalid username or password');
+  export const loginUserAuth = async (email: string, password: string): Promise<LoginResponse> => {
+    try {
+      const response = await axios.post<LoginResponse>(`${API_URL}/login`, { email, password });
+      console.log(response.data);
+      return response.data;
+      
+      
+    } catch (error) {
+      throw new Error('Login failed');
     }
   };
   
-  export const register = async (user: User) => {
-    const userExists = mockUsers.some(existingUser => existingUser.email === user.email);
-    if (userExists) {
-      throw new Error('User already exists');
-    } else {
-      mockUsers.push(user);
-      return { success: true, message: 'Registration successful' };
+export const registerUser = async (userData: UserData) => {
+  try {
+    console.log("datos del formulario en el registro",userData);
+    
+    const response = await axios.post(`${API_URL}/signup`, userData);
+    console.log("response del back",response);
+    console.log(response.status);
+    
+    console.log("response.data del back",response.data);
+    return response;
+  } catch (error) {
+    throw new Error('Registration failed'); // Manejar errores según corresponda
+  }
+};
+
+export const logoutUser = () => {
+  return async (dispatch: Dispatch) => {
+    try {
+      await clearUserData();
+      dispatch(logOut());
+    } catch (error) {
+      console.error('Error logging out:', error);
     }
   };
+};
 
-//   const API_URL = 'https://tu-backend-url.com/api'; // URL de tu backend
+export const sendPasswordResetEmail = async (email: string) => {
+  try {
+    console.log("envio email para recuperar contraseña");
+    
+    // const response = await axios.post(`${API_URL}/auth/forgot-password`, { email });
+    // return response.data;
+  } catch (error) {
+    throw new Error('Error al enviar el correo de recuperación.');
+  }
+};
 
-// export const registerUser = async (userData: UserData) => {
-//   try {
-//     const response = await axios.post(`${API_URL}/register`, userData);
-//     return response.data;
-//   } catch (error) {
-//     throw new Error('Registration failed'); // Manejar errores según corresponda
-//   }
-// };
-  
+// Función para restablecer la contraseña
+export const resetPassword = async (token: string, newPassword: string) => {
+  console.log("envio contraseña para cambiar");
+
+  // const response = await axios.post(`${API_URL}/auth/reset-password/${token}`, { password: newPassword });
+  // return response.data;
+};

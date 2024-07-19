@@ -9,3 +9,7 @@ Para ejecutar en dispositivo fisico descargar app Expo Go.
 Escanear el codigo QR con dispositivo fisico o emulador. 
 
 Tambien se puede ejecutar en el navegador http://localhost:8081.
+
+Paleta: naranja: #F1AD3E
+        azul: #3179BB
+        celeste: #64C9ED
