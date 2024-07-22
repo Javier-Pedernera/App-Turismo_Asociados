@@ -6,7 +6,7 @@ import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 import MainAppScreen from '../screens/MainAppScreen';
 import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
-import ProfileScreen from '../screens/ProfileScreen';  // Importa la pantalla de perfil
+import ProfileScreen from '../screens/ProfileScreen';
 import FavoritePromotions from '../screens/FavoritePromotions';
 import AvailablePromotions from '../screens/Promotions';
 import CustomHeader from '../components/CustomHeader';

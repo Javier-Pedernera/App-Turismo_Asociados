@@ -1,4 +1,3 @@
-// import axios from "axios";
 import axios from "axios";
 import { LoginResponse, UserData } from "../redux/types/types";
 import { clearUserData } from "../utils/storage";
