@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert } from 'react-native';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { StackNavigationProp } from '@react-navigation/stack';
 import Modal from 'react-native-modal';
-import { sendPasswordResetEmail } from '../services/authService'; // Importa tu servicio
+import { sendPasswordResetEmail } from '../services/authService';
 
 type ForgotPasswordScreenProp = StackNavigationProp<RootStackParamList, 'ForgotPassword'>;
 
@@ -20,13 +20,13 @@ const ForgotPasswordScreen: React.FC = () => {
 
   const handleSendResetEmail = async () => {
     try {
-      await sendPasswordResetEmail(email); // Llama al servicio para enviar el correo de restablecimiento
+      await sendPasswordResetEmail(email);
       setModalMessage('Se ha enviado un correo de recuperación. Revisa tu bandeja de entrada.');
       toggleModal();
       setTimeout(() => {
         setModalVisible(false);
         navigation.navigate('Login');
-      }, 2000);
+      }, 3000);
     } catch (error) {
       setModalMessage('Error al enviar el correo de recuperación.');
       toggleModal();
@@ -35,7 +35,8 @@ const ForgotPasswordScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Recuperar Contraseña</Text>
+      <Image source={require('../../assets/logo.png')} style={styles.logoHome} />
+      <Text style={styles.title}>Recupera tu contraseña</Text>
       <TextInput
         style={styles.input}
         placeholder="Correo Electrónico"
@@ -69,10 +70,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#f7f7f7',
   },
   title: {
-    fontSize: 32,
+    fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 20,
+    marginTop:50,
     color: '#333',
+  },
+  logoHome:{
+    width: 50,
+    height: 50,
+      marginTop:20
   },
   input: {
     height: 50,

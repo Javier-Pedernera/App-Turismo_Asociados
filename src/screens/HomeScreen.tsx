@@ -34,21 +34,19 @@ const HomeScreen = () => {
         {isLoggedIn ? (
         <View style={styles.container}>
           <Text>Bienvenido de nuevo!</Text>
-          <Image source={require('../../assets/images/logo.png')} style={styles.logoHome} />
-          <Button title="Ir a la aplicación principal" onPress={() => navigation.navigate('MainAppScreen')} />
+          <Image source={require('../../assets/logo.png')} style={styles.logoHome} />
+          {/* <Button title="Ir a la aplicación principal" onPress={() => navigation.navigate('MainAppScreen')} /> */}
         </View>
       ) : (
         <View style={styles.container}>
-          <Image source={require('../../assets/images/logo.png')} style={styles.logoHome1} />
-          <Image source={require('../../assets/images/logo2.png')} style={styles.logoHome2} />
+          <Image source={require('../../assets/logo.png')} style={styles.logoHome1} />
+          <Image source={require('../../assets/logo2.png')} style={styles.logoHome2} />
           <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Login')}>
         <Text style={styles.buttonText}>Ingresar</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.buttonSecondary} onPress={() => navigation.navigate('Register')}>
         <Text style={styles.buttonSecondaryText}>Registrarse</Text>
       </TouchableOpacity>
-          {/* <Button title="Iniciar Sesión" onPress={() => navigation.navigate('Login')} />
-          <Button title="Registrarse" onPress={() => navigation.navigate('Register')} /> */}
         </View>
       )}
       
@@ -75,8 +73,8 @@ const styles = StyleSheet.create({
     },
     logoHome:{
       width: 150,
-      height: 150
-
+      height: 150,
+        marginTop:20
     },
     logoHome1:{
       width: 100,

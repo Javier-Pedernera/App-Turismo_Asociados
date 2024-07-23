@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, KeyboardAvoidingView, ScrollView, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -8,19 +8,25 @@ import RNPickerSelect from 'react-native-picker-select';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Checkbox from 'expo-checkbox';
 import Modal from 'react-native-modal';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchAllCategories } from '../redux/actions/categoryActions';
+import { AppDispatch, RootState } from '../redux/store/store';
+import { createTourist } from '../services/touristService';
+import Loader from '../components/Loader';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { formatDateToYYYYMMDD } from '../utils/formatDate';
 
 type RegisterScreenProp = StackNavigationProp<RootStackParamList, 'Register'>;
 
-const categories = [
-  { id: 1, name: 'Viajes de Aventura' },
-  { id: 2, name: 'Turismo Cultural' },
-  { id: 3, name: 'Playas' },
-  { id: 4, name: 'Montañas' },
-  { id: 5, name: 'Descuentos Exclusivos' },
-];
 const RegisterScreen: React.FC = () => {
+  const dispatch: AppDispatch = useDispatch();
   const navigation = useNavigation<RegisterScreenProp>();
+  const categories = useSelector((state: RootState) => state.categories.allCategories);
+  // console.log("categorias",categories);
 
+  useEffect(() => {
+    dispatch(fetchAllCategories());
+  }, [dispatch]);
 
 
   const [formData, setFormData] = useState({
@@ -36,8 +42,7 @@ const RegisterScreen: React.FC = () => {
     password: '',
     confirmPassword: '',
     subscribed_to_newsletter: false,
-    status: 'active',
-    // categories: [] as number[],
+    status: 'active'
   });
   const [showOtherGender, setShowOtherGender] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -45,6 +50,9 @@ const RegisterScreen: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const [isModalVisible, setModalVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
     setFormData({
@@ -52,19 +60,20 @@ const RegisterScreen: React.FC = () => {
       [field]: value,
     });
   };
-  // const handleCategoryChange = (categoryId: number) => {
-  //   setFormData(prevData => {
-  //     const updatedCategories = prevData.categories.includes(categoryId)
-  //       ? prevData.categories.filter(id => id !== categoryId)
-  //       : [...prevData.categories, categoryId];
+  const handleCategoryChange = (categoryId: number) => {
+    setSelectedCategories(prevSelectedCategories => {
+      if (prevSelectedCategories.includes(categoryId)) {
+        return prevSelectedCategories.filter(id => id !== categoryId);
+      } else {
+        return [...prevSelectedCategories, categoryId];
+      }
+    });
+  };
 
-  //     return { ...prevData, categories: updatedCategories };
-  //   });
-  // };
-
-  console.log(formData);
+  // console.log(selectedCategories);
 
   const handleRegister = async () => {
+    setLoading(true);
     if (formData.password !== formData.confirmPassword) {
       setError('Las contraseñas no coinciden');
       return;
@@ -74,29 +83,79 @@ const RegisterScreen: React.FC = () => {
     if (other_gender) {
       dataToSend.gender = other_gender;
     }
-    // const dataToSendWithCategories = {
-    //   ...dataToSend,
-    //   categories: selectedCategories,
-    // };
-
-    console.log(dataToSend);
 
     try {
-      const response = await registerUser(dataToSend);
-      if (response.status === 201) {
-        setError(null);
-        Alert.alert('Éxito', "Usuario registrado correctamente", [{ text: 'OK' }], { cancelable: true });
-        setTimeout(() => {
-          navigation.navigate('Login');
-        }, 2000);
+      // Registro del usuario
+      const userResponse = await registerUser(dataToSend);
+      // console.log("userResponse",userResponse);
+
+      if (userResponse.status === 201) {
+        const { user_id, country, gender,birth_date } = userResponse.data;
+        // Crear turista
+        const touristData = {
+          user_id: user_id,
+          origin: country || null,
+          birthday: birth_date || null,
+          gender: gender || null,
+          category_ids: selectedCategories,
+        };
+
+        const touristResponse = await createTourist(touristData);
+        // console.log("touristResponse",touristResponse);
+        if (touristResponse.status === 200) {
+          setError(null);
+          Alert.alert('Éxito', "Usuario registrado correctamente", [{ text: 'OK' }], { cancelable: true });
+          setFormData({
+            first_name: '',
+            last_name: '',
+            email: '',
+            country: '',
+            city: '',
+            phone_number: '',
+            gender: '',
+            other_gender: '',
+            birth_date: '',
+            password: '',
+            confirmPassword: '',
+            subscribed_to_newsletter: false,
+            status: 'active'
+          })
+          setTimeout(() => {
+            navigation.navigate('Login');
+          }, 2000);
+        } else {
+          setError('Fallo al crear el perfil de turista');
+        }
       } else {
         setError('Fallo en el registro');
       }
     } catch (error: any) {
       setError(error.message);
+    } finally {
+      setLoading(false);
     }
   };
-
+  const handleDateChange = (event: any, date?: Date) => {
+    if (Platform.OS === 'ios') {
+        setSelectedDate(date || selectedDate);
+    } else {
+        if (date) {
+            setSelectedDate(date);
+            const formattedDate = date.toISOString().split('T')[0];
+            handleInputChange('birth_date', formattedDate);
+        }
+        setShowDatePicker(false);
+    }
+};
+  const confirmDate = () => {
+    if (selectedDate) {
+      const formattedDate = formatDateToYYYYMMDD(
+        `${selectedDate.getDate()}-${selectedDate.getMonth() + 1}-${selectedDate.getFullYear()}`
+      );
+      handleInputChange('birth_date', formattedDate);
+    }
+    setShowDatePicker(false);
+  };
   const handleGenderChange = (value: string) => {
     setShowOtherGender(value === 'other');
     handleInputChange('gender', value);
@@ -107,7 +166,7 @@ const RegisterScreen: React.FC = () => {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Image source={require('../../assets/images/logo.png')} style={styles.logo} />
+        <Image source={require('../../assets/logo.png')} style={styles.logo} />
         <View style={styles.formGrid}>
           <TextInput
             style={styles.input}
@@ -153,13 +212,28 @@ const RegisterScreen: React.FC = () => {
             onChangeText={(value) => handleInputChange('phone_number', value)}
             keyboardType="phone-pad"
           />
-          <TextInput
-            style={styles.input}
-            placeholder="Fecha de nacimiento (YYYY-MM-DD)"
-            placeholderTextColor="#aaa"
-            value={formData.birth_date}
-            onChangeText={(value) => handleInputChange('birth_date', value)}
-          />
+          <View style={styles.datePickerContainer}>
+      {!showDatePicker && (<TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.inputdate}>
+          <Text style={styles.textDate}>
+            {formData.birth_date ? formData.birth_date : 'Fecha de Nacimiento'}
+          </Text>
+        </TouchableOpacity>)}
+        {showDatePicker && (
+          <View>
+            <DateTimePicker
+              value={selectedDate || new Date()}
+              mode="date"
+              display="spinner"
+              onChange={handleDateChange}
+            />
+            {Platform.OS === 'ios' && (
+              <TouchableOpacity onPress={confirmDate} style={styles.confirmButton}>
+                <Text style={styles.confirmButtonText}>Confirmar fecha</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+      </View>
           <View style={styles.genderDivider}>
             <RNPickerSelect
               onValueChange={(value) => handleGenderChange(value)}
@@ -181,7 +255,7 @@ const RegisterScreen: React.FC = () => {
               />
             )}
           </View>
-
+          {loading && <Loader />}
           <TouchableOpacity style={styles.buttonModal} onPress={toggleModal}>
             <Ionicons name="add" size={24} color="#fff" style={styles.buttonModalIcon} />
             <Text style={styles.buttonModalText}>Preferencias</Text>
@@ -190,11 +264,11 @@ const RegisterScreen: React.FC = () => {
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>Selecciona tus preferencias</Text>
               {categories.map(category => (
-                <View key={category.id} style={styles.checkboxWrapper}>
+                <View key={category.category_id} style={styles.checkboxWrapper}>
                   <Checkbox
                     style={styles.checkbox}
-                    // value={formData.categories.includes(category.id)}
-                    // onValueChange={() => handleCategoryChange(category.id)}
+                    value={selectedCategories.includes(category.category_id)} // Verificar si la categoría está seleccionada
+                    onValueChange={() => handleCategoryChange(category.category_id)} // Manejar el cambio de selección
                   />
                   <Text style={styles.checkboxLabel}>{category.name}</Text>
                 </View>
@@ -466,6 +540,55 @@ const styles = StyleSheet.create({
   },
   buttonModalIcon: {
     marginRight: 5,
+  },
+  confirmButton: {
+    backgroundColor: '#3179bb',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 50,
+    alignItems: 'center',
+    marginBottom: 10,
+    width: 250,
+    alignSelf: 'center'
+  },
+  confirmButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  datePickerContainer: {
+    display:'flex',
+    justifyContent:'center',
+    alignItems:'center',
+    width: '100%',
+    alignSelf:'center'
+  },
+  textDate:{
+    color:'rgb(160, 160, 160)',
+    fontSize:16,
+    display:'flex',
+    justifyContent:'center',
+    alignItems:'center',
+    alignContent:'center'
+  },
+  inputdate: {
+    display:'flex',
+    justifyContent:'center',
+    alignContent:'center',
+    height: 40,
+    width: '100%',
+    borderColor: '#ddd',
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 15,
+    paddingHorizontal: 15,
+    backgroundColor: '#fff',
+    fontSize: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 1,
+    elevation: 2,
   },
 });
 

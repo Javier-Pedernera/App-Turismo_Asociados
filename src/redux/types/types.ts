@@ -12,9 +12,14 @@ export enum UserActionTypes {
     error: string | null; 
   }
   export interface Category {
+    category_id: number;
+    name: string;
+  }
+  export interface UserCategory {
     id: number;
     name: string;
   }
+  
   // Definición de la estructura de los datos del usuario
   export interface UserData {
     user_id?: number;

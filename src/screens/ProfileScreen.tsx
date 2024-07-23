@@ -1,18 +1,40 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Platform, ScrollView, Modal } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import * as ImagePicker from 'expo-image-picker';
-import { RootState } from '../redux/store/store';
+import { AppDispatch, RootState } from '../redux/store/store';
 import RNPickerSelect from 'react-native-picker-select';
 import { UserData } from '../redux/types/types';
 import { updateUserAction } from '../redux/actions/userActions';
 import Icon from 'react-native-vector-icons/Ionicons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { fetchUserCategories, fetchAllCategories } from '../redux/actions/categoryActions';
+import Checkbox from 'expo-checkbox';
+import { updateTourist } from '../services/touristService';
 
 const ProfileScreen: React.FC = () => {
   const user = useSelector((state: RootState) => state.user.userData) as UserData;
-  const dispatch = useDispatch();
-  
+  const categories = useSelector((state: RootState) => state.categories.userCategories);
+  const allCategories = useSelector((state: RootState) => state.categories.allCategories);
+  const dispatch: AppDispatch = useDispatch();
+  // console.log("categorias de usuario",categories);
+  // console.log("usuario",user);
+  const [selectedCategories, setSelectedCategories] = useState<number[]>(
+    categories.map(cat => cat.id) // Usa 'id' en lugar de 'category_id'
+  );
+  // console.log("categorias seleccionadas",selectedCategories);
+  // console.log("allCategories",allCategories);
+  useEffect(() => {
+    if (user?.user_id) {
+      dispatch(fetchUserCategories(user.user_id));
+    }
+    dispatch(fetchAllCategories());
+  }, [dispatch, user?.user_id]);
+
+  useEffect(() => {
+    setSelectedCategories(categories.map(cat => cat.id)); // Usa 'id' en lugar de 'category_id'
+  }, [categories]);
+
   const [formData, setFormData] = useState({
     user_id: user?.user_id || 0,
     first_name: user?.first_name || '',
@@ -23,7 +45,7 @@ const ProfileScreen: React.FC = () => {
     phone_number: user?.phone_number || '',
     gender: user?.gender || '',
     birth_date: user?.birth_date || '',
-    image_url: user?.image_url || '',
+    image_url: user?.image_url || null,
     subscribed_to_newsletter: user?.subscribed_to_newsletter || false,
   });
 
@@ -32,9 +54,9 @@ const ProfileScreen: React.FC = () => {
   const [modalError, setModalError] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [isCategoriesModalVisible, setCategoriesModalVisible] = useState(false);
 
-
-  console.log(selectedDate);
+  console.log(formData);
   
 
   const handleInputChange = (field: string, value: string) => {
@@ -44,22 +66,32 @@ const ProfileScreen: React.FC = () => {
     });
   };
 
-  const formatDate = (date: Date) => {
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
+  const formatDateToYYYYMMDD = (dateString: string): string => {
+    const [day, month, year] = dateString.split('-');
+    return `${year}-${month}-${day}`;
   };
+  
+  
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
     if (Platform.OS !== 'ios') {
       setShowDatePicker(false);
     }
-    handleInputChange('birth_date', formatDate(selectedDate as Date))
+    if (selectedDate) {
+      const formattedDate = formatDateToYYYYMMDD(
+        `${selectedDate.getDate()}-${selectedDate.getMonth() + 1}-${selectedDate.getFullYear()}`
+      );
+      handleInputChange('birth_date', formattedDate);
+    }
   };
-
+  
   const confirmDate = () => {
-    handleInputChange('birth_date', formatDate(selectedDate as Date));
+    if (selectedDate) {
+      const formattedDate = formatDateToYYYYMMDD(
+        `${selectedDate.getDate()}-${selectedDate.getMonth() + 1}-${selectedDate.getFullYear()}`
+      );
+      handleInputChange('birth_date', formattedDate);
+    }
     setShowDatePicker(false);
   };
 
@@ -80,10 +112,26 @@ const ProfileScreen: React.FC = () => {
     try {
       const { user_id, ...dataToSend } = formData;
       const response = await dispatch<any>(updateUserAction({ ...dataToSend, user_id }));
-      
-      if (response.status === 200) {
-        setModalMessage('Datos actualizados con éxito');
-        setModalError(false);
+      // console.log("resouesta de la actualizacion del usuario", response);
+      // console.log("resouesta de la actualizacion del usuario ver status", response.status);
+      if (response.status == 200) {
+        const categoriesResponse = await
+          updateTourist(user_id, {
+            origin: formData.country,
+            birthday: formData.birth_date,
+            gender: formData.gender,
+            category_ids: selectedCategories,
+          })
+// console.log("categoriesResponse",categoriesResponse);
+// console.log("categoriesResponse ver status",categoriesResponse.status);
+        if (categoriesResponse.status == 200) {
+          // dispatch(fetchUserCategories())
+          setModalMessage('Datos y categorías actualizados con éxito');
+          setModalError(false);
+        } else {
+          setModalMessage('Error al actualizar las categorías');
+          setModalError(true);
+        }
       } else {
         setModalMessage('Error al actualizar los datos');
         setModalError(true);
@@ -96,6 +144,18 @@ const ProfileScreen: React.FC = () => {
     }
   };
 
+  const handleCategoryChange = (categoryId: number) => {
+    setSelectedCategories(prevState => {
+      if (prevState.includes(categoryId)) {
+        return prevState.filter(id => id !== categoryId);
+      } else {
+        return [...prevState, categoryId];
+      }
+    });
+  };
+  const handleSaveCategories = () => {
+    setCategoriesModalVisible(false);
+  };
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <TouchableOpacity onPress={handleImagePick}>
@@ -167,8 +227,8 @@ const ProfileScreen: React.FC = () => {
           onChange={(e) => handleInputChange('gender', e.target.value)}
         >
           <option value="" disabled>Seleccione Género</option>
-          <option value="M">Masculino</option>
-          <option value="F">Femenino</option>
+          <option value="Masculino">Masculino</option>
+          <option value="Femenino">Femenino</option>
           <option value="Otro">Otro</option>
         </select>
       ) : (
@@ -184,6 +244,12 @@ const ProfileScreen: React.FC = () => {
           style={pickerSelectStyles}
         />
       )}
+      <TouchableOpacity
+  style={styles.button}
+  onPress={() => setCategoriesModalVisible(true)}
+>
+  <Text style={styles.buttonText}>Ver Categorías</Text>
+</TouchableOpacity>
       <TouchableOpacity style={styles.button} onPress={handleUpdate}>
         <Text style={styles.buttonText}>Actualizar datos</Text>
       </TouchableOpacity>
@@ -207,6 +273,31 @@ const ProfileScreen: React.FC = () => {
           </View>
         </View>
       </Modal>
+      <Modal visible={isCategoriesModalVisible} animationType="slide" transparent>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Editar Categorías</Text>
+            <ScrollView>
+              {allCategories.map((category) => (
+                <View key={category.category_id} style={styles.checkboxContainer}>
+                  <Checkbox
+                    value={selectedCategories.includes(category.category_id)}
+                    onValueChange={() => handleCategoryChange(category.category_id)}
+                  />
+                  <Text style={styles.label}>{category.name}</Text>
+                </View>
+              ))}
+            </ScrollView>
+            <TouchableOpacity onPress={handleSaveCategories} style={styles.modalButton}>
+              <Text style={styles.modalButtonText}>Guardar Categorías</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setCategoriesModalVisible(false)} style={styles.modalButton}>
+              <Text style={styles.modalButtonText}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
     </ScrollView>
   );
 };
@@ -271,6 +362,9 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     marginBottom: 15,
     alignSelf: 'center',
+    borderColor: '#ddd',
+    borderWidth: 1,
+    
   },
   button: {
     backgroundColor: '#3179bb',
@@ -307,39 +401,44 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fondo semitransparente
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: 'white',
+    borderRadius: 10,
     padding: 20,
-    borderRadius: 8,
-    alignItems: 'center',
     width: '80%',
+    maxHeight: '70%',
   },
   modalText: {
     fontSize: 16,
-    marginBottom: 15,
+    marginVertical: 10,
     textAlign: 'center',
   },
-  modalButton: {
-    backgroundColor: '#3179BB',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
+  checkboxContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
+    marginVertical: 5,
+  },
+  label: {
+    marginLeft: 8,
+  },
+  modalButton: {
+    backgroundColor: '#2196F3',
+    borderRadius: 5,
+    padding: 10,
+    alignItems: 'center',
+    marginVertical: 5,
   },
   modalButtonText: {
-    color: '#fff',
-    fontSize: 16,
+    color: 'white',
     fontWeight: 'bold',
   },
   modalError: {
-    // borderColor: '#ff0000',
-    // borderWidth: 2,
+    // backgroundColor: '#f8d7da',
   },
   modalSuccess: {
-    // borderColor: '#00ff00',
-    // borderWidth: 2,
+    // backgroundColor: '#d4edda',
   },
   datePickerContainer: {
     display:'flex',
@@ -382,6 +481,15 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  categoryText: {
+    fontSize: 16,
+    marginVertical: 5,
   },
 });
 
