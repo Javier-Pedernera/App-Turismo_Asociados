@@ -20,7 +20,7 @@ export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
   ForgotPassword: undefined;
-  Profile: undefined;  // Añade el perfil aquí
+  Profile: undefined; 
   FavoritePromotions: undefined;
   AvailablePromotions: undefined;
   ResetPassword: undefined

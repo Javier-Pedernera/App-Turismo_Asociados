@@ -6,7 +6,8 @@ import ProfileScreen from '../screens/ProfileScreen';
 import { FontAwesome } from '@expo/vector-icons';
 import UserCredential from './UserCredential';
 import FavoritePromotions from './FavoritePromotions';
-import AvailablePromotions from './Promotions';
+import PageUnderConstruction from './PageUnderConstruction';
+// import AvailablePromotions from './Promotions';
 
 const Tab = createBottomTabNavigator();
 
@@ -61,9 +62,9 @@ const MainAppScreen: React.FC = () => {
       >
         <Tab.Screen name="Inicio" component={HomeScreen} options={{ headerShown: false }} />
         <Tab.Screen name="Perfil" component={ProfileScreen} options={{ headerShown: false }}/>
-        <Tab.Screen name="Descuentos" component={AvailablePromotions} options={{ headerShown: false }} />
+        <Tab.Screen name="Descuentos" component={PageUnderConstruction} options={{ headerShown: false }} />
         <Tab.Screen name="Credencial" component={UserCredential} options={{ headerShown: false }}/>
-        <Tab.Screen name="Fav" component={FavoritePromotions} options={{ headerShown: false }}/>
+        <Tab.Screen name="Fav" component={PageUnderConstruction} options={{ headerShown: false }}/>
       </Tab.Navigator>
   );
 };

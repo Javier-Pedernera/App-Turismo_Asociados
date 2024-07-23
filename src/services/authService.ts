@@ -13,7 +13,7 @@ const API_URL = 'https://app-turismo-backend.vercel.app';
   export const loginUserAuth = async (email: string, password: string): Promise<LoginResponse> => {
     try {
       const response = await axios.post<LoginResponse>(`${API_URL}/login`, { email, password });
-      console.log(response.data);
+      // console.log(response.data);
       return response.data;
       
       
@@ -24,13 +24,12 @@ const API_URL = 'https://app-turismo-backend.vercel.app';
   
 export const registerUser = async (userData: UserData) => {
   try {
-    console.log("datos del formulario en el registro",userData);
+    // console.log("datos del formulario en el registro",userData);
     
     const response = await axios.post(`${API_URL}/signup`, userData);
-    console.log("response del back",response);
-    console.log(response.status);
-    
-    console.log("response.data del back",response.data);
+    if(response.status === 201 ){
+
+    }
     return response;
   } catch (error) {
     throw new Error('Registration failed'); // Manejar errores según corresponda
@@ -66,3 +65,4 @@ export const resetPassword = async (token: string, newPassword: string) => {
   // const response = await axios.post(`${API_URL}/auth/reset-password/${token}`, { password: newPassword });
   // return response.data;
 };
+

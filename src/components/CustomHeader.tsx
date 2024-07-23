@@ -16,18 +16,14 @@ const CustomHeader: React.FC = () => {
   };
   return (
     <View style={styles.headerContainer}>
-      {/* <Text style={styles.appName}>AppTurismo</Text> */}
-      {/* <Image source={require('../../assets/images/logo.png')} style={styles.logo} /> */}
       {user?.image_url? <Image source={{ uri: user.image_url }} style={styles.avatar} />:
       <Image source={{uri:"https://res.cloudinary.com/dbwmesg3e/image/upload/v1721231402/TurismoApp/perfil_tfymsu.png"}} style={styles.avatar} />
       }
       <View style={styles.nameContainer}>
         <StatusBar barStyle="dark-content" />
-      {/* <Text style={styles.userName}>{user?.nombre} {user?.apellido}</Text> */}
       </View>
       <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
       <AntDesign name="poweroff" size={24} color="black" />
-        {/* <Text style={styles.logoutButtonText}>Logout</Text> */}
       </TouchableOpacity>
     </View>
   );
@@ -43,7 +39,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(49, 121, 187, 0.1)',
     paddingLeft:30,
     paddingRight:20
-    // backgroundColor: '#f7f7f7',
   },
   nameContainer: {
     width:'50%',
@@ -74,7 +69,6 @@ const styles = StyleSheet.create({
     marginLeft: 10
   },
   logoutButton: {
-    // backgroundColor: 'rgba(145, 149, 150, 0.2)',
     paddingVertical: 12,
     paddingHorizontal: 12,
     borderRadius: 50,

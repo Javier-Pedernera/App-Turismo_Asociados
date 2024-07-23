@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "App-Turismo",
-    "slug": "App-Turismo",
+    "name": "CCTD Cobquecura",
+    "slug": "cctd-cobquecura",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -12,7 +12,13 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.javierpedernera.appturismo",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -22,7 +28,7 @@
       "permissions": [
         "android.permission.CAMERA"
       ],
-      "package": "com.javierpedernera.AppTurismo",
+      "package": "com.javierpedernera.appturismo",
       "versionCode": 1
     },
     "web": {
@@ -34,7 +40,8 @@
         {
           "cameraPermission": "Allow $(PRODUCT_NAME) to access camera."
         }
-      ]
+      ],
+      "expo-router"
     ],
     "extra": {
       "eas": {
@@ -43,3 +50,4 @@
     }
   }
 }
+

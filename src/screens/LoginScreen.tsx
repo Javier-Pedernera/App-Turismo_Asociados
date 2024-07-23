@@ -8,6 +8,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import Modal from 'react-native-modal';
 
 import { userLogIn } from '../redux/actions/userActions';
+import Loader from '../components/Loader';
 
 type LoginScreenProp = StackNavigationProp<RootStackParamList, 'Login'>;
 
@@ -20,15 +21,16 @@ const LoginScreen: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isModalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
-
+  const [loading, setLoading] = useState(false); 
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
 
   const handleLogin = async () => {
     try {
+      setLoading(true);
       const response = await dispatch<any>(userLogIn(email, password));
-      console.log("respuesta en la funcion handlelogin", response);
+      // console.log("respuesta en la funcion handlelogin", response);
       setError(null);
       setModalMessage('Bienvenido ' + response.user.first_name + '!');
       toggleModal();
@@ -42,12 +44,14 @@ const LoginScreen: React.FC = () => {
       setError(err.message);
       setModalMessage('Error: ' + err.message);
       toggleModal();
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Image source={require('../../assets/images/logo.png')} style={styles.logoLog} />
+      <Image source={require('../../assets/logo.png')} style={styles.logoLog} />
       <TextInput
         style={styles.input}
         placeholder="Correo Electrónico"
@@ -79,7 +83,7 @@ const LoginScreen: React.FC = () => {
       <TouchableOpacity style={styles.forgotPasswordButton} onPress={() => navigation.navigate('ForgotPassword')}>
         <Text style={styles.forgotPasswordText}>Olvidaste tu contraseña?</Text>
       </TouchableOpacity>
-
+      {loading && <Loader />}
       <Modal isVisible={isModalVisible}>
         <View style={styles.modalContent}>
           <Text style={styles.modalMessage}>{modalMessage}</Text>
@@ -107,8 +111,8 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   logoLog: {
-    height: 150,
-    width: 150,
+    height: 130,
+    width: 130,
     marginBottom: 50
   },
   input: {

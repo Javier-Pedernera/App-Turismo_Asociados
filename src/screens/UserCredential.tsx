@@ -7,7 +7,7 @@ import { UserData } from '../redux/types/types';
 
 const UserCredential: React.FC = () => {
   const user = useSelector((state: RootState) => state.user.userData) as UserData;
-// console.log(user);
+
 
   return (
     Object.keys(user).length? <View style={styles.container}>
@@ -34,12 +34,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fff',
     padding: 20,
-    // borderRadius: 10,
-    // shadowColor: '#000',
-    // shadowOffset: { width: 0, height: 2 },
-    // shadowOpacity: 0.8,
-    // shadowRadius: 2,
-    // elevation: 5,
   },
   name: {
     fontSize: 24,
