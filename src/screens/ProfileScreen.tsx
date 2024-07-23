@@ -45,7 +45,7 @@ const ProfileScreen: React.FC = () => {
     phone_number: user?.phone_number || '',
     gender: user?.gender || '',
     birth_date: user?.birth_date || '',
-    image_url: user?.image_url || '',
+    image_url: user?.image_url || null,
     subscribed_to_newsletter: user?.subscribed_to_newsletter || false,
   });
 
@@ -362,6 +362,8 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     marginBottom: 15,
     alignSelf: 'center',
+    borderColor: '#ddd',
+    borderWidth: 1,
     
   },
   button: {

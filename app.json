@@ -13,7 +13,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.javierpedernera.appturismo",
+      "bundleIdentifier": "com.javierpedernera.Appturismo",
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
@@ -28,7 +28,7 @@
       "permissions": [
         "android.permission.CAMERA"
       ],
-      "package": "com.javierpedernera.appturismo",
+      "package": "com.javierpedernera.Appturismo",
       "versionCode": 1
     },
     "web": {

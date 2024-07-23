@@ -57,6 +57,9 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 50,
     marginRight: 10,
+    borderColor: 'rgb(160, 159, 159)',
+    borderWidth: 1,
+    
   },
   userName: {
     color:'rgba(145, 149, 150, 0.9)',

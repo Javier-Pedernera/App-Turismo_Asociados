@@ -46,6 +46,9 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     marginBottom: 20,
     alignSelf: 'center',
+    borderColor: '#ddd',
+    borderWidth: 1,
+    
   },
   qrCard: {
     backgroundColor: '#f7f7f7',
