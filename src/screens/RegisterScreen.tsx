@@ -163,6 +163,19 @@ const RegisterScreen: React.FC = () => {
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
+
+  const isFormValid = () => {
+    return (
+      formData.first_name &&
+      formData.last_name &&
+      formData.email &&
+      formData.country &&
+      formData.password &&
+      formData.confirmPassword &&
+      formData.password === formData.confirmPassword
+    );
+  };
+
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={styles.container}>
@@ -308,9 +321,14 @@ const RegisterScreen: React.FC = () => {
         </View>
         {error && <Text style={styles.error}>{error}</Text>}
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={handleRegister}>
+        <TouchableOpacity
+            style={[styles.button, !isFormValid() && { backgroundColor: '#ccc' }]}
+            onPress={handleRegister}
+            disabled={!isFormValid()}
+          >
             <Text style={styles.buttonText}>Registrar</Text>
           </TouchableOpacity>
+
           <TouchableOpacity style={styles.buttonSecondary} onPress={() => navigation.navigate('Login')}>
             <Text style={styles.buttonSecondaryText}>Iniciar sesión</Text>
           </TouchableOpacity>

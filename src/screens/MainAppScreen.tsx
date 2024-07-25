@@ -7,7 +7,8 @@ import { FontAwesome } from '@expo/vector-icons';
 import UserCredential from './UserCredential';
 import FavoritePromotions from './FavoritePromotions';
 import PageUnderConstruction from './PageUnderConstruction';
-// import AvailablePromotions from './Promotions';
+import PromotionsScreen from './PromotionsScreen';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const Tab = createBottomTabNavigator();
 
@@ -21,8 +22,8 @@ const MainAppScreen: React.FC = () => {
         return 'user';
       case 'Descuentos':
         return 'ticket';
-      case 'Fav':
-        return 'star';
+      case 'Más':
+        return 'menu-open';
       case 'Credencial':
         return 'address-card';
       default:
@@ -35,7 +36,11 @@ const MainAppScreen: React.FC = () => {
         screenOptions={({ route }) => ({
           tabBarIcon: ({ color, size }) => {
             const iconName = getIconName(route.name);
-            return <FontAwesome name={iconName} size={size} color={color} />;
+            if(iconName == "menu-open"){ return <MaterialIcons name={iconName} size={size} color={color} />}
+            else{
+              return <FontAwesome name={iconName} size={size} color={color} />;
+            }
+            
           },
           tabBarActiveTintColor: '#3179BB', 
           tabBarInactiveTintColor: '#aaa', 
@@ -62,9 +67,9 @@ const MainAppScreen: React.FC = () => {
       >
         <Tab.Screen name="Inicio" component={HomeScreen} options={{ headerShown: false }} />
         <Tab.Screen name="Perfil" component={ProfileScreen} options={{ headerShown: false }}/>
-        <Tab.Screen name="Descuentos" component={PageUnderConstruction} options={{ headerShown: false }} />
+        <Tab.Screen name="Descuentos" component={PromotionsScreen} options={{ headerShown: false }} />
         <Tab.Screen name="Credencial" component={UserCredential} options={{ headerShown: false }}/>
-        <Tab.Screen name="Fav" component={PageUnderConstruction} options={{ headerShown: false }}/>
+        <Tab.Screen name="Más" component={PageUnderConstruction} options={{ headerShown: false }}/>
       </Tab.Navigator>
   );
 };

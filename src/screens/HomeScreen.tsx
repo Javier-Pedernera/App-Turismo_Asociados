@@ -1,132 +1,303 @@
 import React, { useEffect } from 'react';
-import { View, Text, Button, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { getUserData } from '../utils/storage';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AppDispatch, RootState } from '../redux/store/store';
 import { useDispatch, useSelector } from 'react-redux';
-import { UserData } from '../redux/types/types';
+import { UserData, Promotion } from '../redux/types/types';
 import { setUser } from '../redux/reducers/userReducer';
+import { fetchPromotions } from '../redux/actions/promotionsActions';
+import { fetchAllCategories } from '../redux/actions/categoryActions';
+import { RFPercentage } from "react-native-responsive-fontsize";
+import Carousel from 'react-native-reanimated-carousel';
+import { LinearGradient } from 'expo-linear-gradient';
 
+const { width: screenWidth } = Dimensions.get('window');
+const screenHeight = Dimensions.get('window').height;
 type homeScreenProp = StackNavigationProp<RootStackParamList, 'Home'>;
 
 const HomeScreen = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigation = useNavigation<homeScreenProp>();
   const userData = useSelector((state: RootState) => state.user.userData) as UserData;
+  const promotions = useSelector((state: RootState) => state.promotions.promotions.slice(0, 2)) as Promotion[];
   const isLoggedIn = userData?.email;
 
   useEffect(() => {
     checkUserLoggedIn();
+    
   }, []);
 
   const checkUserLoggedIn = async () => {
     const storedUserData = await getUserData();
+    console.log("storedUserData",storedUserData);
+    
+    dispatch(fetchPromotions());
     if (storedUserData) {
       dispatch(setUser(storedUserData));
       navigation.navigate('MainAppScreen');
     }
   };
 
+  
+  const handlePress = (promotion: Promotion) => {
+    if (isLoggedIn) {
+      navigation.navigate('PromotionDetail', { promotion });
+    } else {
+      navigation.navigate('Login');
+    }
+  };
+
+  const renderItem = ({ item }: { item: Promotion }) => (
+   
+      <TouchableOpacity style={styles.carouselItem} onPress={() => handlePress(item)}>
+      <View style={styles.promotionContent}>
+        <Text style={styles.promotionTitle}>{item.title}</Text>
+        <View style={styles.discountContainer}>
+          <Text style={styles.discountText}>30%</Text>
+        </View>
+      </View>
+      <Image source={{ uri: item.images[0]?.image_path }} style={styles.carouselImage} />
+      </TouchableOpacity>
+   
+  );
+
   return (
     <View style={styles.container}>
-        {isLoggedIn ? (
-        <View style={styles.container}>
-          <Text>Bienvenido de nuevo!</Text>
-          <Image source={require('../../assets/logo.png')} style={styles.logoHome} />
-          {/* <Button title="Ir a la aplicación principal" onPress={() => navigation.navigate('MainAppScreen')} /> */}
-        </View>
-      ) : (
-        <View style={styles.container}>
-          <Image source={require('../../assets/logo.png')} style={styles.logoHome1} />
-          <Image source={require('../../assets/logo2.png')} style={styles.logoHome2} />
-          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Login')}>
-        <Text style={styles.buttonText}>Ingresar</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.buttonSecondary} onPress={() => navigation.navigate('Register')}>
-        <Text style={styles.buttonSecondaryText}>Registrarse</Text>
-      </TouchableOpacity>
-        </View>
-      )}
       
+      <View style={styles.upperSection}>
+        <Image source={{ uri: 'https://res.cloudinary.com/dbwmesg3e/image/upload/v1721915163/TurismoApp/imagenes/letrero-cobquecura-1_ebnygx.jpg' }} style={styles.backgroundImage} />
+        <View style={styles.textContainer}>
+          <Text style={styles.title}>Bienvenido a la Cámara de Comercio de Cobquecura</Text>
+          <Text style={styles.description}>
+            Esta aplicación está diseñada para ayudar a los usuarios a conseguir promociones y promocionar lugares turísticos en Cobquecura, Chile.
+          </Text>
+          {isLoggedIn ? (
+            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('PromotionsScreen')}>
+              <Text style={styles.buttonText}>Ir a las promociones</Text>
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.authButtons}>
+              <TouchableOpacity style={styles.buttonSecondary} onPress={() => navigation.navigate('Login')}>
+                <Text style={styles.buttonText}>Ingresar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.buttonSecondary} onPress={() => navigation.navigate('Register')}>
+                <Text style={styles.buttonSecondaryText}>Registrarse</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </View>
+
+      {promotions && 
+      <View style={styles.lowerSection}>
+        {/* <LinearGradient
+        colors={['#f1ad3e', '#f5f5f5', 'rgb(247, 175, 59)']}
+        style={styles.gradientBackground}
+        start={{ x: 0.0, y: 0.0 }}
+        end={{ x: 1.0, y: 1.0 }}
+      >
+        <LinearGradient
+          colors={['#fce2b8', 'rgba(255, 255, 255, 0.5)']}
+          style={[styles.gradientOverlay, styles.topLeft]}
+          start={{ x: 0.0, y: 0.0 }}
+          end={{ x: 1.0, y: 1.0 }}
+        />
+        <LinearGradient
+          colors={['rgba(255, 255, 255, 0)', '#fce2b8']}
+          style={[styles.gradientOverlay, styles.bottomRight]}
+          start={{ x: 1.0, y: 1.0 }}
+          end={{ x: 0.0, y: 0.0 }}
+        /> */}
+        <LinearGradient
+        // Colors in the gradient
+        colors={['#ffffff', '#d59831', '#0b0d04']}
+        // Angle of the gradient
+        start={{ x: 1, y: 1 }} // start at the top-left
+        end={{ x: 1, y: 0 }}   // end at the bottom-right
+        style={styles.gradient}
+      >
+
+        <Carousel
+          loop
+          width={screenWidth}
+          height={screenWidth / 2}
+          autoPlay={true}
+          autoPlayInterval={5000}
+          data={promotions}
+          scrollAnimationDuration={3000}
+          mode="parallax"
+          modeConfig={{
+            parallaxScrollingScale: 0.8,
+            parallaxScrollingOffset: 50,
+          }}
+          renderItem={renderItem}
+          style={styles.carousel}
+          panGestureHandlerProps={{
+            activeOffsetX: [-10, 10],
+          }}
+        />
+        </LinearGradient>
+      </View>
+      }
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-    container: {
-      display:'flex',
-      justifyContent:'center',
-      alignItems: 'center',
-      flexDirection:'column',
-      height:"100%"
-    },
-    buttonContainer: {
-      marginBottom: 10,
-    //   width: '100%',
-      borderStyle:'solid',
-      borderWidth:1,
-      borderColor:"#1976D2",
-      color:"#1976D2",
-      borderRadius:5
-    },
-    logoHome:{
-      width: 150,
-      height: 150,
-        marginTop:20
-    },
-    logoHome1:{
-      width: 100,
-      height: 100,
-      marginBottom:20
-    },
-    logoHome2:{
-      width: 210,
-      height: 65,
-      marginBottom:20
-    },
-    text:{
-        marginBottom: 5,
-        fontWeight:"700"
-    },
-    button: {
-      backgroundColor: '#3179BB',
-      paddingVertical: 10,
-      paddingHorizontal: 30,
-      borderRadius: 8,
-      alignItems: 'center',
-      width: '48%',
-      marginBottom:10,
-      shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 5,
-    },
-    buttonText: {
-      color: '#fff',
-      fontSize: 16,
-      fontWeight: 'bold',
-    },
-    buttonSecondary: {
-      backgroundColor: '#64C9ED',
-      paddingVertical: 10,
-      paddingHorizontal: 20,
-      borderRadius: 8,
-      alignItems: 'center',
-      width: '48%',
-      shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 5,
-    },
-    buttonSecondaryText: {
-      color: '#fff',
-      fontSize: 16,
-      fontWeight: 'bold',
-    },
-  });
+  container: {
+    height:'100%'
+  },
+  upperSection: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  backgroundImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+  },
+  textContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Opcional: para un fondo semitransparente
+  },
+  title: {
+    fontSize: RFPercentage(3),
+    color: '#fff',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  description: {
+    fontSize: RFPercentage(2),
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  authButtons: {
+    marginBottom:-50,
+    marginTop:40,
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    width: '100%',
+  },
+  button: {
+    borderColor:'#fff',
+    borderWidth:1,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+    width: '60%',
+    marginBottom: 5,
+    marginTop:15
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  buttonSecondary: {
+    borderColor:'#fff',
+    borderWidth:1,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+    width: '40%',
+    marginBottom: 5,
+    marginTop:15
+  },
+  buttonSecondaryText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  lowerSection: {
+    flex: 1,
+    alignContent:'center',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  carouselItem: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  carouselImage: {
+    width: screenWidth,
+    height: '100%',
+    borderRadius: 10,
+  },
+  carousel: {
+    // backgroundColor:'red',
+    height:"100%",
+    marginTop:20,
+    alignContent:'flex-start',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    width:screenWidth
+  },
+  promotionContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 15,
+  },
+  promotionTitle: {
+    color: '#efefef',
+    fontSize: RFPercentage(2.3),
+    fontWeight: 'bold',
+    marginBottom:10,
+    width:'80%'
+  },
+  discountContainer: {
+    backgroundColor: '#FF6347',
+    borderRadius: 20,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+  },
+  discountText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  gradientBackground: {
+    flex: 1,
+  },
+  gradientOverlay: {
+    position: 'absolute',
+    width: screenWidth,
+    height: screenHeight,
+    opacity: 0.5,
+  },
+  topLeft: {
+    top: 0,
+    left: 0,
+    width: screenWidth * 0.5,
+    height: screenHeight * 0.5,
+  },
+  bottomRight: {
+    bottom: 0,
+    right: 0,
+    width: screenWidth * 0.5,
+    height: screenHeight * 0.5,
+  },
+  gradient: {
+    flex: 1,
+  },
+});
 
 export default HomeScreen;
+

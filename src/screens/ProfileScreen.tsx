@@ -11,6 +11,8 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { fetchUserCategories, fetchAllCategories } from '../redux/actions/categoryActions';
 import Checkbox from 'expo-checkbox';
 import { updateTourist } from '../services/touristService';
+import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const ProfileScreen: React.FC = () => {
   const user = useSelector((state: RootState) => state.user.userData) as UserData;
@@ -19,8 +21,7 @@ const ProfileScreen: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   // console.log("categorias de usuario",categories);
   // console.log("usuario",user);
-  const [selectedCategories, setSelectedCategories] = useState<number[]>(
-    categories.map(cat => cat.id) // Usa 'id' en lugar de 'category_id'
+  const [selectedCategories, setSelectedCategories] = useState<any>(categories.map(cat => cat.id)
   );
   // console.log("categorias seleccionadas",selectedCategories);
   // console.log("allCategories",allCategories);
@@ -32,7 +33,7 @@ const ProfileScreen: React.FC = () => {
   }, [dispatch, user?.user_id]);
 
   useEffect(() => {
-    setSelectedCategories(categories.map(cat => cat.id)); // Usa 'id' en lugar de 'category_id'
+    setSelectedCategories(categories.map(cat => cat.id));
   }, [categories]);
 
   const [formData, setFormData] = useState({
@@ -126,7 +127,7 @@ const ProfileScreen: React.FC = () => {
 // console.log("categoriesResponse ver status",categoriesResponse.status);
         if (categoriesResponse.status == 200) {
           // dispatch(fetchUserCategories())
-          setModalMessage('Datos y categorías actualizados con éxito');
+          setModalMessage('Datos actualizados con éxito');
           setModalError(false);
         } else {
           setModalMessage('Error al actualizar las categorías');
@@ -145,9 +146,9 @@ const ProfileScreen: React.FC = () => {
   };
 
   const handleCategoryChange = (categoryId: number) => {
-    setSelectedCategories(prevState => {
+    setSelectedCategories((prevState:any) => {
       if (prevState.includes(categoryId)) {
-        return prevState.filter(id => id !== categoryId);
+        return prevState.filter((id : any)=> id !== categoryId);
       } else {
         return [...prevState, categoryId];
       }
@@ -157,6 +158,12 @@ const ProfileScreen: React.FC = () => {
     setCategoriesModalVisible(false);
   };
   return (
+      <LinearGradient
+        colors={['#ffffff', '#d59831']}
+        start={{ x: 1, y: 1 }} 
+        end={{ x: 1, y: 0 }}  
+        // style={styles.gradient}
+      >
     <ScrollView contentContainerStyle={styles.container}>
       <TouchableOpacity onPress={handleImagePick}>
         <Image source={{ uri: formData.image_url || 'https://via.placeholder.com/150' }} style={styles.image} />
@@ -179,6 +186,7 @@ const ProfileScreen: React.FC = () => {
         value={formData.email}
         onChangeText={(value) => handleInputChange('email', value)}
         keyboardType="email-address"
+        editable={false}
       />
       <TextInput
         style={styles.input}
@@ -247,7 +255,7 @@ const ProfileScreen: React.FC = () => {
       <TouchableOpacity
   style={styles.button}
   onPress={() => setCategoriesModalVisible(true)}
->
+><MaterialIcons name="category" size={24} color="white" />
   <Text style={styles.buttonText}>Ver Categorías</Text>
 </TouchableOpacity>
       <TouchableOpacity style={styles.button} onPress={handleUpdate}>
@@ -291,14 +299,14 @@ const ProfileScreen: React.FC = () => {
             <TouchableOpacity onPress={handleSaveCategories} style={styles.modalButton}>
               <Text style={styles.modalButtonText}>Guardar Categorías</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => setCategoriesModalVisible(false)} style={styles.modalButton}>
+            <TouchableOpacity onPress={() => setCategoriesModalVisible(false)} style={styles.modalButtonCancel}>
               <Text style={styles.modalButtonText}>Cancelar</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
-
     </ScrollView>
+      </LinearGradient>
   );
 };
 
@@ -337,7 +345,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#f7f7f7',
+    // backgroundColor: '#f7f7f7',
   },
   title: {
     fontSize: 14,
@@ -362,18 +370,21 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     marginBottom: 15,
     alignSelf: 'center',
-    borderColor: '#ddd',
+    borderColor: '#fff',
     borderWidth: 1,
     
   },
   button: {
+    display:"flex",
+    flexDirection:"row",
+    justifyContent:"space-evenly",
     backgroundColor: '#3179bb',
-    paddingVertical: 12,
+    paddingVertical: 10,
     paddingHorizontal: 25,
     borderRadius: 8,
-    marginTop: 20,
+    marginTop: 10,
     alignItems: 'center',
-    width: '60%',
+    width: '80%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.8,
@@ -409,6 +420,7 @@ const styles = StyleSheet.create({
     padding: 20,
     width: '80%',
     maxHeight: '70%',
+    alignContent:'center'
   },
   modalText: {
     fontSize: 16,
@@ -424,7 +436,14 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   modalButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: '#3179bb',
+    borderRadius: 5,
+    padding: 10,
+    alignItems: 'center',
+    marginVertical: 5,
+  },
+  modalButtonCancel:{
+    backgroundColor: '#ba2f09',
     borderRadius: 5,
     padding: 10,
     alignItems: 'center',
@@ -435,9 +454,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   modalError: {
+    display:'flex',
+    justifyContent:'center',
+    alignItems:'center'
     // backgroundColor: '#f8d7da',
   },
   modalSuccess: {
+    display:'flex',
+    justifyContent:'center',
+    alignItems:'center'
     // backgroundColor: '#d4edda',
   },
   datePickerContainer: {

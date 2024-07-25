@@ -8,11 +8,13 @@ import MainAppScreen from '../screens/MainAppScreen';
 import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import FavoritePromotions from '../screens/FavoritePromotions';
-import AvailablePromotions from '../screens/Promotions';
+import PromotionsScreen from '../screens/PromotionsScreen';
 import CustomHeader from '../components/CustomHeader';
 import { useSelector } from 'react-redux';
 import { RootState } from '../redux/store/store';
 import ResetPasswordScreen from '../screens/ResetPasswordScreen';
+import PromotionDetailScreen from '../screens/PromotionDetailScreen';
+import { Promotion } from '../redux/types/types';
 
 export type RootStackParamList = {
   MainAppScreen: undefined;
@@ -22,8 +24,9 @@ export type RootStackParamList = {
   ForgotPassword: undefined;
   Profile: undefined; 
   FavoritePromotions: undefined;
-  AvailablePromotions: undefined;
-  ResetPassword: undefined
+  PromotionsScreen: undefined;
+  ResetPassword: undefined;
+  PromotionDetail: { promotion: Promotion };
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -73,8 +76,8 @@ const AppNavigator = () => {
               }}
             />
             <Stack.Screen
-              name="AvailablePromotions"
-              component={AvailablePromotions}
+              name="PromotionsScreen"
+              component={PromotionsScreen}
               options={{
                 headerShown: true,
                 headerTitle: 'Promociones Disponibles',
@@ -82,6 +85,15 @@ const AppNavigator = () => {
                 headerTintColor: '#fff',
               }}
             />
+            <Stack.Screen 
+              name="PromotionDetail" 
+              component={PromotionDetailScreen} 
+              options={{
+                headerShown: false,
+                headerTitle: "Detalles",
+                headerStyle: { backgroundColor: '#3179BB' },
+                headerTintColor: '#fff',
+            }}/>
           </>
         )}
       </Stack.Navigator>

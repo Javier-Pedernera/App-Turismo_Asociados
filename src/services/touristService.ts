@@ -1,8 +1,9 @@
 import axios from 'axios';
 import { setUserCategories } from '../redux/reducers/categoryReducer';
 
-const API_URL = 'https://app-turismo-backend.vercel.app';
+// const API_URL = 'https://app-turismo-backend.vercel.app';
 // const API_URL = 'http://192.168.100.4:5000';
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export const createTourist = async (touristData: {
   user_id: number;

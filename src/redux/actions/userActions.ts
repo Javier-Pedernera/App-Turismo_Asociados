@@ -6,9 +6,9 @@ import { RootState } from '../store/store';
 import axios from 'axios';
 
 
-const API_URL = 'https://app-turismo-backend.vercel.app';
+// const API_URL = 'https://app-turismo-backend.vercel.app';
 // const API_URL = 'http://192.168.100.4:5000';
-
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 // Acción asíncrona para realizar el login
 export const userLogIn = (email: string, password: string) => {
   return async (dispatch: Dispatch) => {

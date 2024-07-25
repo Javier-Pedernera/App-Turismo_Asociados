@@ -4,9 +4,9 @@ import { RootState, AppDispatch } from '../store/store'; // Importar AppDispatch
 import { Category } from '../types/types';
 import { setAllCategories, setUserCategories } from '../reducers/categoryReducer';
 
-const API_URL = 'https://app-turismo-backend.vercel.app';
+// const API_URL = 'https://app-turismo-backend.vercel.app';
 // const API_URL = 'http://192.168.100.4:5000';
-
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 export const fetchAllCategories = () => {
   return async (dispatch: AppDispatch) => {
     try {

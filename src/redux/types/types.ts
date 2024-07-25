@@ -16,7 +16,8 @@ export enum UserActionTypes {
     name: string;
   }
   export interface UserCategory {
-    id: number;
+    id?: number;
+    category_id?: number;
     name: string;
   }
   
@@ -44,4 +45,20 @@ export enum UserActionTypes {
   export interface LoginResponse {
     token: string;
     user: UserData;
+  }
+  export interface ImagePromotion {
+    image_id: number;
+    image_path: string;
+    promotion_id: number;
+  }
+  export interface Promotion {
+    promotion_id: number;
+    title: string;
+    description: string;
+    start_date: string;
+    expiration_date: string;
+    qr_code: string;
+    partner_id: number;
+    categories: UserCategory[];
+    images: ImagePromotion[];
   }
