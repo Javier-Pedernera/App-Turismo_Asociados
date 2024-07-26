@@ -32,12 +32,12 @@ const HomeScreen = () => {
 
   const checkUserLoggedIn = async () => {
     const storedUserData = await getUserData();
-    console.log("storedUserData",storedUserData);
+    // console.log("storedUserData",storedUserData);
     
     dispatch(fetchPromotions());
     if (storedUserData) {
       dispatch(setUser(storedUserData));
-      navigation.navigate('MainAppScreen');
+      navigation.navigate('Home');
     }
   };
 
@@ -71,10 +71,10 @@ const HomeScreen = () => {
         <Image source={{ uri: 'https://res.cloudinary.com/dbwmesg3e/image/upload/v1721915163/TurismoApp/imagenes/letrero-cobquecura-1_ebnygx.jpg' }} style={styles.backgroundImage} />
         <View style={styles.textContainer}>
           <Text style={styles.title}>Bienvenido a la Cámara de Comercio de Cobquecura</Text>
-          <Text style={styles.description}>
+          {/* <Text style={styles.description}>
             Esta aplicación está diseñada para ayudar a los usuarios a conseguir promociones y promocionar lugares turísticos en Cobquecura, Chile.
-          </Text>
-          {isLoggedIn ? (
+          </Text> */}
+          {/* {isLoggedIn ? (
             <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('PromotionsScreen')}>
               <Text style={styles.buttonText}>Ir a las promociones</Text>
             </TouchableOpacity>
@@ -87,33 +87,15 @@ const HomeScreen = () => {
                 <Text style={styles.buttonSecondaryText}>Registrarse</Text>
               </TouchableOpacity>
             </View>
-          )}
+          )} */}
         </View>
       </View>
 
       {promotions && 
       <View style={styles.lowerSection}>
-        {/* <LinearGradient
-        colors={['#f1ad3e', '#f5f5f5', 'rgb(247, 175, 59)']}
-        style={styles.gradientBackground}
-        start={{ x: 0.0, y: 0.0 }}
-        end={{ x: 1.0, y: 1.0 }}
-      >
-        <LinearGradient
-          colors={['#fce2b8', 'rgba(255, 255, 255, 0.5)']}
-          style={[styles.gradientOverlay, styles.topLeft]}
-          start={{ x: 0.0, y: 0.0 }}
-          end={{ x: 1.0, y: 1.0 }}
-        />
-        <LinearGradient
-          colors={['rgba(255, 255, 255, 0)', '#fce2b8']}
-          style={[styles.gradientOverlay, styles.bottomRight]}
-          start={{ x: 1.0, y: 1.0 }}
-          end={{ x: 0.0, y: 0.0 }}
-        /> */}
         <LinearGradient
         // Colors in the gradient
-        colors={['#ffffff', '#d59831', '#0b0d04']}
+        colors={['#ffffff', '#ffffff', '#ffffff']}
         // Angle of the gradient
         start={{ x: 1, y: 1 }} // start at the top-left
         end={{ x: 1, y: 0 }}   // end at the bottom-right
@@ -142,13 +124,25 @@ const HomeScreen = () => {
         </LinearGradient>
       </View>
       }
+      {!isLoggedIn &&
+            <View style={styles.authButtons}>
+              <TouchableOpacity style={styles.buttonSecondary} onPress={() => navigation.navigate('Login')}>
+                <Text style={styles.buttonText}>Ingresar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.buttonSecondary} onPress={() => navigation.navigate('Register')}>
+                <Text style={styles.buttonSecondaryText}>Registrarse</Text>
+              </TouchableOpacity>
+            </View>
+           }
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    height:'100%'
+    height:'100%',
+    display:'flex',
+
   },
   upperSection: {
     flex: 1,
@@ -174,11 +168,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)', // Opcional: para un fondo semitransparente
   },
   title: {
-    fontSize: RFPercentage(3),
+    fontSize: RFPercentage(2.5),
     color: '#fff',
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 10,
+    marginBottom: 80,
   },
   description: {
     fontSize: RFPercentage(2),
@@ -187,45 +181,52 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   authButtons: {
-    marginBottom:-50,
-    marginTop:40,
+    position:"absolute",
+    bottom:0,
+    // marginBottom:-50,
+    // marginTop:40,
+    marginBottom: 33,
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     width: '100%',
   },
   button: {
-    borderColor:'#fff',
+    borderColor:'#3179BB',
     borderWidth:1,
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
     alignItems: 'center',
     width: '60%',
-    marginBottom: 5,
-    marginTop:15
+    // marginBottom: 5,
+    // marginTop:15
   },
   buttonText: {
-    color: '#fff',
+    color: '#3179BB',
     fontSize: 16,
     fontWeight: 'bold',
   },
   buttonSecondary: {
-    borderColor:'#fff',
+    borderColor:'#3179BB',
     borderWidth:1,
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
     alignItems: 'center',
     width: '40%',
-    marginBottom: 5,
-    marginTop:15
+    // marginBottom: 5,
+    // marginTop:15
   },
   buttonSecondaryText: {
-    color: '#fff',
+    color: '#3179BB',
     fontSize: 16,
     fontWeight: 'bold',
   },
   lowerSection: {
+    // shadowColor: '#fff',
+    // shadowOffset: { width: 0, height: 1 },
+    // shadowOpacity: 1,
+    // shadowRadius: 25,
     flex: 1,
     alignContent:'center',
     justifyContent: 'center',
@@ -247,6 +248,7 @@ const styles = StyleSheet.create({
     alignContent:'flex-start',
     justifyContent: 'center',
     alignItems: 'flex-start',
+    zIndex:1,
     width:screenWidth
   },
   promotionContent: {
@@ -256,7 +258,7 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   promotionTitle: {
-    color: '#efefef',
+    color: 'black',
     fontSize: RFPercentage(2.3),
     fontWeight: 'bold',
     marginBottom:10,

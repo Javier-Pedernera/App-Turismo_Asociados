@@ -18,18 +18,17 @@ const UserCredential: React.FC = () => {
 
   return (
     <View style={styles.background}>
-      <Svg
+      {/* <Svg
         height="100%"
         width="100%"
         style={StyleSheet.absoluteFill}
       >
-        {/* Círculos de color en el fondo */}
-        <Circle cx="20%" cy="20%" r="80" fill="#F1AD3E" opacity={0.7} />
-        <Circle cx="80%" cy="30%" r="90" fill="#3179BB" opacity={0.7} />
-        <Circle cx="30%" cy="70%" r="100" fill="#64C9ED" opacity={0.7} />
-        <Circle cx="70%" cy="80%" r="70" fill="#F1AD3E" opacity={0.6} />
-        <Circle cx="50%" cy="50%" r="60" fill="#3179BB" opacity={0.5} />
-      </Svg>
+        <Circle cx="20%" cy="20%" r="180" fill="#F1AD3E" opacity={0.7} />
+        <Circle cx="80%" cy="30%" r="190" fill="#3179BB" opacity={0.7} />
+        <Circle cx="30%" cy="80%" r="150" fill="#64C9ED" opacity={0.7} />
+        <Circle cx="80%" cy="90%" r="110" fill="#F1AD3E" opacity={0.6} />
+        <Circle cx="90%" cy="70%" r="120" fill="#3179BB" opacity={0.5} />
+      </Svg> */}
       <View style={styles.container}>
         <Image 
           source={{ uri: user.image_url || 'https://via.placeholder.com/150' }} 

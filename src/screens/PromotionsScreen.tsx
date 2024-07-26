@@ -34,11 +34,11 @@ const PromotionsScreen: React.FC = () => {
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-console.log("categorias del usuario",user_categories);
+// console.log("categorias del usuario",user_categories);
 
-console.log("filterByPreferences",filterByPreferences);
-console.log("selectedCategories",selectedCategories);
-console.log("filteredPromotions",filteredPromotions);
+// console.log("filterByPreferences",filterByPreferences);
+// console.log("selectedCategories",selectedCategories);
+// console.log("filteredPromotions",filteredPromotions);
 
 
   useEffect(() => {
@@ -325,6 +325,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     // borderTopWidth: 1,
     // borderTopColor: '#ddd',
+    borderRadius:25,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -1 },
     shadowOpacity: 0.1,
@@ -436,7 +437,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: '#ccc',
+    backgroundColor: 'rgba(49, 121, 187,0.5)',
     marginHorizontal: 15,
   },
   carouselItem: {

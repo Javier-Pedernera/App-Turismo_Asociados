@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Platform, ScrollView, Modal } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Platform, ScrollView, Modal, Dimensions } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import * as ImagePicker from 'expo-image-picker';
 import { AppDispatch, RootState } from '../redux/store/store';
@@ -13,6 +13,9 @@ import Checkbox from 'expo-checkbox';
 import { updateTourist } from '../services/touristService';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
+
+const { width: screenWidth } = Dimensions.get('window');
+// const screenHeight = Dimensions.get('window').height;
 
 const ProfileScreen: React.FC = () => {
   const user = useSelector((state: RootState) => state.user.userData) as UserData;
@@ -159,7 +162,7 @@ const ProfileScreen: React.FC = () => {
   };
   return (
       <LinearGradient
-        colors={['#ffffff', '#d59831']}
+        colors={['#ffffff', '#ffffff']}
         start={{ x: 1, y: 1 }} 
         end={{ x: 1, y: 0 }}  
         // style={styles.gradient}
@@ -229,6 +232,7 @@ const ProfileScreen: React.FC = () => {
         )}
       </View>
       {Platform.OS === 'web' ? (
+        <View style={styles.selectView}>
         <select
           style={styles.select}
           value={formData.gender}
@@ -239,8 +243,10 @@ const ProfileScreen: React.FC = () => {
           <option value="Femenino">Femenino</option>
           <option value="Otro">Otro</option>
         </select>
+        </View>
       ) : (
-        <RNPickerSelect
+        <View >
+           <RNPickerSelect
           onValueChange={(value: any) => handleInputChange('gender', value)}
           value={formData.gender}
           items={[
@@ -250,7 +256,10 @@ const ProfileScreen: React.FC = () => {
           ]}
           placeholder={{ label: 'Seleccione Género', value: '' }}
           style={pickerSelectStyles}
+          useNativeAndroidPickerStyle={false}
         />
+        </View>
+       
       )}
       <TouchableOpacity
   style={styles.button}
@@ -313,9 +322,9 @@ const ProfileScreen: React.FC = () => {
 const pickerSelectStyles = StyleSheet.create({
   inputIOS: {
     height: 40,
-    width: Platform.OS === 'web' ? '50%' : '90%',
-    maxWidth: Platform.OS === 'web' ? 400 : '90%',
-    borderColor: '#ddd',
+    width: Platform.OS === 'web' ? '50%' : screenWidth,
+    maxWidth: Platform.OS === 'web' ? 400 : screenWidth *0.8,
+    borderColor: 'rgba(49, 121, 187,0.5)',
     borderWidth: 1,
     borderRadius: 8,
     marginBottom: 15,
@@ -326,9 +335,9 @@ const pickerSelectStyles = StyleSheet.create({
   },
   inputAndroid: {
     height: 40,
-    width: Platform.OS === 'web' ? '50%' : '90%',
-    maxWidth: Platform.OS === 'web' ? '30%' : '90%',
-    borderColor: '#ddd',
+    width: Platform.OS === 'web' ? '50%' : screenWidth,
+    maxWidth: Platform.OS === 'web' ? '30%' : screenWidth *0.8,
+    borderColor: 'rgba(49, 121, 187,0.5)',
     borderWidth: 1,
     borderRadius: 8,
     marginBottom: 15,
@@ -356,7 +365,7 @@ const styles = StyleSheet.create({
   input: {
     height: 40,
     width: '90%',
-    borderColor: '#ddd',
+    borderColor: 'rgba(49, 121, 187,0.5)',
     borderWidth: 1,
     borderRadius: 8,
     marginBottom: 15,
@@ -370,7 +379,7 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     marginBottom: 15,
     alignSelf: 'center',
-    borderColor: '#fff',
+    borderColor: 'rgba(49, 121, 187,0.5)',
     borderWidth: 1,
     
   },
@@ -396,15 +405,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  selectView:{
+    width:screenWidth,
+    borderColor: 'rgba(49, 121, 187,0.5)',
+    borderWidth: 1,
+    borderRadius: 8,
+  },
   select: {
     height: 50,
-    width: '100%',
-    borderColor: '#ddd',
+    width: screenWidth,
     borderWidth: 1,
     borderRadius: 8,
     marginBottom: 15,
     paddingHorizontal: 15,
     backgroundColor: '#fff',
+    // outLineColor: 'rgba(49, 121, 187,0.5)',
+    borderColor: 'rgba(49, 121, 187,0.5)',
     fontSize: 16,
     color: '#595959',
   },
@@ -484,13 +500,14 @@ const styles = StyleSheet.create({
     alignContent:'center',
     height: 40,
     width: '90%',
-    borderColor: '#ddd',
+    borderColor: 'rgba(49, 121, 187,0.5)',
     borderWidth: 1,
     borderRadius: 8,
     marginBottom: 15,
     paddingHorizontal: 15,
     backgroundColor: '#fff',
     fontSize: 16,
+
   },
   confirmButton: {
     backgroundColor: '#3179bb',

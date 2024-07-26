@@ -8,7 +8,7 @@ import UserCredential from './UserCredential';
 import FavoritePromotions from './FavoritePromotions';
 import PageUnderConstruction from './PageUnderConstruction';
 import PromotionsScreen from './PromotionsScreen';
-import { MaterialIcons } from '@expo/vector-icons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 const Tab = createBottomTabNavigator();
 
@@ -36,8 +36,9 @@ const MainAppScreen: React.FC = () => {
         screenOptions={({ route }) => ({
           tabBarIcon: ({ color, size }) => {
             const iconName = getIconName(route.name);
-            if(iconName == "menu-open"){ return <MaterialIcons name={iconName} size={size} color={color} />}
-            else{
+            if(iconName == 'menu-open'){
+              return <MaterialCommunityIcons name="menu-open" size={size} color={color} />
+            }else{
               return <FontAwesome name={iconName} size={size} color={color} />;
             }
             

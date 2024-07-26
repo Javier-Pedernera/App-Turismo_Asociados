@@ -11,5 +11,6 @@ Escanear el codigo QR con dispositivo fisico o emulador.
 Tambien se puede ejecutar en el navegador http://localhost:8081.
 
 Paleta: naranja: #F1AD3E
+        mostaza: #d59831
         azul: #3179BB
         celeste: #64C9ED

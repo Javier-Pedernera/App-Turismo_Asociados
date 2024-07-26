@@ -38,7 +38,8 @@ const LoginScreen: React.FC = () => {
       setPassword('')
       setTimeout(() => {
         setModalVisible(false)
-        navigation.navigate('MainAppScreen');
+        navigation.navigate('MainAppScreen'); 
+        // Es el nombre del  componente principal cuando esta logueado
       }, 1500); 
     } catch (err: any) {
       setError(err.message);

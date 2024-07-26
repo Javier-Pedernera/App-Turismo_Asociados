@@ -49,7 +49,7 @@ const PromotionDetailScreen: React.FC = () => {
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <MaterialCommunityIcons name="arrow-left" size={24} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Detalles</Text>
+        <Text style={styles.headerTitle}>Volver</Text>
       </View>
       <ScrollView contentContainerStyle={styles.content}>
         {/* Mostrar la imagen principal */}
@@ -74,12 +74,12 @@ const PromotionDetailScreen: React.FC = () => {
         <View style={styles.qrCode}>
           <QRCode
             value={promotion.qr_code}
-            size={150}
+            size={screenWidth *0.5}
             color="black"
             backgroundColor="white"
           />
-        <View style={styles.dates2}>
             <Text style={styles.dates}>Validez:</Text>
+        <View style={styles.dates2}>
         <Text style={styles.dates}>
           Desde: {promotion.start_date}
         </Text>
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingTop: 50,
-    backgroundColor: '#d59831',
+    backgroundColor: '#3179BB',
     paddingVertical: 15,
     paddingHorizontal: 20,
     flexDirection: 'row',
@@ -169,9 +169,11 @@ const styles = StyleSheet.create({
   },
   qrCode: {
     display:'flex',
+    marginTop:20,
     width:'90%',
-    justifyContent:'space-between',
-    flexDirection:'row',
+    justifyContent:'center',
+    flexDirection:'column',
+    alignItems:'center',
     alignSelf: 'center',
     marginVertical: 20,
   },
@@ -194,17 +196,19 @@ const styles = StyleSheet.create({
     fontWeight:'bold'
   },
   dates2: {
+    marginTop:-5,
     display:'flex',
-    flexDirection:'column',
-    width:'50%',
+    flexDirection:'row',
+    width:'100%',
+    justifyContent:'space-evenly',
     fontSize: 14,
     color: '#888',
-    marginBottom: 10,
+    // marginBottom: 10,
   },
   dates: {
+    paddingTop:15,
     fontSize: 14,
     color: '#888',
-    marginBottom: 10,
   },
   categories: {
     flexDirection: 'row',

@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../redux/store/store';
 import { UserData } from '../redux/types/types';
 import { logoutUser } from '../services/authService';
-import { AntDesign } from '@expo/vector-icons';
+import { SimpleLineIcons } from '@expo/vector-icons';
 
 const CustomHeader: React.FC = () => {
   const dispatch = useDispatch();
@@ -32,7 +32,7 @@ const CustomHeader: React.FC = () => {
         {/* <Text style={styles.appName}>TuApp</Text> */}
       </View>
       <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-        <AntDesign name="poweroff" size={24} color="#fff" />
+      <SimpleLineIcons name="logout" size={24} color="#fff" />
       </TouchableOpacity>
     </View>
   );
@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 50,
     padding: 10,
-    backgroundColor: '#d59831', 
+    backgroundColor: '#3179BB', 
     paddingHorizontal: 20,
     elevation: 5,
   },
@@ -78,15 +78,15 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     // backgroundColor: '#64C9ED', // Usar color celeste de la paleta
-    paddingVertical: 8,
-    paddingHorizontal: 10,
+    paddingVertical: 5,
+    paddingHorizontal: 5,
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
     // borderRadius: 25,
-    borderColor: '#fff', // Usar color naranja de la paleta
-    borderWidth: 0.5,
-    marginRight:10
+    // borderColor: '#fff',
+    // borderWidth: 0.5,
+    // marginRight:10
   },
 });
 

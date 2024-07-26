@@ -80,9 +80,7 @@ const AppNavigator = () => {
               component={PromotionsScreen}
               options={{
                 headerShown: true,
-                headerTitle: 'Promociones Disponibles',
-                headerStyle: { backgroundColor: '#3179BB' },
-                headerTintColor: '#fff',
+                header: () => <CustomHeader />
               }}
             />
             <Stack.Screen 
