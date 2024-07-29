@@ -59,7 +59,7 @@ const AppNavigator = () => {
               name="Profile"
               component={ProfileScreen}
               options={{
-                headerShown: true,
+                headerShown: false,
                 headerTitle: 'Perfil',
                 headerStyle: { backgroundColor: '#3179BB' },
                 headerTintColor: '#fff',
@@ -69,7 +69,7 @@ const AppNavigator = () => {
               name="FavoritePromotions"
               component={FavoritePromotions}
               options={{
-                headerShown: true,
+                headerShown: false,
                 headerTitle: 'Promociones Favoritas',
                 headerStyle: { backgroundColor: '#3179BB' },
                 headerTintColor: '#fff',

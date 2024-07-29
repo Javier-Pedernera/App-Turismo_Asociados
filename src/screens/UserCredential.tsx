@@ -30,10 +30,13 @@ const UserCredential: React.FC = () => {
         <Circle cx="90%" cy="70%" r="120" fill="#3179BB" opacity={0.5} />
       </Svg> */}
       <View style={styles.container}>
-        <Image 
+        <View style={styles.imagecont} >
+          <Image 
           source={{ uri: user.image_url || 'https://via.placeholder.com/150' }} 
           style={styles.image} 
         />
+        </View>
+        
         <Text style={styles.name}>{user.first_name} {user.last_name}</Text>
         <Animatable.View animation="bounceIn" duration={1500} style={styles.qrCard}>
           <QRCode
@@ -65,17 +68,31 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#000',
+    marginBottom: 40,
+    color: '#1c242b',
     textAlign: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1,
+    elevation: 1,
   },
   image: {
     width: 120,
     height: 120,
     borderRadius: 60,
+    
+  },
+  imagecont:{
+    borderColor: '#3179BB',
+    borderWidth: 1,
+    borderRadius: 60,
     marginBottom: 20,
-    borderColor: '#fff',
-    borderWidth: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 3,
+    elevation: 5,
   },
   qrCard: {
     backgroundColor: '#f7f7f7',

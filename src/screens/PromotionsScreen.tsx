@@ -34,11 +34,11 @@ const PromotionsScreen: React.FC = () => {
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-// console.log("categorias del usuario",user_categories);
+  // console.log("categorias del usuario",user_categories);
 
-// console.log("filterByPreferences",filterByPreferences);
-// console.log("selectedCategories",selectedCategories);
-// console.log("filteredPromotions",filteredPromotions);
+  // console.log("filterByPreferences",filterByPreferences);
+  // console.log("selectedCategories",selectedCategories);
+  // console.log("filteredPromotions",filteredPromotions);
 
 
   useEffect(() => {
@@ -62,15 +62,26 @@ const PromotionsScreen: React.FC = () => {
       <Image source={{ uri: item.image_path }} style={styles.carouselImage} />
     </View>
   );
+  const formatDateString = (date: Date) => {
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-based
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
   const handleStartDateChange = (event: any, date?: Date | undefined) => {
-    setShowStartDatePicker(false);
+    if (Platform.OS === 'android') {
+      setShowStartDatePicker(false);
+    }
     if (date) {
       setStartDate(date);
     }
   };
 
   const handleEndDateChange = (event: any, date?: Date | undefined) => {
-    setShowEndDatePicker(false);
+    if (Platform.OS === 'android') {
+      setShowEndDatePicker(false);
+    }
     if (date) {
       setEndDate(date);
     }
@@ -114,16 +125,16 @@ const PromotionsScreen: React.FC = () => {
     }
 
     if (startDate) {
-      console.log("fecha de inicio",startDate);
-      
+      console.log("fecha de inicio", startDate);
+
       filtered = filtered.filter(promotion =>
         new Date(promotion.start_date) >= startDate
       );
     }
 
     if (endDate) {
-      console.log("fecha de fin",endDate);
-      
+      console.log("fecha de fin", endDate);
+
       filtered = filtered.filter(promotion =>
         new Date(promotion.expiration_date) <= endDate
       );
@@ -152,20 +163,28 @@ const PromotionsScreen: React.FC = () => {
       end={[1, 0]}
       style={styles.gradient}
     >
-        <View style={styles.btns}>
-          <TouchableOpacity style={styles.filterButton} onPress={() => setIsModalVisible(true)}>
-            <MaterialCommunityIcons name="filter-outline" size={24} color="#fff" />
-            <Text style={styles.filterButtonText}>Mostrar Filtros</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.clearFiltersButton} onPress={clearFilters}>
-            <MaterialCommunityIcons name="filter-remove-outline" size={24} color="#fff" />
-            <Text style={styles.clearFiltersButtonText}>Limpiar Filtros</Text>
-          </TouchableOpacity>
-        </View>
+      <View style={styles.btns}>
+        <TouchableOpacity style={styles.filterButton} onPress={() => setIsModalVisible(true)}>
+          <MaterialCommunityIcons name="filter-outline" size={24} color="#fff" />
+          <Text style={styles.filterButtonText}>Mostrar Filtros</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.clearFiltersButton} onPress={clearFilters}>
+          <MaterialCommunityIcons name="filter-remove-outline" size={24} color="#fff" />
+          <Text style={styles.clearFiltersButtonText}>Limpiar Filtros</Text>
+        </TouchableOpacity>
+      </View>
       <ScrollView contentContainerStyle={styles.container}>
 
         <Modal isVisible={isModalVisible} style={styles.modal}>
           <View style={styles.modalContent}>
+            <View style={styles.misPrefe}>
+              <Checkbox
+                style={styles.checkbox}
+                value={filterByPreferences}
+                onValueChange={setFilterByPreferences}
+              />
+              <Text style={styles.labelMisprefer}>Filtrar por mis preferencias</Text>
+            </View>
             <FlatList
               data={categories}
               keyExtractor={(item) => item.category_id.toString()}
@@ -181,14 +200,6 @@ const PromotionsScreen: React.FC = () => {
                 </View>
               )}
             />
-            <View style={styles.misPrefe}>
-              <Checkbox
-                style={styles.checkbox}
-                value={filterByPreferences}
-                onValueChange={setFilterByPreferences}
-              />
-              <Text style={styles.labelMisprefer}>Filtrar por mis preferencias</Text>
-            </View>
             <TextInput
               style={styles.input}
               placeholder="Palabra clave"
@@ -197,54 +208,54 @@ const PromotionsScreen: React.FC = () => {
               onChangeText={setKeyword}
             />
             <View style={styles.containerDate}>
-      {/* Botón para seleccionar la fecha de inicio */}
-      {!showStartDatePicker && (
-        <TouchableOpacity onPress={() => setShowStartDatePicker(true)} style={styles.inputdate}>
-          <Text style={styles.textDate}>
-            {startDate ? startDate.toDateString() : 'Fecha de Inicio'}
-          </Text>
-        </TouchableOpacity>
-      )}
-      {showStartDatePicker && (
-        <View>
-          <DateTimePicker
-            value={startDate || new Date()}
-            mode="date"
-            display="spinner"
-            onChange={handleStartDateChange}
-          />
-          {Platform.OS === 'ios' && (
-            <TouchableOpacity onPress={confirmStartDate} style={styles.confirmButton}>
-              <Text style={styles.confirmButtonText}>Confirmar fecha de inicio</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      )}
+              {/* Botón para seleccionar la fecha de inicio */}
+              {!showStartDatePicker && (
+                <TouchableOpacity onPress={() => setShowStartDatePicker(true)} style={styles.inputdate}>
+                  <Text style={styles.textDate}>
+                    {startDate ? formatDateString(startDate) : 'Fecha de Inicio'}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              {showStartDatePicker && (
+                <View>
+                  <DateTimePicker
+                    value={startDate || new Date()}
+                    mode="date"
+                    display="spinner"
+                    onChange={handleStartDateChange}
+                  />
+                  {Platform.OS === 'ios' && (
+                    <TouchableOpacity onPress={confirmStartDate} style={styles.confirmButton}>
+                      <Text style={styles.confirmButtonText}>Confirmar fecha de inicio</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              )}
 
-      {/* Botón para seleccionar la fecha de fin */}
-      {!showEndDatePicker && (
-        <TouchableOpacity onPress={() => setShowEndDatePicker(true)} style={styles.inputdate}>
-          <Text style={styles.textDate}>
-            {endDate ? endDate.toDateString() : 'Fecha de Fin'}
-          </Text>
-        </TouchableOpacity>
-      )}
-      {showEndDatePicker && (
-        <View>
-          <DateTimePicker
-            value={endDate || new Date()}
-            mode="date"
-            display="spinner"
-            onChange={handleEndDateChange}
-          />
-          {Platform.OS === 'ios' && (
-            <TouchableOpacity onPress={confirmEndDate} style={styles.confirmButton}>
-              <Text style={styles.confirmButtonText}>Confirmar fecha de fin</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      )}
-    </View>
+              {/* Botón para seleccionar la fecha de fin */}
+              {!showEndDatePicker && (
+                <TouchableOpacity onPress={() => setShowEndDatePicker(true)} style={styles.inputdate}>
+                  <Text style={styles.textDate}>
+                    {endDate ? formatDateString(endDate) : 'Fecha de Fin'}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              {showEndDatePicker && (
+                <View>
+                  <DateTimePicker
+                    value={endDate || new Date()}
+                    mode="date"
+                    display="spinner"
+                    onChange={handleEndDateChange}
+                  />
+                  {Platform.OS === 'ios' && (
+                    <TouchableOpacity onPress={confirmEndDate} style={styles.confirmButton}>
+                      <Text style={styles.confirmButtonText}>Confirmar fecha de fin</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              )}
+            </View>
             <TouchableOpacity style={styles.filteraplyButton} onPress={applyFilters}>
               <Text style={styles.filterButtonText}>Aplicar Filtros</Text>
             </TouchableOpacity>
@@ -254,50 +265,50 @@ const PromotionsScreen: React.FC = () => {
           </View>
         </Modal>
         {loading ? (
-  <ActivityIndicator size="large" color="#0000ff" />
-) : (
- filteredPromotions.map((promotion) => (
-          <TouchableOpacity
-            key={promotion.promotion_id}
-            style={styles.promotionCard}
-            onPress={() => handlePress(promotion)}
-          >
-            <Carousel
-              loop
-              width={screenWidth}
-              height={screenWidth / 2}
-              autoPlay={true}
-              autoPlayInterval={5000}
-              data={promotion.images}
-              scrollAnimationDuration={3000}
-              mode="parallax"
-              modeConfig={{
-                parallaxScrollingScale: 0.8,
-                parallaxScrollingOffset: 50,
-              }}
-              renderItem={renderItem}
-              style={styles.carousel}
-              panGestureHandlerProps={{
-                activeOffsetX: [-10, 10],
-              }}
-            />
-            <View style={styles.promotionContent}>
-              <View>
-                <Text style={styles.promotionTitle}>{promotion.title}</Text>
-                <Text style={styles.promotionDates}>
-                  Desde: {promotion.start_date}
-                </Text>
-                <Text style={styles.promotionDates}>
-                  Hasta: {promotion.expiration_date}
-                </Text>
+          <ActivityIndicator size="large" color="#0000ff" />
+        ) : (
+          filteredPromotions.map((promotion) => (
+            <TouchableOpacity
+              key={promotion.promotion_id}
+              style={styles.promotionCard}
+              onPress={() => handlePress(promotion)}
+            >
+              <Carousel
+                loop
+                width={screenWidth}
+                height={screenWidth / 2}
+                autoPlay={true}
+                autoPlayInterval={5000}
+                data={promotion.images}
+                scrollAnimationDuration={3000}
+                mode="parallax"
+                modeConfig={{
+                  parallaxScrollingScale: 0.8,
+                  parallaxScrollingOffset: 50,
+                }}
+                renderItem={renderItem}
+                style={styles.carousel}
+                panGestureHandlerProps={{
+                  activeOffsetX: [-10, 10],
+                }}
+              />
+              <View style={styles.promotionContent}>
+                <View style={styles.discountContainerText}>
+                  <Text style={styles.promotionTitle}>{promotion.title}</Text>
+                  <Text style={styles.promotionDates}>
+                    Desde: {promotion.start_date}
+                  </Text>
+                  <Text style={styles.promotionDates}>
+                    Hasta: {promotion.expiration_date}
+                  </Text>
+                </View>
+                <View style={styles.discountContainer}>
+                  <Text style={styles.discountText}>30%</Text>
+                </View>
               </View>
-              <View style={styles.discountContainer}>
-                <Text style={styles.discountText}>30%</Text>
-              </View>
-            </View>
-            <View style={styles.divider} />
-          </TouchableOpacity>
-        )))}
+              <View style={styles.divider} />
+            </TouchableOpacity>
+          )))}
       </ScrollView>
     </LinearGradient>
   );
@@ -349,7 +360,7 @@ const styles = StyleSheet.create({
   },
   checkbox: {
     borderRadius: 8,
-    color: '#64c9ed',
+    borderColor: 'rgba(49, 121, 187,0.5)',
   },
   checkboxContainer: {
     height: 20,
@@ -363,11 +374,13 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   input: {
+    alignSelf:'center',
+    width:'70%',
     backgroundColor: '#fff',
     borderRadius: 8,
     padding: 10,
-    marginBottom: 10,
-    borderColor: '#ddd',
+    marginTop: 10,
+    borderColor: 'rgba(49, 121, 187,0.5)',
     borderWidth: 1,
     color:"#000"
   },
@@ -452,11 +465,17 @@ const styles = StyleSheet.create({
   carousel: {
     alignSelf: 'center',
   },
+  discountContainerText:{
+    width:'80%',
+  },
   discountContainer: {
+    alignSelf:'flex-start',
+    width:'18%',
     backgroundColor: '#FF6347',
-    borderRadius: 20,
+    borderRadius: 15,
     paddingVertical: 5,
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
+    textAlign:'center'
   },
   discountText: {
     color: '#fff',
@@ -512,12 +531,14 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   inputdate: {
+    alignSelf:'center',
+    width:'80%',
     padding: 10,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 5,
-    borderColor: '#ccc',
+    borderRadius: 8,
+    borderColor: 'rgba(49, 121, 187,0.5)',
     borderWidth: 1,
     marginBottom: 10,
+    backgroundColor: '#fff',
   },
   textDate: {
     fontSize: 16,
@@ -525,8 +546,8 @@ const styles = StyleSheet.create({
   confirmButton: {
     marginTop: 10,
     padding: 10,
-    backgroundColor: '#007bff',
-    borderRadius: 5,
+    backgroundColor: '#64C9ED',
+    borderRadius: 8,
     alignItems: 'center',
   },
   confirmButtonText: {

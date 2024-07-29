@@ -5,12 +5,18 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://app-turismo-backend.vercel.app"
+      }
     },
     "preview": {
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://app-turismo-backend.vercel.app"
       }
     },
     "production": {
@@ -20,6 +26,9 @@
       },
       "ios": {
         "image": "latest"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://app-turismo-backend.vercel.app"
       }
     }
   },

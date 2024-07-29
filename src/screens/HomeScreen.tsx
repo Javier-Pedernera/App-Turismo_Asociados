@@ -235,9 +235,12 @@ const styles = StyleSheet.create({
   carouselItem: {
     justifyContent: 'center',
     alignItems: 'center',
+    height: '100%',
+    paddingTop:10,
   },
   carouselImage: {
     width: screenWidth,
+    
     height: '100%',
     borderRadius: 10,
   },

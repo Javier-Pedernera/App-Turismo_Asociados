@@ -52,14 +52,16 @@ const styles = StyleSheet.create({
   avatarContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft:10
+    marginLeft:10,
+    borderColor: '#fff', // Usar color naranja de la paleta
+    borderWidth: 1,
+    borderRadius: 25,
   },
   avatar: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    borderColor: '#fff', // Usar color naranja de la paleta
-    borderWidth: 2,
+   
   },
   nameContainer: {
     flex: 1,

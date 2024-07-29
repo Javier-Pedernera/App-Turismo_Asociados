@@ -1,0 +1,13 @@
+# Excluir carpetas de caché y archivos temporales
+node_modules/
+.expo/
+.expo-shared/
+dist/
+.git/
+.idea/
+.vscode/
+*.log
+*.md
+
+build/
+!app.json

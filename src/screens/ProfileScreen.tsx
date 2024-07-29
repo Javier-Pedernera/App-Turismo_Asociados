@@ -168,7 +168,7 @@ const ProfileScreen: React.FC = () => {
         // style={styles.gradient}
       >
     <ScrollView contentContainerStyle={styles.container}>
-      <TouchableOpacity onPress={handleImagePick}>
+      <TouchableOpacity style={styles.image} onPress={handleImagePick}>
         <Image source={{ uri: formData.image_url || 'https://via.placeholder.com/150' }} style={styles.image} />
       </TouchableOpacity>
       <TextInput
@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     marginBottom: 15,
     alignSelf: 'center',
-    borderColor: 'rgba(49, 121, 187,0.5)',
+    borderColor: '#3179bb',
     borderWidth: 1,
     
   },
