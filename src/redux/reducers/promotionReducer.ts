@@ -33,3 +33,4 @@ const promotionSlice = createSlice({
 
 export const { setPromotions, addPromotion, updatePromotion, deletePromotion } = promotionSlice.actions;
 export default promotionSlice.reducer;
+

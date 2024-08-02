@@ -1,13 +1,11 @@
 import { Dispatch } from 'redux';
-import { UserActionTypes, UserData } from '../types/types'; 
-import { loginUser, logOut, setUser } from '../reducers/userReducer';
+import { Promotion, UserActionTypes, UserData } from '../types/types'; 
+import {  addFavorite, loginUser, logOut, removeFavorite, setFavorites, setUser } from '../reducers/userReducer';
 import { loginUserAuth } from '../../services/authService';
 import { RootState } from '../store/store';
 import axios from 'axios';
 
 
-// const API_URL = 'https://app-turismo-backend.vercel.app';
-// const API_URL = 'http://192.168.100.4:5000';
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 // Acción asíncrona para realizar el login
 export const userLogIn = (email: string, password: string) => {
@@ -33,7 +31,7 @@ export const updateUserAction = (updatedUserData: UserData) => {
     try {
       const state = getState();
       const token = state.user.accessToken;
-
+      
       if (!token) {
         throw new Error('User not authenticated');
       }
@@ -47,6 +45,81 @@ export const updateUserAction = (updatedUserData: UserData) => {
       // console.log("respuesta del backend",response.status);
       dispatch(setUser(response.data));
       return response;
+    } catch (error) {
+      throw error;
+    }
+  };
+};
+
+export const fetchUserFavorites = () => {
+  return async (dispatch: Dispatch, getState: () => RootState) => {
+    try {
+      const state = getState();
+      const token = state.user.accessToken;
+      const userId = state.user.userData?.user_id;
+
+      if (!token || !userId) {
+        throw new Error('User not authenticated');
+      }
+      const response = await axios.get(`${API_URL}/users/${userId}/favorites`);
+      // console.log(response);
+      
+      const favorites = response.data.map((fav: { promotion_id: number }) => fav.promotion_id);
+      dispatch(setFavorites(favorites));
+    } catch (error) {
+      throw error;
+    }
+  };
+};
+
+export const addFavoriteAction = (promotion: Promotion) => {
+  return async (dispatch: Dispatch, getState: () => RootState) => {
+    try {
+      const state = getState();
+      const token = state.user.accessToken;
+      const userId = state.user.userData?.user_id;
+
+
+      if (!token || !userId) {
+        throw new Error('User not authenticated');
+      }
+      // console.log("al agregar a favorito", userId, promotion);
+      await axios.post(
+        `${API_URL}/favorites`,
+        { user_id: userId, promotion_id: promotion.promotion_id },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      dispatch(addFavorite(promotion.promotion_id));
+    } catch (error) {
+      throw error;
+    }
+  };
+};
+
+export const removeFavoriteAction = (promotionId: number) => {
+  return async (dispatch: Dispatch, getState: () => RootState) => {
+    try {
+      const state = getState();
+      const token = state.user.accessToken;
+      const userId = state.user.userData?.user_id;
+
+      if (!token || !userId) {
+        throw new Error('User not authenticated');
+      }
+      await axios.delete(`${API_URL}/favorites`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        data: {
+          user_id: userId,
+          promotion_id: promotionId,
+        },
+      });
+      dispatch(removeFavorite(promotionId));
     } catch (error) {
       throw error;
     }

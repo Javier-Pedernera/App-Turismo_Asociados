@@ -1,15 +1,17 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { UserData } from '../types/types';
+import { Promotion, UserData } from '../types/types';
 import { UserStorageData } from '../../utils/storage';
 
 export interface UserState {
-  userData: UserData | {};
+  userData: UserData | null;
   accessToken: string | null;
+  favorites: number[];
 }
 
 const initialState: UserState = {
-  userData: {},
-  accessToken: null
+  userData: null,
+  accessToken: null,
+  favorites: [],
 };
 
 const userSlice = createSlice({
@@ -18,18 +20,33 @@ const userSlice = createSlice({
   reducers: {
     loginUser: (state, action: PayloadAction<{ token: string; user: UserData }>) => {
       const { token, user } = action.payload;
-      state.userData = user;
-      state.accessToken = token;
+      return {
+        ...state,
+        userData: user,
+        accessToken: token,
+      };
     },
     logOut: (state) => {
-      state.userData = {};
+      state.userData = null;
       state.accessToken = null;
     },
-    setUser: (state, action: PayloadAction<UserStorageData>) => {
-      state.userData = action.payload;
+    setUser: (state, action: PayloadAction<any>) => {
+      return {
+      ...state,
+      userData: action.payload
+      }
     },
-  }
+    setFavorites: (state, action: PayloadAction<number[]>) => {
+      state.favorites = action.payload;
+    },
+    addFavorite: (state, action: PayloadAction<number>) => {
+      state.favorites.push(action.payload);
+    },
+    removeFavorite: (state, action: PayloadAction<number>) => {
+      state.favorites = state.favorites.filter(id => id !== action.payload);
+    },
+  },
 });
 
-export const { loginUser, logOut, setUser } = userSlice.actions;
+export const { loginUser, logOut, setUser,setFavorites ,addFavorite, removeFavorite } = userSlice.actions;
 export default userSlice.reducer;

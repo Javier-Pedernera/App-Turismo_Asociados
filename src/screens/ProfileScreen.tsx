@@ -13,17 +13,19 @@ import Checkbox from 'expo-checkbox';
 import { updateTourist } from '../services/touristService';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
+import { getMemoizedUserData } from '../redux/selectors/userSelectors';
+import { getMemoizedAllCategories, getMemoizedUserCategories } from '../redux/selectors/categorySelectors';
 
 const { width: screenWidth } = Dimensions.get('window');
 // const screenHeight = Dimensions.get('window').height;
 
 const ProfileScreen: React.FC = () => {
-  const user = useSelector((state: RootState) => state.user.userData) as UserData;
-  const categories = useSelector((state: RootState) => state.categories.userCategories);
-  const allCategories = useSelector((state: RootState) => state.categories.allCategories);
+  const user = useSelector(getMemoizedUserData) as UserData;
+  const categories = useSelector(getMemoizedUserCategories);
+  const allCategories = useSelector(getMemoizedAllCategories);
   const dispatch: AppDispatch = useDispatch();
   // console.log("categorias de usuario",categories);
-  // console.log("usuario",user);
+  // console.log("usuario en el profile",user);
   const [selectedCategories, setSelectedCategories] = useState<any>(categories.map(cat => cat.id)
   );
   // console.log("categorias seleccionadas",selectedCategories);
@@ -60,7 +62,7 @@ const ProfileScreen: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [isCategoriesModalVisible, setCategoriesModalVisible] = useState(false);
 
-  console.log(formData);
+  // console.log(formData);
   
 
   const handleInputChange = (field: string, value: string) => {
@@ -127,7 +129,7 @@ const ProfileScreen: React.FC = () => {
             category_ids: selectedCategories,
           })
 // console.log("categoriesResponse",categoriesResponse);
-// console.log("categoriesResponse ver status",categoriesResponse.status);
+console.log("categoriesResponse ver status",categoriesResponse.status);
         if (categoriesResponse.status == 200) {
           // dispatch(fetchUserCategories())
           setModalMessage('Datos actualizados con éxito');

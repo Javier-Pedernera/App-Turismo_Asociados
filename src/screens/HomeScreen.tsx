@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions,ActivityIndicator,Animated  } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { getUserData } from '../utils/storage';
 import { RootStackParamList } from '../navigation/AppNavigator';
@@ -13,6 +13,9 @@ import { fetchAllCategories } from '../redux/actions/categoryActions';
 import { RFPercentage } from "react-native-responsive-fontsize";
 import Carousel from 'react-native-reanimated-carousel';
 import { LinearGradient } from 'expo-linear-gradient';
+import { getMemoizedAccessToken, getMemoizedUserData } from '../redux/selectors/userSelectors';
+import { getMemoizedPromotions } from '../redux/selectors/promotionSelectors';
+import { fetchBranches } from '../redux/actions/branchActions';
 
 const { width: screenWidth } = Dimensions.get('window');
 const screenHeight = Dimensions.get('window').height;
@@ -21,27 +24,30 @@ type homeScreenProp = StackNavigationProp<RootStackParamList, 'Home'>;
 const HomeScreen = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigation = useNavigation<homeScreenProp>();
-  const userData = useSelector((state: RootState) => state.user.userData) as UserData;
-  const promotions = useSelector((state: RootState) => state.promotions.promotions.slice(0, 2)) as Promotion[];
-  const isLoggedIn = userData?.email;
-
+  const userData = useSelector(getMemoizedUserData) as UserData;
+  const promotions = useSelector(getMemoizedPromotions).slice(0,3);
+  const accessToken = useSelector(getMemoizedAccessToken);
+  const isLoggedIn = !!accessToken;
+  const [loading, setLoading] = useState(true);
+  const opacity = useRef(new Animated.Value(0)).current;
+  console.log("promociones en home",promotions.length);
+  
   useEffect(() => {
-    checkUserLoggedIn();
+    if (!promotions.length) {
+      dispatch(fetchPromotions())
+    }
     
+    checkUserLoggedIn();
   }, []);
 
   const checkUserLoggedIn = async () => {
     const storedUserData = await getUserData();
-    // console.log("storedUserData",storedUserData);
-    
-    dispatch(fetchPromotions());
     if (storedUserData) {
       dispatch(setUser(storedUserData));
-      navigation.navigate('Home');
+      // navigation.navigate('Home');
     }
   };
 
-  
   const handlePress = (promotion: Promotion) => {
     if (isLoggedIn) {
       navigation.navigate('PromotionDetail', { promotion });
@@ -49,45 +55,50 @@ const HomeScreen = () => {
       navigation.navigate('Login');
     }
   };
+  const handleImageLoadStart = () => setLoading(true);
+  
+  const handleImageLoadEnd = () => {
+    setLoading(false);
+    Animated.timing(opacity, {
+      toValue: 1,
+      duration: 500, // Duración de la animación
+      useNativeDriver: true,
+    }).start();
+  };
 
   const renderItem = ({ item }: { item: Promotion }) => (
-   
-      <TouchableOpacity style={styles.carouselItem} onPress={() => handlePress(item)}>
+    <TouchableOpacity style={styles.carouselItem} onPress={() => handlePress(item)}>
       <View style={styles.promotionContent}>
         <Text style={styles.promotionTitle}>{item.title}</Text>
         <View style={styles.discountContainer}>
-          <Text style={styles.discountText}>30%</Text>
+          <Text style={styles.discountText}>{item.discount_percentage}%</Text>
         </View>
       </View>
-      <Image source={{ uri: item.images[0]?.image_path }} style={styles.carouselImage} />
-      </TouchableOpacity>
-   
+      {!loading && (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color="#F1AD3E" />
+        </View>
+      )}
+      <Animated.Image
+        source={{ uri: item.images[0]?.image_path }}
+        style={[styles.carouselImage, { opacity }]}
+        onLoadStart={handleImageLoadStart}
+        onLoadEnd={handleImageLoadEnd}
+      />
+    </TouchableOpacity>
   );
 
   return (
     <View style={styles.container}>
       
       <View style={styles.upperSection}>
-        <Image source={{ uri: 'https://res.cloudinary.com/dbwmesg3e/image/upload/v1721915163/TurismoApp/imagenes/letrero-cobquecura-1_ebnygx.jpg' }} style={styles.backgroundImage} />
+        <Image 
+          source={{ uri: 'https://res.cloudinary.com/dbwmesg3e/image/upload/v1721915163/TurismoApp/imagenes/letrero-cobquecura-1_ebnygx.jpg' }} 
+          style={styles.backgroundImage}
+          
+         />
         <View style={styles.textContainer}>
           <Text style={styles.title}>Bienvenido a la Cámara de Comercio de Cobquecura</Text>
-          {/* <Text style={styles.description}>
-            Esta aplicación está diseñada para ayudar a los usuarios a conseguir promociones y promocionar lugares turísticos en Cobquecura, Chile.
-          </Text> */}
-          {/* {isLoggedIn ? (
-            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('PromotionsScreen')}>
-              <Text style={styles.buttonText}>Ir a las promociones</Text>
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.authButtons}>
-              <TouchableOpacity style={styles.buttonSecondary} onPress={() => navigation.navigate('Login')}>
-                <Text style={styles.buttonText}>Ingresar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.buttonSecondary} onPress={() => navigation.navigate('Register')}>
-                <Text style={styles.buttonSecondaryText}>Registrarse</Text>
-              </TouchableOpacity>
-            </View>
-          )} */}
         </View>
       </View>
 
@@ -145,7 +156,7 @@ const styles = StyleSheet.create({
 
   },
   upperSection: {
-    flex: 1,
+    flex: 0.8,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -236,11 +247,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     height: '100%',
-    paddingTop:10,
+    paddingTop:15,
   },
   carouselImage: {
     width: screenWidth,
-    
     height: '100%',
     borderRadius: 10,
   },
@@ -301,6 +311,24 @@ const styles = StyleSheet.create({
   },
   gradient: {
     flex: 1,
+  },
+  loaderContainer: {
+    position:'absolute',
+    bottom:screenHeight * -0.08,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 300,
+  },
+  loader: {
+    position:'absolute',
+    bottom:screenHeight * 0.2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
   },
 });
 

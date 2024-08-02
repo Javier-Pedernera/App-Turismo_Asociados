@@ -7,7 +7,7 @@ import RegisterScreen from '../screens/RegisterScreen';
 import MainAppScreen from '../screens/MainAppScreen';
 import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
 import ProfileScreen from '../screens/ProfileScreen';
-import FavoritePromotions from '../screens/FavoritePromotions';
+// import FavoritePromotions from '../screens/FavoritePromotions';
 import PromotionsScreen from '../screens/PromotionsScreen';
 import CustomHeader from '../components/CustomHeader';
 import { useSelector } from 'react-redux';
@@ -15,6 +15,8 @@ import { RootState } from '../redux/store/store';
 import ResetPasswordScreen from '../screens/ResetPasswordScreen';
 import PromotionDetailScreen from '../screens/PromotionDetailScreen';
 import { Promotion } from '../redux/types/types';
+import { getMemoizedAccessToken } from '../redux/selectors/userSelectors';
+import FavoritesScreen from '../screens/FavoritesScreen';
 
 export type RootStackParamList = {
   MainAppScreen: undefined;
@@ -23,16 +25,19 @@ export type RootStackParamList = {
   Register: undefined;
   ForgotPassword: undefined;
   Profile: undefined; 
-  FavoritePromotions: undefined;
+  FavoritesScreen: undefined;
   PromotionsScreen: undefined;
   ResetPassword: undefined;
   PromotionDetail: { promotion: Promotion };
+  
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
 
 const AppNavigator = () => {
-  const isAuthenticated = useSelector((state: RootState) => !!state.user.accessToken);
+  const accessToken = useSelector(getMemoizedAccessToken);
+  const isAuthenticated = !!accessToken;
+// console.log("isAuthenticated en appnavigator",isAuthenticated);
 
   return (
     <NavigationContainer>
@@ -66,8 +71,8 @@ const AppNavigator = () => {
               }}
             />
             <Stack.Screen
-              name="FavoritePromotions"
-              component={FavoritePromotions}
+              name="FavoritesScreen"
+              component={FavoritesScreen}
               options={{
                 headerShown: false,
                 headerTitle: 'Promociones Favoritas',
@@ -75,14 +80,14 @@ const AppNavigator = () => {
                 headerTintColor: '#fff',
               }}
             />
-            <Stack.Screen
+            {/* <Stack.Screen
               name="PromotionsScreen"
               component={PromotionsScreen}
               options={{
                 headerShown: true,
                 header: () => <CustomHeader />
               }}
-            />
+            /> */}
             <Stack.Screen 
               name="PromotionDetail" 
               component={PromotionDetailScreen} 

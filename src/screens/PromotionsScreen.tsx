@@ -13,15 +13,19 @@ import Modal from 'react-native-modal';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { fetchAllCategories, fetchUserCategories } from '../redux/actions/categoryActions';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { getMemoizedPromotions } from '../redux/selectors/promotionSelectors';
+import { getMemoizedAllCategories, getMemoizedUserCategories } from '../redux/selectors/categorySelectors';
+import { getMemoizedFavorites, getMemoizedUserData } from '../redux/selectors/userSelectors';
+import { addFavoriteAction, fetchUserFavorites, removeFavoriteAction } from '../redux/actions/userActions';
 
 const { width: screenWidth } = Dimensions.get('window');
 
 const PromotionsScreen: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
-  const promotions = useSelector((state: RootState) => state.promotions.promotions);
-  const categories = useSelector((state: RootState) => state.categories.allCategories);
-  const user_categories = useSelector((state: RootState) => state.categories.userCategories);
-  const user = useSelector((state: RootState) => state.user.userData) as UserData;
+  const promotions = useSelector(getMemoizedPromotions);
+  const categories = useSelector(getMemoizedAllCategories);
+  const user_categories = useSelector(getMemoizedUserCategories);
+  const user = useSelector(getMemoizedUserData) as UserData;
   const [filteredPromotions, setFilteredPromotions] = useState<Promotion[]>(promotions);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const [keyword, setKeyword] = useState('');
@@ -31,11 +35,12 @@ const PromotionsScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
-
+  const [loadingImg, setLoadingImg] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const userFavorites = useSelector(getMemoizedFavorites);
   // console.log("categorias del usuario",user_categories);
-
+ console.log("favoritos del usuario en promotions screen",userFavorites);
   // console.log("filterByPreferences",filterByPreferences);
   // console.log("selectedCategories",selectedCategories);
   // console.log("filteredPromotions",filteredPromotions);
@@ -44,22 +49,35 @@ const PromotionsScreen: React.FC = () => {
   useEffect(() => {
     if (user?.user_id) {
       dispatch(fetchUserCategories(user.user_id));
+      dispatch(fetchUserFavorites());
     }
     dispatch(fetchAllCategories());
     dispatch(fetchPromotions());
   }, []);
 
-  useEffect(() => {
-    setFilteredPromotions(promotions);
-  }, [promotions]);
+  // useEffect(() => {
+  //   setFilteredPromotions(promotions);
+  // }, [promotions]);
 
   const handlePress = (promotion: Promotion) => {
     navigation.navigate('PromotionDetail', { promotion });
   };
-
+  const handleImageLoadStart = () => setLoadingImg(true);
+  const handleImageLoadEnd = () => setLoadingImg(false);
   const renderItem = ({ item }: { item: PromotionImage }) => (
     <View style={styles.carouselItem}>
-      <Image source={{ uri: item.image_path }} style={styles.carouselImage} />
+      {/* {loadingImg && (
+          <View style={styles.loaderContainer}>
+            <View style={styles.loader}>
+              <ActivityIndicator size="large" color="#F1AD3E" />
+            </View>
+          </View>
+        )} */}
+      <Image 
+      source={{ uri: item.image_path }} 
+      style={styles.carouselImage}
+      onLoadStart={handleImageLoadStart}
+      onLoadEnd={handleImageLoadEnd} />
     </View>
   );
   const formatDateString = (date: Date) => {
@@ -110,7 +128,7 @@ const PromotionsScreen: React.FC = () => {
     let filtered = promotions;
     if (filterByPreferences && user && user.categories) {
       filtered = filtered.filter(promotion =>
-        promotion.categories.some(c => user_categories.map(uc => uc.id).includes(c.id))
+        promotion.categories.some(c => user_categories.map(uc => uc.id).includes(c.category_id))
       );
     }
     if (selectedCategories.length > 0) {
@@ -146,15 +164,27 @@ const PromotionsScreen: React.FC = () => {
 
   };
   const clearFilters = () => {
-    setLoading(true);
+    // setLoading(true);
     setSelectedCategories([]);
     setKeyword('');
     setStartDate(null);
     setEndDate(null);
     setFilterByPreferences(false);
     setFilteredPromotions(promotions)
-    setLoading(false)
+    // setLoading(false)
     console.log('se limpiaron los filtros');
+  };
+
+  const isFavorite = (promotionId: number) => {
+    return userFavorites.includes(promotionId);
+  };
+
+  const handleFavoritePress = (promotion: Promotion) => {
+    if (isFavorite(promotion.promotion_id)) {
+      dispatch(removeFavoriteAction(promotion.promotion_id));
+    } else {
+      dispatch(addFavoriteAction(promotion));
+    }
   };
   return (
     <LinearGradient
@@ -174,7 +204,6 @@ const PromotionsScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
       <ScrollView contentContainerStyle={styles.container}>
-
         <Modal isVisible={isModalVisible} style={styles.modal}>
           <View style={styles.modalContent}>
             <View style={styles.misPrefe}>
@@ -303,12 +332,35 @@ const PromotionsScreen: React.FC = () => {
                   </Text>
                 </View>
                 <View style={styles.discountContainer}>
-                  <Text style={styles.discountText}>30%</Text>
+                  <View style={styles.discountContText}>
+                    <Text style={styles.discountText}>{promotion.discount_percentage}%</Text>
+                  </View>
+                  
+                <View style={styles.starCont}>
+                  <TouchableOpacity  onPress={() => handleFavoritePress(promotion)}>
+                    <MaterialCommunityIcons
+                      name={isFavorite(promotion.promotion_id) ? 'star' : 'star-outline'}
+                      size={35}
+                      color={isFavorite(promotion.promotion_id) ? '#F1AD3E' : '#F1AD3E'}
+                      style={styles.star}
+                    />
+                  </TouchableOpacity>
+                  </View>
                 </View>
+                {/* <View>
+                <TouchableOpacity onPress={() => handleFavoritePress(promotion)}>
+                  <MaterialCommunityIcons
+                    name={isFavorite(promotion.promotion_id) ? 'star' : 'star-outline'}
+                    size={30}
+                    color={isFavorite(promotion.promotion_id) ? '#FFD700' : '#000'}
+                  />
+                </TouchableOpacity>
+                </View> */}
               </View>
               <View style={styles.divider} />
             </TouchableOpacity>
-          )))}
+          )
+          ))}
       </ScrollView>
     </LinearGradient>
   );
@@ -327,7 +379,7 @@ const styles = StyleSheet.create({
   },
   btns: {
     position: 'absolute',
-    bottom: 10,
+    top: 0,
     left: 0,
     right: 0,
     flexDirection: 'row',
@@ -421,6 +473,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginLeft: 5,
   },
+  
   promotionCard: {
     backgroundColor: 'rgba(255, 255, 255, 0)',
     borderRadius: 10,
@@ -467,12 +520,21 @@ const styles = StyleSheet.create({
   },
   discountContainerText:{
     width:'80%',
+    
   },
   discountContainer: {
-    alignSelf:'flex-start',
-    width:'18%',
+    // height:'50%',
+    display:'flex',
+    flexDirection:'column',
+    justifyContent:'space-evenly',
+    alignContent:'center',
+    alignItems:'center',
+    width:'20%',
+  },
+  discountContText:{
     backgroundColor: '#FF6347',
-    borderRadius: 15,
+    width:'85%',
+    borderRadius: 10,
     paddingVertical: 5,
     paddingHorizontal: 8,
     textAlign:'center'
@@ -481,6 +543,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+    
   },
   modal: {
     justifyContent: 'flex-end',
@@ -554,6 +617,37 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
+  loaderContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 300,
+  },
+  loader: {
+    justifyContent: 'flex-start',
+    alignContent:'flex-start',
+    alignItems: 'center',
+    alignSelf:'flex-start',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  starCont:{
+    marginTop:20,
+    // position:'absolute',
+    // bottom:0,
+    // right:20,
+    // top:70,
+    zIndex:10,
+  },
+  star:{
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.4,
+    shadowRadius: 1,
+    elevation: 1,
+  }
 });
 
 export default PromotionsScreen;

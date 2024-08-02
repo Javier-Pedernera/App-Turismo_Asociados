@@ -6,7 +6,7 @@ const USER_TOKEN_KEY = 'userToken';
 
 
 export interface UserStorageData {
-  user: UserData;
+  user: UserData | null;
   token: string;
 }
 

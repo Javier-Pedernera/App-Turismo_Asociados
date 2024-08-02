@@ -1,19 +1,20 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, Platform, StatusBar, TouchableOpacity } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../redux/store/store';
 import { UserData } from '../redux/types/types';
 import { logoutUser } from '../services/authService';
 import { SimpleLineIcons } from '@expo/vector-icons';
+import { getMemoizedUserData } from '../redux/selectors/userSelectors';
 
 const CustomHeader: React.FC = () => {
   const dispatch = useDispatch();
-  const user = useSelector((state: RootState) => state.user.userData) as UserData;
-  if (!Object.keys(user).length) return null;
+  const user = useSelector(getMemoizedUserData);
+  if (!user) return null;
 
   const handleLogout = () => {
     dispatch(logoutUser() as any);
   };
+// console.log(user.image_url?.slice(0,4));
 
   return (
     <View style={styles.headerContainer}>
@@ -43,7 +44,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 50,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 40,
     padding: 10,
     backgroundColor: '#3179BB', 
     paddingHorizontal: 20,
@@ -58,8 +59,8 @@ const styles = StyleSheet.create({
     borderRadius: 25,
   },
   avatar: {
-    width: 50,
-    height: 50,
+    width: 40,
+    height: 40,
     borderRadius: 25,
    
   },

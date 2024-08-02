@@ -27,6 +27,10 @@ const LoginScreen: React.FC = () => {
   };
 
   const handleLogin = async () => {
+    if (email === '' || password === '') {
+      Alert.alert('Error', 'Por favor ingresa tu correo electrónico y contraseña.');
+      return;
+    }
     try {
       setLoading(true);
       const response = await dispatch<any>(userLogIn(email, password));

@@ -7,7 +7,7 @@ export enum UserActionTypes {
   
   // Definición del tipo de estado del usuario
   export interface UserState {
-    userData: UserData | null; 
+    userData: UserData | {}; 
     loading: boolean; 
     error: string | null; 
   }
@@ -59,6 +59,28 @@ export enum UserActionTypes {
     expiration_date: string;
     qr_code: string;
     partner_id: number;
-    categories: UserCategory[];
+    categories: Category[];
     images: ImagePromotion[];
+    latitude?: number,
+    longitude?: number,
+    discount_percentage?:number,
+    branch_id?:number,
+    available_quantity?: number
+  }
+
+  export interface Branch {
+    branch_id: number;
+    partner_id: number;
+    name: string;
+    description: string;
+    address: string;
+    latitude: number;
+    longitude: number;
+    status: 'active' | 'inactive' | 'paused';
+    image_url: string;
+  }
+  export interface Favorite{
+    created_at: string;
+    promotion_id: number;
+    user_id: number
   }

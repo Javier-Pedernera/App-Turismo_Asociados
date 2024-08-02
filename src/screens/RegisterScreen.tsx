@@ -15,13 +15,14 @@ import { createTourist } from '../services/touristService';
 import Loader from '../components/Loader';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { formatDateToYYYYMMDD } from '../utils/formatDate';
+import { getMemoizedAllCategories } from '../redux/selectors/categorySelectors';
 
 type RegisterScreenProp = StackNavigationProp<RootStackParamList, 'Register'>;
 
 const RegisterScreen: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const navigation = useNavigation<RegisterScreenProp>();
-  const categories = useSelector((state: RootState) => state.categories.allCategories);
+  const categories = useSelector(getMemoizedAllCategories);
   // console.log("categorias",categories);
 
   useEffect(() => {

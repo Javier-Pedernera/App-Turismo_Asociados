@@ -4,14 +4,8 @@ import { clearUserData } from "../utils/storage";
 import { logOut } from "../redux/reducers/userReducer";
 import { Dispatch } from "@reduxjs/toolkit";
 
-// Local
-// const API_URL = 'http://192.168.100.4:5000';
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
-console.log(API_URL);
 
-
-// dev
-// const API_URL = 'https://app-turismo-backend.vercel.app';
   
   export const loginUserAuth = async (email: string, password: string): Promise<LoginResponse> => {
     try {
