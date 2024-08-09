@@ -1,13 +1,13 @@
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { AppDispatch, RootState } from '../redux/store/store';
 import { fetchPromotions } from '../redux/actions/promotionsActions';
-import { Promotion, UserData } from '../redux/types/types';
+import { Promotion } from '../redux/types/types';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { getMemoizedPromotions } from '../redux/selectors/promotionSelectors';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useEffect, useState } from 'react';
 import { getMemoizedFavorites } from '../redux/selectors/userSelectors';
 import { fetchUserFavorites, removeFavoriteAction } from '../redux/actions/userActions';
 import Checkbox from 'expo-checkbox';
@@ -20,15 +20,27 @@ const FavoritesScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const promotions = useSelector(getMemoizedPromotions);
   const userFavorites = useSelector(getMemoizedFavorites);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [showOnlyAvailable, setShowOnlyAvailable] = useState(false);
-  
-  
+  const [filteredFavorites, setFilteredFavorites] = useState<Promotion[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      await Promise.all([dispatch(fetchPromotions()), dispatch(fetchUserFavorites())]);
+      setLoading(false);
+    };
+    fetchData();
+  }, [dispatch]);
+
   useEffect(() => {
     setLoading(true);
-    dispatch(fetchPromotions());
-    dispatch(fetchUserFavorites()).finally(() => setLoading(false));
-  }, [dispatch]);
+    const filterFavorites = () => {
+      const favorites = promotions.filter(promotion => userFavorites.includes(promotion.promotion_id));
+      setFilteredFavorites(favorites);
+    };
+    filterFavorites();
+    setLoading(false);
+  }, [promotions, userFavorites]);
 
   const handlePress = (promotion: Promotion) => {
     navigation.navigate('PromotionDetail', { promotion });
@@ -45,7 +57,10 @@ const FavoritesScreen: React.FC = () => {
         },
         {
           text: "Eliminar",
-          onPress: () => dispatch(removeFavoriteAction(promotionId)),
+          onPress: () => {
+            dispatch(removeFavoriteAction(promotionId));
+            setFilteredFavorites(prevFavorites => prevFavorites.filter(promo => promo.promotion_id !== promotionId));
+          },
           style: "destructive"
         }
       ],
@@ -53,8 +68,6 @@ const FavoritesScreen: React.FC = () => {
     );
   };
 
-  const filteredFavorites = promotions.filter(promotion => userFavorites.includes(promotion.promotion_id));
-  console.log("favoritos del usuario",filteredFavorites);
   const isPromotionAvailable = (promotion: Promotion) => {
     const today = new Date();
     return promotion.available_quantity! > 0 && new Date(promotion.expiration_date) >= today;
@@ -65,7 +78,6 @@ const FavoritesScreen: React.FC = () => {
     : filteredFavorites;
 
   return (
-    filteredFavorites.length? 
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.filterContainer}>
         <Checkbox
@@ -75,45 +87,50 @@ const FavoritesScreen: React.FC = () => {
         />
         <Text style={styles.checkboxLabel}>Mostrar solo disponibles</Text>
       </View>
+      <View style={styles.divider1} />
       {loading ? (
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator style={styles.loader} size="large" color="#64C9ED" />
       ) : (
-        displayedFavorites.map((promotion) => (
-          <TouchableOpacity
-            key={promotion.promotion_id}
-            style={styles.promotionCard}
-            onPress={() => handlePress(promotion)}
-          >
-            <View style={styles.promotionContent}>
-              <Image
-                source={isPromotionAvailable(promotion) ? { uri: promotion.images[0].image_path } : require('../../assets/no_disponible.jpg')}
-                style={styles.promotionImage}
-              />
-              <View style={styles.promotionContentText}>
-                <Text style={styles.promotionTitle}>{promotion.title}</Text>
-                <Text style={styles.promotionDates}>Desde: {promotion.start_date}</Text>
-                <Text style={styles.promotionDates}>Hasta: {promotion.expiration_date}</Text>
-                <Text style={styles.discountText}>{promotion.discount_percentage}%</Text>
+        displayedFavorites.length ? (
+          displayedFavorites.map((promotion) => (
+            <TouchableOpacity
+              key={promotion.promotion_id}
+              style={styles.promotionCard}
+              onPress={() => handlePress(promotion)}
+            >
+              <View style={styles.promotionContent}>
+                <Image
+                  source={isPromotionAvailable(promotion) ? { uri: promotion.images[0].image_path } : require('../../assets/no_disponible.jpg')}
+                  style={styles.promotionImage}
+                />
+                <View style={styles.promotionContentText}>
+                  <Text style={styles.promotionTitle}>{promotion.title}</Text>
+                  <Text style={styles.promotionDates}>Desde: {promotion.start_date}</Text>
+                  <Text style={styles.promotionDates}>Hasta: {promotion.expiration_date}</Text>
+                  <Text style={styles.discountText}>{promotion.discount_percentage}%</Text>
+                </View>
+                <TouchableOpacity style={styles.deleteBtn} onPress={() => handleRemoveFavorite(promotion.promotion_id)}>
+                  <MaterialIcons name="delete" size={24} color="red" />
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity style={styles.deleteBtn} onPress={() => handleRemoveFavorite(promotion.promotion_id)}>
-                <MaterialIcons name="delete" size={24} color="red" />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.divider} />
-          </TouchableOpacity>
-        ))
+              <View style={styles.divider} />
+            </TouchableOpacity>
+          ))
+        ) : (
+          <View style={styles.favtextcont}>
+            <Text style={styles.favtext}>Agrega tus promociones favoritas.</Text>
+          </View>
+        )
       )}
     </ScrollView>
-    
-    : <View style={styles.favtextcont}>
-      <Text style={styles.favtext}>Agrega tus promociones favoritas.</Text>
-    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     padding: 16,
+    display: 'flex',
+    flexDirection: 'column'
   },
   filterContainer: {
     flexDirection: 'row',
@@ -133,9 +150,9 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     marginBottom: 16,
     alignItems: 'center',
-    justifyContent:'center',
-    alignContent:'center',
-    alignSelf:'center'
+    justifyContent: 'center',
+    alignContent: 'center',
+    alignSelf: 'center'
   },
   promotionImage: {
     borderRadius: 5,
@@ -146,16 +163,14 @@ const styles = StyleSheet.create({
   promotionContent: {
     display: 'flex',
     flexDirection: 'row',
-    // width: '90%',
   },
   promotionContentText: {
     width: "70%",
     flexDirection: 'column',
     flexWrap: 'wrap',
-
   },
   promotionTitle: {
-    width:"100%",
+    width: "100%",
     fontSize: 14,
     fontWeight: 'bold',
     flexWrap: 'wrap',
@@ -175,6 +190,18 @@ const styles = StyleSheet.create({
     bottom: 5,
     right: 15,
   },
+  divider1: {
+    height: 1,
+    width: '100%',
+    backgroundColor: 'rgba(49, 122, 187,0.7)',
+    marginBottom: 10,
+    padding: 0.8,
+  },
+  loader: {
+    position: 'absolute',
+    width: screenWidth,
+    height: screenHeight * 0.7
+  },
   divider: {
     height: 1,
     width: '100%',
@@ -182,20 +209,19 @@ const styles = StyleSheet.create({
     marginTop: 10,
     padding: 0.8,
   },
-  favtext:{
-    
+  favtext: {
     fontSize: 14,
     fontWeight: 'bold',
-    color:'#14160d',
+    color: '#14160d',
     flexWrap: 'wrap',
-    textAlignVertical:'center',
+    textAlignVertical: 'center',
     textAlign: 'center'
   },
-  favtextcont:{
-    display:'flex',
-    justifyContent:'center',
-    width:"100%",
-    height: screenHeight *0.4,
+  favtextcont: {
+    display: 'flex',
+    justifyContent: 'center',
+    width: "100%",
+    height: screenHeight * 0.4,
   }
 });
 

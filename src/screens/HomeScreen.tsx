@@ -16,6 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { getMemoizedAccessToken, getMemoizedUserData } from '../redux/selectors/userSelectors';
 import { getMemoizedPromotions } from '../redux/selectors/promotionSelectors';
 import { fetchBranches } from '../redux/actions/branchActions';
+import { fetchTouristPoints } from '../redux/actions/touristPointActions';
 
 const { width: screenWidth } = Dimensions.get('window');
 const screenHeight = Dimensions.get('window').height;
@@ -24,7 +25,7 @@ type homeScreenProp = StackNavigationProp<RootStackParamList, 'Home'>;
 const HomeScreen = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigation = useNavigation<homeScreenProp>();
-  const userData = useSelector(getMemoizedUserData) as UserData;
+  // const userData = useSelector(getMemoizedUserData) as UserData;
   const promotions = useSelector(getMemoizedPromotions).slice(0,3);
   const accessToken = useSelector(getMemoizedAccessToken);
   const isLoggedIn = !!accessToken;
@@ -32,11 +33,14 @@ const HomeScreen = () => {
   const opacity = useRef(new Animated.Value(0)).current;
   console.log("promociones en home",promotions.length);
   
+
+  
   useEffect(() => {
     if (!promotions.length) {
       dispatch(fetchPromotions())
+      
     }
-    
+    dispatch(fetchBranches()) 
     checkUserLoggedIn();
   }, []);
 
@@ -76,7 +80,7 @@ const HomeScreen = () => {
       </View>
       {!loading && (
         <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color="#F1AD3E" />
+          <ActivityIndicator size="large" color="#64C9ED" />
         </View>
       )}
       <Animated.Image
@@ -102,17 +106,9 @@ const HomeScreen = () => {
         </View>
       </View>
 
-      {promotions && 
+      {promotions.length? 
       <View style={styles.lowerSection}>
-        <LinearGradient
-        // Colors in the gradient
-        colors={['#ffffff', '#ffffff', '#ffffff']}
-        // Angle of the gradient
-        start={{ x: 1, y: 1 }} // start at the top-left
-        end={{ x: 1, y: 0 }}   // end at the bottom-right
-        style={styles.gradient}
-      >
-
+        
         <Carousel
           loop
           width={screenWidth}
@@ -132,8 +128,9 @@ const HomeScreen = () => {
             activeOffsetX: [-10, 10],
           }}
         />
-        </LinearGradient>
-      </View>
+      </View> : <View style={styles.lowerSection}>
+          <ActivityIndicator size="large" color="#F1AD3E" />
+        </View>
       }
       {!isLoggedIn &&
             <View style={styles.authButtons}>

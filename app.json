@@ -29,7 +29,12 @@
         "android.permission.CAMERA"
       ],
       "package": "com.javierpedernera.Appturismo",
-      "versionCode": 1
+      "versionCode": 1,
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyCT_n-0KfURHxeSE04sZlmAdWeUwaGQ1Ek"
+        }
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"

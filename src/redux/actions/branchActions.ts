@@ -1,11 +1,10 @@
 import { Dispatch } from 'redux';
-import { setBranches, clearBranches } from '../reducers/branchReducer';
+import { setBranches, clearBranches, fetchBranchRatingsRequest, fetchBranchRatingsSuccess, fetchBranchRatingsFailure, addBranchRating, editBranchRating, deleteBranchRating, clearBranchRatings } from '../reducers/branchReducer';
 import { RootState } from '../store/store';
 import axios from 'axios';
-import { Branch } from '../types/types';
+import { Branch, Rating, RatingBranch } from '../types/types';
 
-// const API_URL = 'https://app-turismo-backend.vercel.app';
-// const API_URL = 'http://192.168.100.4:5000';
+
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export const fetchBranches = () => {
@@ -19,7 +18,7 @@ export const fetchBranches = () => {
       }
 
       const response = await axios.get<Branch[]>(`${API_URL}/branches`);
-      console.log(response);
+      // console.log(response);
       
       dispatch(setBranches(response.data));
     } catch (error) {
@@ -31,5 +30,55 @@ export const fetchBranches = () => {
 export const clearAllBranches = () => {
   return (dispatch: Dispatch) => {
     dispatch(clearBranches());
+  };
+};
+
+export const fetchBranchRatings = (branchId: number) => {
+  return async (dispatch: Dispatch, getState: () => RootState) => {
+    dispatch(fetchBranchRatingsRequest());
+    try {
+      const response = await axios.get<{ ratings: RatingBranch[], average_rating: number }>(`${API_URL}/branches/${branchId}/ratings/all`);
+      dispatch(fetchBranchRatingsSuccess(response.data));
+    } catch (error:any) {
+      dispatch(fetchBranchRatingsFailure(error.toString()));
+    }
+  };
+};
+
+export const addRating = (branchId: number, rating: RatingBranch) => {
+  return async (dispatch: Dispatch, getState: () => RootState) => {
+    try {
+      const response = await axios.post<RatingBranch>(`${API_URL}/branches/${branchId}/ratings`, rating);
+      dispatch(addBranchRating(response.data));
+    } catch (error) {
+      throw error;
+    }
+  };
+};
+
+export const editRating = (branchId: number, rating: RatingBranch) => {
+  return async (dispatch: Dispatch, getState: () => RootState) => {
+    try {
+      const response = await axios.put<RatingBranch>(`${API_URL}/branches/ratings/${branchId}`, rating);
+      dispatch(editBranchRating(response.data));
+    } catch (error) {
+      throw error;
+    }
+  };
+};
+
+export const deleteRating = (branchId: number, ratingId: number) => {
+  return async (dispatch: Dispatch, getState: () => RootState) => {
+    try {
+      await axios.delete(`${API_URL}/branches/ratings/${branchId}`, { data: { id: ratingId } });
+      dispatch(deleteBranchRating(ratingId));
+    } catch (error) {
+      throw error;
+    }
+  };
+};
+export const clearBranchRatingsAction = () => {
+  return (dispatch: Dispatch, getState: () => RootState) => {
+    dispatch(clearBranchRatings());
   };
 };

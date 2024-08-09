@@ -17,6 +17,8 @@ import { fetchBranches } from '../redux/actions/branchActions';
 import MapScreen from './MapScreen';
 import FavoritesScreen from './FavoritesScreen';
 import ContactComponent from './ContactoScreen';
+import TouristListScreen from './TouristListScreen';
+import TouristDetailScreen from './TouristDetailScreen';
 
 const Tab = createBottomTabNavigator();
 const Drawer = createDrawerNavigator();
@@ -30,8 +32,8 @@ const MainTabs = () => {
     switch (routeName) {
       case 'Inicio':
         return 'home';
-      case 'Perfil':
-        return 'user';
+      case 'Mapa':
+        return 'map-o';
       case 'Descuentos':
         return 'ticket';
       case 'Credencial':
@@ -102,12 +104,12 @@ const MainTabs = () => {
           tabPress: () => setFocusedTab('Inicio'),
         }}
       />
-      <Tab.Screen
-        name="Perfil"
-        component={ProfileScreen}
+       <Tab.Screen
+        name="Mapa"
+        component={MapScreen}
         options={{ headerShown: false }}
         listeners={{
-          tabPress: () => setFocusedTab('Perfil'),
+          tabPress: () => setFocusedTab('Mapa'),
         }}
       />
       <Tab.Screen
@@ -137,9 +139,9 @@ const MainTabs = () => {
           },
         })}
       />
-      <Tab.Screen
-        name="Mapa"
-        component={MapScreen}
+     <Tab.Screen
+        name="Perfil"
+        component={ProfileScreen}
         options={{ tabBarButton: () => null, headerShown: false  }}
       />
       <Tab.Screen
@@ -152,6 +154,16 @@ const MainTabs = () => {
         component={ContactComponent}
         options={{ tabBarButton: () => null, headerShown: false }}
       />
+      <Tab.Screen
+        name="PuntosTuristicos"
+        component={TouristListScreen}
+        options={{ tabBarButton: () => null, headerShown: false  }}
+      />
+      {/* <Tab.Screen
+        name="DetallePuntoTuristico"
+        component={TouristDetailScreen}
+        options={{ tabBarButton: () => null, headerShown: false  }}
+      /> */}
       
     </Tab.Navigator>
     
@@ -159,10 +171,7 @@ const MainTabs = () => {
 };
 
 const MainAppScreen: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  useEffect(() => {
-    dispatch(fetchBranches());
-  }, [dispatch]);
+  
 
   return (
     <Drawer.Navigator

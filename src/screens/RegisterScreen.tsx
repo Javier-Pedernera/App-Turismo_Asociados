@@ -455,7 +455,7 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: '#F1AD3E',
-    paddingVertical: 15,
+    paddingVertical: 10,
     paddingHorizontal: 30,
     borderRadius: 8,
     alignItems: 'center',
@@ -473,7 +473,7 @@ const styles = StyleSheet.create({
   },
   buttonSecondary: {
     backgroundColor: '#3179BB',
-    paddingVertical: 15,
+    paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
     alignItems: 'center',

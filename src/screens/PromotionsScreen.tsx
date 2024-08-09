@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, ScrollView, TextInput, FlatList, ActivityIndicator, Platform } from 'react-native';
-import Carousel from 'react-native-reanimated-carousel';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { Promotion, ImagePromotion as PromotionImage, Category, UserData } from '../redux/types/types';
-import { AppDispatch, RootState } from '../redux/store/store';
+import { Promotion, ImagePromotion as PromotionImage, UserData } from '../redux/types/types';
+import { AppDispatch } from '../redux/store/store';
 import { fetchPromotions } from '../redux/actions/promotionsActions';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import Checkbox from 'expo-checkbox';
@@ -15,8 +14,10 @@ import { fetchAllCategories, fetchUserCategories } from '../redux/actions/catego
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { getMemoizedPromotions } from '../redux/selectors/promotionSelectors';
 import { getMemoizedAllCategories, getMemoizedUserCategories } from '../redux/selectors/categorySelectors';
-import { getMemoizedFavorites, getMemoizedUserData } from '../redux/selectors/userSelectors';
-import { addFavoriteAction, fetchUserFavorites, removeFavoriteAction } from '../redux/actions/userActions';
+import {  getMemoizedUserData } from '../redux/selectors/userSelectors';
+import {  fetchUserFavorites } from '../redux/actions/userActions';
+import PromotionCard from '../components/PromotionCard';
+import Loader from '../components/Loader';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -35,85 +36,69 @@ const PromotionsScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
-  const [loadingImg, setLoadingImg] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const userFavorites = useSelector(getMemoizedFavorites);
-  // console.log("categorias del usuario",user_categories);
- console.log("favoritos del usuario en promotions screen",userFavorites);
-  // console.log("filterByPreferences",filterByPreferences);
-  // console.log("selectedCategories",selectedCategories);
-  // console.log("filteredPromotions",filteredPromotions);
-
 
   useEffect(() => {
-    if (user?.user_id) {
-      dispatch(fetchUserCategories(user.user_id));
-      dispatch(fetchUserFavorites());
-    }
-    dispatch(fetchAllCategories());
-    dispatch(fetchPromotions());
-  }, []);
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        if (user?.user_id) {
+          await dispatch(fetchUserCategories(user.user_id));
+          await dispatch(fetchUserFavorites());
+        }
+        await dispatch(fetchAllCategories());
+        await dispatch(fetchPromotions());
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    loadData();
+  }, [dispatch, user]);
 
-  // useEffect(() => {
-  //   setFilteredPromotions(promotions);
-  // }, [promotions]);
+  useEffect(() => {
+    setFilteredPromotions(promotions);
+  }, [promotions]);
 
-  const handlePress = (promotion: Promotion) => {
+  const handlePress = useCallback((promotion: Promotion) => {
     navigation.navigate('PromotionDetail', { promotion });
-  };
-  const handleImageLoadStart = () => setLoadingImg(true);
-  const handleImageLoadEnd = () => setLoadingImg(false);
-  const renderItem = ({ item }: { item: PromotionImage }) => (
-    <View style={styles.carouselItem}>
-      {/* {loadingImg && (
-          <View style={styles.loaderContainer}>
-            <View style={styles.loader}>
-              <ActivityIndicator size="large" color="#F1AD3E" />
-            </View>
-          </View>
-        )} */}
-      <Image 
-      source={{ uri: item.image_path }} 
-      style={styles.carouselImage}
-      onLoadStart={handleImageLoadStart}
-      onLoadEnd={handleImageLoadEnd} />
-    </View>
-  );
-  const formatDateString = (date: Date) => {
+  }, [navigation]);
+
+  const formatDateString = useCallback((date: Date) => {
     const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-based
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear();
     return `${day}-${month}-${year}`;
-  };
+  }, []);
 
-  const handleStartDateChange = (event: any, date?: Date | undefined) => {
+  const handleStartDateChange = useCallback((event: any, date?: Date | undefined) => {
     if (Platform.OS === 'android') {
       setShowStartDatePicker(false);
     }
     if (date) {
       setStartDate(date);
     }
-  };
+  }, []);
 
-  const handleEndDateChange = (event: any, date?: Date | undefined) => {
+  const handleEndDateChange = useCallback((event: any, date?: Date | undefined) => {
     if (Platform.OS === 'android') {
       setShowEndDatePicker(false);
     }
     if (date) {
       setEndDate(date);
     }
-  };
+  }, []);
 
-  const confirmStartDate = () => {
+  const confirmStartDate = useCallback(() => {
     setShowStartDatePicker(false);
-    // Aquí podrías hacer algo con la fecha de inicio seleccionada.
-  };
-  const confirmEndDate = () => {
+  }, []);
+
+  const confirmEndDate = useCallback(() => {
     setShowEndDatePicker(false);
-    // Aquí podrías hacer algo con la fecha de fin seleccionada.
-  };
-  const toggleCategory = (categoryId: number) => {
+  }, []);
+
+  const toggleCategory = useCallback((categoryId: number) => {
     setSelectedCategories((prevSelectedCategories) => {
       if (prevSelectedCategories.includes(categoryId)) {
         return prevSelectedCategories.filter(id => id !== categoryId);
@@ -121,9 +106,9 @@ const PromotionsScreen: React.FC = () => {
         return [...prevSelectedCategories, categoryId];
       }
     });
-  };
+  }, []);
 
-  const applyFilters = () => {
+  const applyFilters = useCallback(() => {
     setLoading(true);
     let filtered = promotions;
     if (filterByPreferences && user && user.categories) {
@@ -143,16 +128,12 @@ const PromotionsScreen: React.FC = () => {
     }
 
     if (startDate) {
-      console.log("fecha de inicio", startDate);
-
       filtered = filtered.filter(promotion =>
         new Date(promotion.start_date) >= startDate
       );
     }
 
     if (endDate) {
-      console.log("fecha de fin", endDate);
-
       filtered = filtered.filter(promotion =>
         new Date(promotion.expiration_date) <= endDate
       );
@@ -161,37 +142,19 @@ const PromotionsScreen: React.FC = () => {
     setFilteredPromotions(filtered);
     setLoading(false);
     setIsModalVisible(false);
+  }, [filterByPreferences, user, user_categories, selectedCategories, keyword, startDate, endDate, promotions]);
 
-  };
-  const clearFilters = () => {
-    // setLoading(true);
+  const clearFilters = useCallback(() => {
     setSelectedCategories([]);
     setKeyword('');
     setStartDate(null);
     setEndDate(null);
     setFilterByPreferences(false);
-    setFilteredPromotions(promotions)
-    // setLoading(false)
-    console.log('se limpiaron los filtros');
-  };
+    setFilteredPromotions(promotions);
+  }, [promotions]);
 
-  const isFavorite = (promotionId: number) => {
-    return userFavorites.includes(promotionId);
-  };
-
-  const handleFavoritePress = (promotion: Promotion) => {
-    if (isFavorite(promotion.promotion_id)) {
-      dispatch(removeFavoriteAction(promotion.promotion_id));
-    } else {
-      dispatch(addFavoriteAction(promotion));
-    }
-  };
   return (
-    <LinearGradient
-      colors={['#f7f7f7', '#ebf2f4', '#f7f7f7']}
-      start={[0, 0]}
-      end={[1, 0]}
-      style={styles.gradient}
+    <View style={styles.gradient}
     >
       <View style={styles.btns}>
         <TouchableOpacity style={styles.filterButton} onPress={() => setIsModalVisible(true)}>
@@ -237,7 +200,6 @@ const PromotionsScreen: React.FC = () => {
               onChangeText={setKeyword}
             />
             <View style={styles.containerDate}>
-              {/* Botón para seleccionar la fecha de inicio */}
               {!showStartDatePicker && (
                 <TouchableOpacity onPress={() => setShowStartDatePicker(true)} style={styles.inputdate}>
                   <Text style={styles.textDate}>
@@ -260,8 +222,6 @@ const PromotionsScreen: React.FC = () => {
                   )}
                 </View>
               )}
-
-              {/* Botón para seleccionar la fecha de fin */}
               {!showEndDatePicker && (
                 <TouchableOpacity onPress={() => setShowEndDatePicker(true)} style={styles.inputdate}>
                   <Text style={styles.textDate}>
@@ -294,75 +254,19 @@ const PromotionsScreen: React.FC = () => {
           </View>
         </Modal>
         {loading ? (
-          <ActivityIndicator size="large" color="#0000ff" />
+          <Loader></Loader>
         ) : (
-          filteredPromotions.map((promotion) => (
-            <TouchableOpacity
+          filteredPromotions.map((promotion: Promotion, index:number) => (
+            <PromotionCard
               key={promotion.promotion_id}
-              style={styles.promotionCard}
-              onPress={() => handlePress(promotion)}
-            >
-              <Carousel
-                loop
-                width={screenWidth}
-                height={screenWidth / 2}
-                autoPlay={true}
-                autoPlayInterval={5000}
-                data={promotion.images}
-                scrollAnimationDuration={3000}
-                mode="parallax"
-                modeConfig={{
-                  parallaxScrollingScale: 0.8,
-                  parallaxScrollingOffset: 50,
-                }}
-                renderItem={renderItem}
-                style={styles.carousel}
-                panGestureHandlerProps={{
-                  activeOffsetX: [-10, 10],
-                }}
-              />
-              <View style={styles.promotionContent}>
-                <View style={styles.discountContainerText}>
-                  <Text style={styles.promotionTitle}>{promotion.title}</Text>
-                  <Text style={styles.promotionDates}>
-                    Desde: {promotion.start_date}
-                  </Text>
-                  <Text style={styles.promotionDates}>
-                    Hasta: {promotion.expiration_date}
-                  </Text>
-                </View>
-                <View style={styles.discountContainer}>
-                  <View style={styles.discountContText}>
-                    <Text style={styles.discountText}>{promotion.discount_percentage}%</Text>
-                  </View>
-                  
-                <View style={styles.starCont}>
-                  <TouchableOpacity  onPress={() => handleFavoritePress(promotion)}>
-                    <MaterialCommunityIcons
-                      name={isFavorite(promotion.promotion_id) ? 'star' : 'star-outline'}
-                      size={35}
-                      color={isFavorite(promotion.promotion_id) ? '#F1AD3E' : '#F1AD3E'}
-                      style={styles.star}
-                    />
-                  </TouchableOpacity>
-                  </View>
-                </View>
-                {/* <View>
-                <TouchableOpacity onPress={() => handleFavoritePress(promotion)}>
-                  <MaterialCommunityIcons
-                    name={isFavorite(promotion.promotion_id) ? 'star' : 'star-outline'}
-                    size={30}
-                    color={isFavorite(promotion.promotion_id) ? '#FFD700' : '#000'}
-                  />
-                </TouchableOpacity>
-                </View> */}
-              </View>
-              <View style={styles.divider} />
-            </TouchableOpacity>
-          )
-          ))}
+              promotion={promotion}
+              index={index}
+              handlePress={handlePress}
+            />
+          ))
+        )}
       </ScrollView>
-    </LinearGradient>
+    </View>
   );
 };
 
@@ -389,13 +293,13 @@ const styles = StyleSheet.create({
     // borderTopWidth: 1,
     // borderTopColor: '#ddd',
     borderRadius:25,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 2,
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: -1 },
+    // shadowOpacity: 0.1,
+    // shadowRadius: 5,
+    // elevation: 2,
     zIndex:1,
-    backgroundColor: 'rgba(255, 252, 247, 0.3)'
+    // backgroundColor: 'rgba(255, 252, 247, 0.1)'
   },
   labelMisprefer:{
     color: '#f1ad3e',
@@ -456,7 +360,7 @@ const styles = StyleSheet.create({
     width:'45%',
     alignSelf:'center',
     backgroundColor: 'rgba(49, 121, 187, 1)',
-    padding: 6,
+    padding: 4,
     borderRadius: 8,
     alignItems: 'center',
     // marginBottom: 10,
@@ -465,8 +369,8 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.4,
-    shadowRadius: 1,
-    elevation: 3,
+    shadowRadius: 2,
+    elevation: 5,
   },
   filterButtonText: {
     color: '#fff',
@@ -478,12 +382,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0)',
     borderRadius: 10,
     marginBottom: 25,
-    // overflow: 'hidden',
-    // shadowColor: '#000',
-    // shadowOffset: { width: 0, height: 1 },
-    // shadowOpacity: 0.15,
-    // shadowRadius: 1,
-    // elevation: 2,
   },
   promotionContent: {
     flexDirection: 'row',
@@ -574,7 +472,7 @@ const styles = StyleSheet.create({
     width:'45%',
     alignSelf:'center',
     backgroundColor: '#f1ad3e',
-    padding: 6,
+    padding: 4,
     borderRadius: 8,
     alignItems: 'center',
     flexDirection: 'row',
@@ -635,20 +533,21 @@ const styles = StyleSheet.create({
   },
   starCont:{
     marginTop:20,
-    // position:'absolute',
-    // bottom:0,
-    // right:20,
-    // top:70,
     zIndex:10,
   },
   star:{
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.4,
-    shadowRadius: 1,
+    shadowOpacity: 0.2,
+    shadowRadius: 0.5,
     elevation: 1,
   }
 });
 
 export default PromotionsScreen;
 
+ // console.log("categorias del usuario",user_categories);
+//  console.log("favoritos del usuario en promotions screen",userFavorites);
+  // console.log("filterByPreferences",filterByPreferences);
+  // console.log("selectedCategories",selectedCategories);
+  // console.log("filteredPromotions",filteredPromotions);

@@ -1,301 +1,452 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ActivityIndicator, Text, TouchableOpacity, Image, Dimensions } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, StyleSheet, ActivityIndicator, Text, TouchableOpacity, Dimensions, Alert, TouchableWithoutFeedback, Platform, Image } from 'react-native';
 import MapView, { Marker, Callout } from 'react-native-maps';
 import * as Location from 'expo-location';
-import { useSelector } from 'react-redux';
-import { RootState } from '../redux/store/store';
-import MapViewDirections from 'react-native-maps-directions';
+import { useDispatch, useSelector } from 'react-redux';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { useNavigation } from '@react-navigation/native';
+import CustomCallout from '../components/CustomCallout';
+import MapViewDirections from 'react-native-maps-directions';
 import { getMemoizedBranches } from '../redux/selectors/branchSelectors';
-import { Platform } from 'react-native';
-import { WebView } from 'react-native-webview';
-// import { Image } from 'expo-image';
+import Loader from '../components/Loader';
+import { Ionicons } from '@expo/vector-icons';
+import { getMemoizedTouristPoints } from '../redux/selectors/touristPointSelectors';
+import { fetchTouristPoints } from '../redux/actions/touristPointActions';
+import { AppDispatch } from '../redux/store/store';
+
+const initialRegion = {
+  latitude: -36.133852565671226,
+  longitude: -72.79750640571565,
+  latitudeDelta: 0.035,
+  longitudeDelta: 0.02,
+};
 
 const GOOGLE_MAPS_APIKEY = process.env.EXPO_PUBLIC_API_KEYGOOGLE;
 const screenHeight = Dimensions.get('window').height;
+
+
 const MapScreen: React.FC = () => {
-    const branches = useSelector(getMemoizedBranches);
-    const [location, setLocation] = useState<Location.LocationObject | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [destination, setDestination] = useState<{ latitude: number; longitude: number } | null>(null);
-    const [selectedBranchId, setSelectedBranchId] = useState<number | null>(null);
-    const [route, setRoute] = useState<boolean>(false);
+  const navigation = useNavigation();
+  const dispatch = useDispatch<AppDispatch>();
+  const branches = useSelector(getMemoizedBranches);
+  const [location, setLocation] = useState<Location.LocationObject | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [destination, setDestination] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [route, setRoute] = useState<boolean>(false);
+  const [selectedBranch, setSelectedBranch] = useState<any>(null);
+  const [routeLoading, setRouteLoading] = useState(false);
+  const mapRef = useRef<MapView>(null);
+  const touristPoints = useSelector(getMemoizedTouristPoints);
+  const [showPOI, setShowPOI] = useState(true);
+  // console.log("sucursales", branches);
+  // console.log("api key==============", GOOGLE_MAPS_APIKEY);
+  // console.log("localizacion del usuario", location);
 
-    console.log(branches);
-    // console.log("api key==============", GOOGLE_MAPS_APIKEY);
+  useEffect(() => {
+    dispatch(fetchTouristPoints());
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        console.error('Permission to access location was denied');
+        setLoading(false);
+        return;
+      }
 
-    useEffect(() => {
-        (async () => {
-            let { status } = await Location.requestForegroundPermissionsAsync();
-            if (status !== 'granted') {
-                console.error('Permission to access location was denied');
-                setLoading(false);
-                return;
-            }
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location);
+      setLoading(false);
+    })();
+  }, []);
 
-            let location = await Location.getCurrentPositionAsync({});
-            setLocation(location);
-            setLoading(false);
-        })();
-    }, []);
+  const handleMarkerPress = (branch: any) => {
+    setSelectedBranch(branch);
+    setRoute(false)
+  };
 
-    const handleMarkerPress = (branchID: number) => {
-        setSelectedBranchId(null);
-        setRoute(false)
-    };
-    const handleRoutePress = (latitude: number, longitude: number) => {
-        setDestination({ latitude, longitude });
-        setSelectedBranchId(null);
-        setRoute(true)
-    };
+  const handleRoutePress = (latitude: number, longitude: number) => {
+    setDestination({ latitude, longitude });
+    setRoute(true)
+    setSelectedBranch(null);
+    setRouteLoading(true);
+  };
 
+  const handleMapPress = () => {
+    setSelectedBranch(null);
+  };
 
-    if (loading) {
-        return (
-            <View style={styles.loaderContainer}>
-                <ActivityIndicator size="large" color="#3179BB" />
-            </View>
-        );
-    }
-
-    if (!location || !branches) {
-        return (
-            <View style={styles.loaderContainer}>
-                <Text style={styles.errorText}>Unable to fetch current location or branches</Text>
-            </View>
-        );
-    }
-
-    if (!GOOGLE_MAPS_APIKEY) {
-        return (
-            <View style={styles.loaderContainer}>
-                <Text style={styles.errorText}>Google Maps API key is not defined</Text>
-            </View>
-        );
-    }
-
+  if (loading) {
     return (
-        <MapView
-            style={styles.map}
-            initialRegion={{
-                //ubicacion de usuario
-                // latitude: location?.coords.latitude ?? -33.4489,
-                // longitude: location?.coords.longitude ?? -70.6693,
-
-                //ubicacion cobquecura
-                latitude: -36.133852565671226,
-                longitude: -72.79750640571565,
-
-                latitudeDelta: 0.035,
-                longitudeDelta: 0.02,
-            }}
-        >
-            {branches.map((branch: any) => (
-                <Marker
-                    key={branch.branch_id}
-                    coordinate={{
-                        latitude: branch.latitude ?? 0, // Ensure this never returns undefined
-                        longitude: branch.longitude ?? 0, // Ensure this never returns undefined
-                    }}
-                    title={branch.name}
-                    description={branch.description}
-                    onPress={() => handleMarkerPress(branch.branch_id)}
-                >
-                    <MaterialCommunityIcons name="map-marker" size={40} color="#F1AD3E" />
-                    <Callout style={route ? styles.calloutContainerHide : styles.calloutContainer} tooltip>
-                        <View style={styles.calloutback}>
-
-                        {Platform.OS === 'android' ? (
-                            <View style={styles.calloutImageAndroidCont}>
-                            <WebView style={styles.calloutImageAndroid} source={{ uri: branch.image_url  }} />
-                      </View >
-                            // <Text style={styles.calloutImageContainer}>
-                            //     <Image
-                            //         source={{ uri: branch.image_url }}
-                            //         style={styles.calloutImageAndroid}
-                            //     />
-                            // </Text>
-                        ) : (
-                            <View style={styles.calloutImageContainer}>
-                                <Image
-                                    source={{ uri: branch.image_url }}
-                                    style={styles.calloutImage}
-                                />
-                            </View>
-                        )}
-                        <View style={styles.callout}>
-                            <Text style={styles.calloutTitle}>{branch.name}</Text>
-                            <View style={styles.divider}></View>
-                            <Text style={styles.calloutDescription}>{branch.description}</Text>
-                            <Text style={styles.calloutDescription}>{branch.address}</Text>
-                        </View>
-                        <View>
-                            <TouchableOpacity
-                                style={styles.calloutButton}
-                                onPress={() => handleRoutePress(branch.latitude ?? 0, branch.longitude ?? 0)}
-                            >
-                                <Text style={styles.calloutButtonText}>Cómo llegar?</Text>
-                            </TouchableOpacity>
-                        </View>
-                        </View>
-                    </Callout>
-
-                </Marker>
-            ))}
-            <Marker
-                coordinate={{
-                    // marcador cobquecura
-                    latitude: -36.133852565671226,
-                    longitude: -72.79750640571565,
-                    //marcador de usuario
-                    //   latitude: location.coords.latitude,
-                    //   longitude: location.coords.longitude,
-                }}
-                title="Tu ubicación"
-            >
-                <MaterialCommunityIcons name="map-marker-radius" size={40} color="#3179BB" />
-            </Marker>
-            {destination && (
-                <MapViewDirections
-                    origin={{
-                        //ruta desde cobquecura
-                        latitude: -36.133852565671226,
-                        longitude: -72.79750640571565,
-                        //ruta desde usuario
-                        // latitude: location.coords.latitude,
-                        // longitude: location.coords.longitude,
-                    }}
-                    destination={destination}
-                    apikey={GOOGLE_MAPS_APIKEY!}
-                    strokeWidth={3}
-                    strokeColor="#3179BB"
-                />
-            )}
-        </MapView>
+      <View style={styles.loaderContainer}>
+        <Loader/>
+      </View>
     );
+  }
+
+  if (!location || !branches) {
+    return (
+      <View style={styles.loaderContainer}>
+        <Text style={styles.errorText}>Unable to fetch current location or branches</Text>
+      </View>
+    );
+  }
+
+  if (!GOOGLE_MAPS_APIKEY) {
+    return (
+      <View style={styles.loaderContainer}>
+        <Text style={styles.errorText}>Google Maps API key is not defined</Text>
+      </View>
+    );
+  }
+
+  const centerMap = () => {
+    if (mapRef.current && location) {
+      mapRef.current.animateToRegion({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.035,
+        longitudeDelta: 0.02,
+      });
+    }
+  };
+
+  const goToInitialRegion = () => {
+    if (mapRef.current) {
+      mapRef.current.animateToRegion(initialRegion);
+    }
+  };
+  const renderStars = (rating: number) => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <Ionicons
+          key={i}
+          name={i <= rating ? 'star' : i - rating <= 0.5 ? 'star-half' : 'star-outline'}
+          size={16}
+          color="#FFD700"
+        />
+      );
+    }
+    return stars;
+  };
+  const mapStyle = showPOI ? [] : [
+    {
+      elementType: 'labels',
+      stylers: [{ visibility: 'off' }],
+    },
+    {
+      featureType: 'poi',
+      stylers: [{ visibility: 'off' }],
+    },
+  ];
+  return (
+    <TouchableWithoutFeedback onPress={handleMapPress}>
+      <View style={styles.container}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <MaterialIcons name="arrow-back-ios-new" size={24} color="#3179BB" />
+        </TouchableOpacity>
+        <MapView
+          ref={mapRef}
+          style={styles.map}
+          initialRegion={{
+            latitude: -36.133852565671226,
+            longitude: -72.79750640571565,
+            latitudeDelta: 0.035,
+            longitudeDelta: 0.02,
+          }}
+          customMapStyle={mapStyle}
+          onPress={handleMapPress}
+        >
+          {branches.map((branch: any) => (
+            <Marker
+              key={branch.branch_id}
+              coordinate={{
+                latitude: branch.latitude ?? 0,
+                longitude: branch.longitude ?? 0,
+              }}
+              onPress={() => handleMarkerPress(branch)}
+            >
+              <MaterialCommunityIcons name="map-marker" size={40} color="#F1AD3E" />
+              {Platform.OS === 'ios' && (
+                <Callout style={route ? styles.calloutContainerHide : styles.calloutContainerIos} tooltip>
+                  <View style={styles.callout}>
+                    <View style={styles.calloutImageContainer}>
+                      <Image
+                        source={{ uri: branch.image_url }}
+                        style={styles.calloutImage}
+                      />
+                    </View>
+                    <Text style={styles.calloutTitle}>{branch.name}</Text>
+                    <View style={styles.divider} />
+                    <View style={styles.ratingContainer}>
+                      {/* Aqui debo agregar las estrellas  */}
+                      {renderStars(3.5)}
+                    </View>
+                    <Text style={styles.calloutDescription}>{branch.description}</Text>
+                    <Text style={styles.calloutDescription}>{branch.address}</Text>
+                    <TouchableOpacity
+                      style={styles.calloutButton}
+                      onPress={() => handleRoutePress(branch.latitude ?? 0, branch.longitude ?? 0)}
+                    >
+                      <Text style={styles.calloutButtonText}>Cómo llegar?</Text>
+                    </TouchableOpacity>
+                  </View>
+                </Callout>
+              )}
+            </Marker>
+          ))}
+{/* Mostrar puntos turísticos */}
+{touristPoints.map((touristPoint: any) => (
+            <Marker
+              key={touristPoint.id} // Asegúrate de usar el campo correcto como key
+              coordinate={{
+                latitude: touristPoint.latitude ?? 0,
+                longitude: touristPoint.longitude ?? 0,
+              }}
+              onPress={() => handleMarkerPress(touristPoint)}
+            >
+              <MaterialCommunityIcons name="map-marker-star-outline" size={40} color="#64C9ED" />
+              {Platform.OS === 'ios' && (
+                <Callout style={route ? styles.calloutContainerHide : styles.calloutContainerIos} tooltip>
+                  <View style={styles.callout}>
+                    <View style={styles.calloutImageContainer}>
+                      <Image
+                        source={{ uri: touristPoint.images[0]?.image_path }}
+                        style={styles.calloutImage}
+                      />
+                    </View>
+                    <Text style={styles.calloutTitle}>{touristPoint.title}</Text>
+                    <View style={styles.divider} />
+                    <View style={styles.ratingContainer}>
+                      {renderStars(touristPoint.average_rating)} 
+                    </View>
+                    {/* <Text style={styles.calloutDescription}>{touristPoint.description}</Text> */}
+                    <Text style={styles.calloutDescription}>{touristPoint.address}</Text>
+                    <TouchableOpacity
+                      style={styles.calloutButton}
+                      onPress={() => handleRoutePress(touristPoint.latitude ?? 0, touristPoint.longitude ?? 0)}
+                    >
+                      <Text style={styles.calloutButtonText}>Cómo llegar?</Text>
+                    </TouchableOpacity>
+                  </View>
+                </Callout>
+              )}
+            </Marker>
+          ))}
+
+
+          <Marker
+            coordinate={{
+              latitude: location.coords.latitude,
+              longitude: location.coords.longitude,
+            }}
+            title="Tu ubicación"
+          >
+            <MaterialCommunityIcons name="map-marker-account" size={40} color="#3179BB" />
+          </Marker>
+          {destination && location && (
+            <MapViewDirections
+              origin={{
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+              }}
+              destination={destination}
+              apikey={GOOGLE_MAPS_APIKEY!}
+              strokeWidth={3}
+              strokeColor="#3179BB"
+              timePrecision="none"
+              precision='high'
+              onReady={() => {
+                setRouteLoading(false);
+              }}
+              onError={(errorMessage) => {
+                console.error('GMSDirections Error: ', errorMessage);
+                Alert.alert('Error', 'No se pudo calcular la ruta.');
+              }}
+            />
+          )}
+        </MapView>
+        {routeLoading && (
+          <View style={styles.routeLoaderContainer}>
+            <ActivityIndicator size="large" color="#3179BB" />
+          </View>
+        )}
+        {selectedBranch && Platform.OS === 'android' && (
+          <View style={styles.calloutContainer}>
+            <CustomCallout
+              branch={selectedBranch}
+              handleRoutePress={() => handleRoutePress(selectedBranch.latitude ?? 0, selectedBranch.longitude ?? 0)}
+            />
+          </View>
+        )}
+        <TouchableOpacity style={styles.centerButton} onPress={centerMap}>
+          <MaterialCommunityIcons name="crosshairs-gps" size={24} color="#FFF" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.initialRegionButton} onPress={goToInitialRegion}>
+          <MaterialIcons name="discount" size={24} color="#FFF" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.referButton} onPress={() => setShowPOI(prev => !prev)}>
+          <MaterialCommunityIcons name="map-marker-remove-outline" size={24} color="#FFF" />
+        </TouchableOpacity>
+      </View>
+    </TouchableWithoutFeedback>
+  );
 };
 
 const styles = StyleSheet.create({
-    map: {
-        flex: 1,
-    },
-    loaderContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    errorText: {
-        fontSize: 18,
-        color: 'red',
-    },
-    calloutContainer: {
-        // alignSelf:'center',
-        marginTop: 95,
-        // backgroundColor: 'rgba(255, 255, 255, 0.7)',
-        height:300,
-        width: 250,
-        padding: 10,
-        display:'flex',
-        justifyContent: 'center',
-        alignContent: 'center',
-        alignItems:'center',
-        borderRadius: 10,
-         backgroundColor:"transparent",
-        
-    },
-    calloutContainerHide: {
-        display: 'none'
-    },
-    calloutback:{
-        height:300,
-        width: 250,
-        display:'flex',
-        borderRadius: 10,
-         backgroundColor:"rgba(255, 255, 255,0.8)",
-         justifyContent: 'center',
-         alignContent: 'center',
-         alignItems:'center',
-         padding: 10,
-    },
-    callout: {
-        // width:'100%',
-        // display: 'flex',
-        // justifyContent: 'center',
-        // alignContent: 'center',
-        // padding: 0,
-        height:'30%',
-        width: 250,
-        alignItems: 'center',
-        borderRadius: 10,
-       
-    },
-    calloutTitle: {
-        textAlign: 'center',
-        // backgroundColor: '#3179BB',
-        // alignSelf: 'flex-start',
-        // width: 200,
-        fontSize: 16,
-        fontWeight: 'bold',
-        marginBottom: 5,
-    },
-    calloutButton: {
-        backgroundColor: '#3179BB',
-        paddingVertical: 5,
-        paddingHorizontal: 10,
-        width:'80%',
-        borderRadius: 5,
-        marginTop:25,
-        marginBottom: 5,
-    },
-    calloutButtonText: {
-        color: '#fff',
-    },
-    calloutImageContainer: {
-        display:'flex',
-        flexDirection:'column',
-        alignSelf:'center',
-        alignItems: 'center',
-        justifyContent:'center',
-        alignContent:'center',
-        top:0,
-        width: 150,
-        height: 100,
-        borderRadius: 10,
-        overflow: 'hidden',
-        // marginBottom: 15,
-        backgroundColor: 'white',  
-    },
-    calloutImage: {
-        width: 200,
-        height: 100,
-        resizeMode: 'cover',
-    },
-    calloutImageAndroidCont:{
-        width: 150,
-        height: 100,
-        backgroundColor: 'white',  
-    },
-    calloutImageAndroid:{
-        // alignSelf:'center',
-        width:'100%',
-        minHeight: 100,
-        backgroundColor: 'white',  
-    },
-    calloutDescription: {
-        textAlign: 'center',
-        fontSize: 14,
-        color: 'gray',
-        marginBottom: 0,
-    },
-    divider: {
-        height: 1,
-        width: 200,
-        // padding:20,
-        marginTop: 5,
-        marginBottom: 5,
-        backgroundColor: 'rgb(206, 206, 206)',
-        marginHorizontal: 15,
-    },
+  container: {
+    flex: 1,
+    // backgroundColor: '#fff',
+  },
+  map: {
+    width: '100%',
+    height: '100%',
+  },
+  calloutContainerIos:{
+    backgroundColor:'rgba(255, 255, 255,0.7)'
+  },
+  calloutContainerHide:{
+  display:"none"
+  },
+  callout: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    width: 200,
+    padding: 10,
+  },
+  calloutImageContainer: {
+    marginBottom: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  calloutImage: {
+    width: 150,
+    height: 100,
+    borderRadius: 5,
+  },
+  calloutTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  divider: {
+    height: 1,
+    width: '100%',
+    backgroundColor: 'rgba(206, 206, 206, 0.5)',
+    marginVertical: 5,
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    marginBottom: 5,
+  },
+  calloutDescription: {
+    fontSize: 14,
+    color: '#555',
+    textAlign: 'center',
+    marginBottom: 5,
+  },
+  calloutButton: {
+    backgroundColor: '#3179BB',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 5,
+  },
+  calloutButtonText: {
+    color: '#fff',
+  },
+  calloutContainer: {
+    position: 'absolute',
+    bottom: 100,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  loaderContainer: {
+    height: '100%',
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorText: {
+    fontSize: 18,
+    color: 'red',
+  },
+  centerButton: {
+    position: 'absolute',
+    zIndex: 1,
+    bottom: 80,
+    right: 20,
+    backgroundColor: '#3179BB',
+    padding: 10,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  initialRegionButton: {
+    position: 'absolute',
+    zIndex: 1,
+    bottom: 20,
+    right: 20,
+    backgroundColor: '#F1AD3E',
+    padding: 10,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  referButton:{
+    position: 'absolute',
+    zIndex: 1,
+    bottom: 30,
+    left: 13,
+    backgroundColor: '#999a9b',
+    padding: 10,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  routeLoaderContainer: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: [{ translateX: -25 }, { translateY: -25 }],
+    zIndex: 3,
+  },
+  backButton:{
+    position:'absolute',
+    // alignSelf:'center',
+    zIndex:1,
+    width:45,
+    top:30,
+    height:35,
+    left: 10,
+    backgroundColor: 'rgb(255, 255, 255)',
+    padding: 5,
+    borderRadius: 5,
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent:'center',
+    alignContent:'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 1,
+    elevation: 3,
+  },
 });
 
 export default MapScreen;

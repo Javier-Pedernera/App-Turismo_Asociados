@@ -76,7 +76,11 @@ const ProfileScreen: React.FC = () => {
     const [day, month, year] = dateString.split('-');
     return `${year}-${month}-${day}`;
   };
-  
+  const formatDateToDDMMYYYY = (dateString: string): string => {
+    if (!dateString) return '';
+    const [year, month, day] = dateString.split('-');
+    return `${day}-${month}-${year}`;
+  };
   
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
@@ -129,7 +133,7 @@ const ProfileScreen: React.FC = () => {
             category_ids: selectedCategories,
           })
 // console.log("categoriesResponse",categoriesResponse);
-console.log("categoriesResponse ver status",categoriesResponse.status);
+// console.log("categoriesResponse ver status",categoriesResponse.status);
         if (categoriesResponse.status == 200) {
           // dispatch(fetchUserCategories())
           setModalMessage('Datos actualizados con éxito');
@@ -214,7 +218,7 @@ console.log("categoriesResponse ver status",categoriesResponse.status);
       <View style={styles.datePickerContainer}>
       {!showDatePicker && (<TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.inputdate}>
           <Text style={styles.textDate}>
-            {formData.birth_date ? formData.birth_date : 'Fecha de Nacimiento (DD-MM-YYYY)'}
+            {formData.birth_date ? formatDateToDDMMYYYY(formData.birth_date) : 'Fecha de Nacimiento (DD-MM-YYYY)'}
           </Text>
         </TouchableOpacity>)}
         {showDatePicker && (
@@ -391,11 +395,11 @@ const styles = StyleSheet.create({
     justifyContent:"space-evenly",
     backgroundColor: '#3179bb',
     paddingVertical: 10,
-    paddingHorizontal: 25,
-    borderRadius: 8,
+    paddingHorizontal: 20,
+    borderRadius: 6,
     marginTop: 10,
     alignItems: 'center',
-    width: '80%',
+    width: '70%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.8,

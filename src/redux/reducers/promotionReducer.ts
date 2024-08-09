@@ -3,10 +3,12 @@ import { Promotion } from '../types/types';
 
 interface PromotionState {
   promotions: Promotion[];
+  error: string | null;
 }
 
 const initialState: PromotionState = {
   promotions: [],
+  error: null,
 };
 
 const promotionSlice = createSlice({
@@ -15,6 +17,7 @@ const promotionSlice = createSlice({
   reducers: {
     setPromotions: (state, action: PayloadAction<Promotion[]>) => {
       state.promotions = action.payload;
+      state.error = null; // Clear any previous error
     },
     addPromotion: (state, action: PayloadAction<Promotion>) => {
       state.promotions.push(action.payload);
@@ -28,9 +31,13 @@ const promotionSlice = createSlice({
     deletePromotion: (state, action: PayloadAction<number>) => {
       state.promotions = state.promotions.filter(promo => promo.promotion_id !== action.payload);
     },
+    setPromotionsError: (state, action: PayloadAction<string>) => {
+      state.error = action.payload;
+    },
   },
 });
 
-export const { setPromotions, addPromotion, updatePromotion, deletePromotion } = promotionSlice.actions;
+export const { setPromotions, addPromotion, updatePromotion, deletePromotion, setPromotionsError } = promotionSlice.actions;
 export default promotionSlice.reducer;
+
 

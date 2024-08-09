@@ -84,3 +84,38 @@ export enum UserActionTypes {
     promotion_id: number;
     user_id: number
   }
+
+  export interface TouristPoint {
+    id: number;
+    title: string;
+    description: string;
+    latitude: number;
+    longitude: number;
+    images: {
+      id: number;
+      image_path: string;
+    }[];
+    average_rating: number | null;
+  }
+  export interface Rating {
+    id: number ;
+    comment: string;
+    rating: number;
+    tourist_id?: number;
+    tourist_point_id: number;
+    
+  }
+  export interface NewRating {
+    comment: string;
+    rating: number;
+    tourist_id?: number;
+  }
+  export interface RatingBranch {
+    id?: number ;
+    user_id?:number;
+    rating: number ;
+    comment: string ;
+    created_at?: string;
+    first_name?:string;
+  }
+  

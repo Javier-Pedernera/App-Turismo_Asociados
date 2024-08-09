@@ -53,8 +53,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   logo2: {
-    width: '34%',
-    height: 40,
+    width: 98,
+    height: 30,
     alignSelf: 'center',
     marginBottom: 20,
   },
@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   subHeader: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     marginTop: 15,
     marginBottom: 5,

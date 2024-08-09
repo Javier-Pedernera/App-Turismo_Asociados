@@ -14,9 +14,10 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../redux/store/store';
 import ResetPasswordScreen from '../screens/ResetPasswordScreen';
 import PromotionDetailScreen from '../screens/PromotionDetailScreen';
-import { Promotion } from '../redux/types/types';
+import { Promotion, TouristPoint } from '../redux/types/types';
 import { getMemoizedAccessToken } from '../redux/selectors/userSelectors';
 import FavoritesScreen from '../screens/FavoritesScreen';
+import TouristDetailScreen from '../screens/TouristDetailScreen';
 
 export type RootStackParamList = {
   MainAppScreen: undefined;
@@ -29,7 +30,7 @@ export type RootStackParamList = {
   PromotionsScreen: undefined;
   ResetPassword: undefined;
   PromotionDetail: { promotion: Promotion };
-  
+  TouristDetailScreen: { touristPoint: TouristPoint };
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -80,14 +81,16 @@ const AppNavigator = () => {
                 headerTintColor: '#fff',
               }}
             />
-            {/* <Stack.Screen
-              name="PromotionsScreen"
-              component={PromotionsScreen}
+            <Stack.Screen
+              name="TouristDetailScreen"
+              component={TouristDetailScreen}
               options={{
-                headerShown: true,
-                header: () => <CustomHeader />
-              }}
-            /> */}
+                headerShown: false,
+                headerTitle: "Detalles",
+                headerStyle: { backgroundColor: '#3179BB' },
+                headerTintColor: '#fff',
+            }}
+            />
             <Stack.Screen 
               name="PromotionDetail" 
               component={PromotionDetailScreen} 

@@ -33,7 +33,7 @@ const CustomHeader: React.FC = () => {
         {/* <Text style={styles.appName}>TuApp</Text> */}
       </View>
       <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-      <SimpleLineIcons name="logout" size={24} color="#fff" />
+      <SimpleLineIcons name="logout" size={20} color="#fff" />
       </TouchableOpacity>
     </View>
   );
@@ -49,6 +49,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#3179BB', 
     paddingHorizontal: 20,
     elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 0.5,
   },
   avatarContainer: {
     flexDirection: 'row',

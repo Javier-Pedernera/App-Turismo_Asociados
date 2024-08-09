@@ -34,7 +34,7 @@ const LoginScreen: React.FC = () => {
     try {
       setLoading(true);
       const response = await dispatch<any>(userLogIn(email, password));
-      // console.log("respuesta en la funcion handlelogin", response);
+      console.log("respuesta en la funcion handle login", response);
       setError(null);
       setModalMessage('Bienvenido ' + response.user.first_name + '!');
       toggleModal();
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: '#3179BB',
-    paddingVertical: 15,
+    paddingVertical: 10,
     paddingHorizontal: 30,
     borderRadius: 8,
     marginTop: 10,
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
   },
   buttonSecondary: {
     backgroundColor: '#ddd',
-    paddingVertical: 15,
+    paddingVertical: 10,
     paddingHorizontal: 30,
     borderRadius: 8,
     marginTop: 10,

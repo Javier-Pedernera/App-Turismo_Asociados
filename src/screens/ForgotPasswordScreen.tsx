@@ -77,8 +77,8 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   logoHome:{
-    width: 50,
-    height: 50,
+    width: 70,
+    height: 70,
       marginTop:20
   },
   input: {
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: '#3179BB',
-    paddingVertical: 15,
+    paddingVertical: 10,
     paddingHorizontal: 30,
     borderRadius: 8,
     marginTop: 10,

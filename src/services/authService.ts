@@ -10,7 +10,7 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL;
   export const loginUserAuth = async (email: string, password: string): Promise<LoginResponse> => {
     try {
       const response = await axios.post<LoginResponse>(`${API_URL}/login`, { email, password });
-      // console.log(response.data);
+      console.log(response.data);
       return response.data;
       
       
@@ -46,10 +46,11 @@ export const logoutUser = () => {
 
 export const sendPasswordResetEmail = async (email: string) => {
   try {
-    console.log("envio email para recuperar contraseña");
+    // console.log("envio email para recuperar contraseña");
     
-    // const response = await axios.post(`${API_URL}/auth/forgot-password`, { email });
-    // return response.data;
+    const response = await axios.post(`${API_URL}/reset_password`, { email });
+    console.log(response.data);
+    return response.data;
   } catch (error) {
     throw new Error('Error al enviar el correo de recuperación.');
   }

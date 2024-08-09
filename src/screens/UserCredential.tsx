@@ -22,20 +22,22 @@ const UserCredential: React.FC = () => {
 
   return (
     <View style={styles.background}>
-      <View style={styles.container}>
-        <View style={styles.imagecont}>
+      <View style={styles.credentialContainer}>
+        <View style={styles.imageContainer}>
           <Image
             source={{ uri: user.image_url || 'https://via.placeholder.com/150' }}
             style={styles.image}
           />
         </View>
-
-        <Text style={styles.name}>
-          {user.first_name} {user.last_name}
-        </Text>
+        <View style={styles.infoContainer}>
+          <Text style={styles.name}>
+            {user.first_name} {user.last_name}
+          </Text>
+          <Text style={styles.email}>{user.email}</Text>
+        </View>
         <Animatable.View animation="bounceIn" duration={1500} style={styles.qrCard}>
           {userId ? (
-            <QRCode value={userId} size={width * 0.6} />
+            <QRCode value={userId} size={width * 0.4} />
           ) : (
             <Text style={styles.emptyText}>No QR Code available</Text>
           )}
@@ -50,54 +52,56 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: '#ffffff'
   },
-  svg: {
-    position: 'absolute',
-  },
-  container: {
-    justifyContent: 'center',
-    alignItems: 'center',
+  credentialContainer: {
+    width: width * 0.85,
+    backgroundColor: '#f7f7f7',
+    borderRadius: 15,
     padding: 20,
-    width: '100%',
-  },
-  name: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 40,
-    color: '#1c242b',
-    textAlign: 'center',
+    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1,
-    elevation: 1,
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  imageContainer: {
+    borderColor: '#3179BB',
+    borderWidth: 1,
+    borderRadius: 60,
+    padding: 5,
+    marginBottom: 20,
   },
   image: {
     width: 120,
     height: 120,
     borderRadius: 60,
-    
   },
-  imagecont:{
-    borderColor: '#3179BB',
-    borderWidth: 1,
-    borderRadius: 60,
+  infoContainer: {
+    alignItems: 'center',
     marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 3,
-    elevation: 5,
+  },
+  name: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#1c242b',
+    textAlign: 'center',
+  },
+  email: {
+    fontSize: 16,
+    color: '#555',
+    textAlign: 'center',
+    marginTop: 5,
   },
   qrCard: {
-    backgroundColor: '#f7f7f7',
+    backgroundColor: '#fff',
     padding: 20,
     borderRadius: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.5,
-    shadowRadius: 3,
+    shadowRadius: 5,
     elevation: 5,
     alignItems: 'center',
   },
