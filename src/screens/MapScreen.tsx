@@ -205,7 +205,7 @@ const MapScreen: React.FC = () => {
               }}
               onPress={() => handleMarkerPress(touristPoint)}
             >
-              <MaterialCommunityIcons name="map-marker-star-outline" size={40} color="#64C9ED" />
+              <MaterialCommunityIcons name="map-marker-star-outline" size={40} color="#3dc6f4" />
               {Platform.OS === 'ios' && (
                 <Callout style={route ? styles.calloutContainerHide : styles.calloutContainerIos} tooltip>
                   <View style={styles.callout}>
