@@ -5,14 +5,16 @@ import { useNavigation } from '@react-navigation/native';
 import { getMemoizedTouristPoints } from '../redux/selectors/touristPointSelectors';
 import { fetchTouristPoints } from '../redux/actions/touristPointActions';
 import { AppDispatch } from '../redux/store/store';
-import Loader from '../components/Loader'; // Asegúrate de importar el Loader
+import Loader from '../components/Loader';
+import { TouristPoint } from '../redux/types/types';
 
 const TouristListScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const dispatch = useDispatch<AppDispatch>();
-  const touristPoints = useSelector(getMemoizedTouristPoints);
+  const touristPoints = useSelector(getMemoizedTouristPoints) as TouristPoint[];
   const [loading, setLoading] = useState(true);
-
+  console.log("puntos turistico en la lista",touristPoints);
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -31,26 +33,30 @@ const TouristListScreen: React.FC = () => {
     navigation.navigate('TouristDetailScreen', { touristPoint });
   };
 
-  const renderItem = ({ item }: { item: any }) => (
+  const renderItem = ({ item }: { item: TouristPoint }) => (
     <TouchableOpacity style={styles.itemContainer} onPress={() => handlePress(item)}>
-      <Image source={{ uri: item.images[0].image_path }} style={styles.image} />
+      {item.images && Array.isArray(item.images) && item.images.length > 0 && (
+        <Image source={{ uri: item.images[0].image_path }} style={styles.image} />
+      )}
       <View style={styles.textContainer}>
         <Text style={styles.title}>{item.title}</Text>
       </View>
     </TouchableOpacity>
   );
-
   if (loading) {
     return <Loader />;
   }
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={touristPoints}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
-      />
+      {
+        touristPoints &&
+        <FlatList
+          data={touristPoints}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id.toString()}
+        />
+      }
     </View>
   );
 };

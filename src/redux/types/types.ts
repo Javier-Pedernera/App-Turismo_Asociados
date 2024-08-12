@@ -118,4 +118,9 @@ export enum UserActionTypes {
     created_at?: string;
     first_name?:string;
   }
-  
+  export interface Country {
+    code: string;      
+    id: number; 
+    name: string;
+    phone_code: string;
+  }

@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
   centerButton: {
     position: 'absolute',
     zIndex: 1,
-    bottom: 80,
+    bottom: 110,
     right: 20,
     backgroundColor: '#3179BB',
     padding: 10,
@@ -390,7 +390,7 @@ const styles = StyleSheet.create({
   initialRegionButton: {
     position: 'absolute',
     zIndex: 1,
-    bottom: 20,
+    bottom: 60,
     right: 20,
     backgroundColor: '#F1AD3E',
     padding: 10,

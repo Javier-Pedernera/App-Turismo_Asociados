@@ -24,12 +24,14 @@ export const registerUser = async (userData: UserData) => {
     // console.log("datos del formulario en el registro",userData);
     
     const response = await axios.post(`${API_URL}/signup`, userData);
+    console.log("respuesta del registro",response);
+    
     if(response.status === 201 ){
 
     }
     return response;
   } catch (error) {
-    throw new Error('Registration failed'); // Manejar errores según corresponda
+    throw new Error('Registration failed');
   }
 };
 

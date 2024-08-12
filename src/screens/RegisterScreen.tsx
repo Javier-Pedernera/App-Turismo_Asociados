@@ -14,8 +14,9 @@ import { AppDispatch, RootState } from '../redux/store/store';
 import { createTourist } from '../services/touristService';
 import Loader from '../components/Loader';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { formatDateToYYYYMMDD } from '../utils/formatDate';
+import { formatDateToDDMMYYYY, formatDateToYYYYMMDD } from '../utils/formatDate';
 import { getMemoizedAllCategories } from '../redux/selectors/categorySelectors';
+import CountryPicker from '../components/CountrySelect';
 
 type RegisterScreenProp = StackNavigationProp<RootStackParamList, 'Register'>;
 
@@ -23,7 +24,7 @@ const RegisterScreen: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const navigation = useNavigation<RegisterScreenProp>();
   const categories = useSelector(getMemoizedAllCategories);
-  // console.log("categorias",categories);
+  
 
   useEffect(() => {
     dispatch(fetchAllCategories());
@@ -70,7 +71,7 @@ const RegisterScreen: React.FC = () => {
       }
     });
   };
-
+  // console.log("categorias",formData);
   // console.log(selectedCategories);
 
   const handleRegister = async () => {
@@ -88,7 +89,7 @@ const RegisterScreen: React.FC = () => {
     try {
       // Registro del usuario
       const userResponse = await registerUser(dataToSend);
-      // console.log("userResponse",userResponse);
+      console.log("userResponse",userResponse);
 
       if (userResponse.status === 201) {
         const { user_id, country, gender,birth_date } = userResponse.data;
@@ -157,6 +158,9 @@ const RegisterScreen: React.FC = () => {
     }
     setShowDatePicker(false);
   };
+  const handleCountryChange = (value: string) => {
+    handleInputChange('country', value);
+  };
   const handleGenderChange = (value: string) => {
     setShowOtherGender(value === 'other');
     handleInputChange('gender', value);
@@ -204,12 +208,10 @@ const RegisterScreen: React.FC = () => {
             onChangeText={(value) => handleInputChange('email', value)}
             keyboardType="email-address"
           />
-          <TextInput
-            style={styles.input}
-            placeholder="* País"
-            placeholderTextColor="#aaa"
-            value={formData.country}
-            onChangeText={(value) => handleInputChange('country', value)}
+          <CountryPicker
+            selectedCountry={formData.country}
+            onCountryChange={handleCountryChange}
+            estilo={true}
           />
           <TextInput
             style={styles.input}
@@ -229,7 +231,7 @@ const RegisterScreen: React.FC = () => {
           <View style={styles.datePickerContainer}>
       {!showDatePicker && (<TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.inputdate}>
           <Text style={styles.textDate}>
-            {formData.birth_date ? formData.birth_date : 'Fecha de Nacimiento'}
+          {formData.birth_date ? formatDateToDDMMYYYY(formData.birth_date) : 'Fecha de Nacimiento (DD-MM-YYYY)'}
           </Text>
         </TouchableOpacity>)}
         {showDatePicker && (
@@ -249,6 +251,7 @@ const RegisterScreen: React.FC = () => {
         )}
       </View>
           <View style={styles.genderDivider}>
+          <View style={styles.pickerWrapper}>
             <RNPickerSelect
               onValueChange={(value) => handleGenderChange(value)}
               items={[
@@ -259,6 +262,7 @@ const RegisterScreen: React.FC = () => {
               placeholder={{ label: 'Seleccione Género', value: '' }}
               style={pickerSelectStyles}
             />
+            </View>
             {showOtherGender && (
               <TextInput
                 style={styles.input}
@@ -341,7 +345,7 @@ const RegisterScreen: React.FC = () => {
 
 const pickerSelectStyles = StyleSheet.create({
   inputIOS: {
-    height: 50,
+    // height: 50,
     width: '100%',
     borderColor: '#ddd',
     borderWidth: 1,
@@ -353,13 +357,10 @@ const pickerSelectStyles = StyleSheet.create({
   },
   inputAndroid: {
     height: 50,
-    width: '100%',
-    borderColor: '#ddd',
-    borderWidth: 1,
-    borderRadius: 8,
-    marginBottom: 15,
-    paddingHorizontal: 15,
-    backgroundColor: '#fff',
+    display:'flex',
+    justifyContent:'center',
+    alignContent:'center',
+    alignItems:'center',
     fontSize: 16,
   },
   iconContainer: {
@@ -410,7 +411,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 1,
-    elevation: 2,
+    elevation: 1,
   },
   passwordContainer: {
     flexDirection: 'row',
@@ -608,6 +609,23 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 1,
     elevation: 2,
+  },
+  pickerWrapper: {
+    marginBottom: 10,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    borderColor: '#ddd',
+    borderWidth: 1,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 1,
+    elevation: 1,
+    backgroundColor: '#fff',
+    height:40,
+    alignContent:'center',    
   },
 });
 

@@ -15,6 +15,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
 import { getMemoizedUserData } from '../redux/selectors/userSelectors';
 import { getMemoizedAllCategories, getMemoizedUserCategories } from '../redux/selectors/categorySelectors';
+import { formatDateToDDMMYYYY } from '../utils/formatDate';
+import CountryPicker from '../components/CountrySelect';
 
 const { width: screenWidth } = Dimensions.get('window');
 // const screenHeight = Dimensions.get('window').height;
@@ -40,7 +42,7 @@ const ProfileScreen: React.FC = () => {
   useEffect(() => {
     setSelectedCategories(categories.map(cat => cat.id));
   }, [categories]);
-
+  
   const [formData, setFormData] = useState({
     user_id: user?.user_id || 0,
     first_name: user?.first_name || '',
@@ -62,7 +64,7 @@ const ProfileScreen: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [isCategoriesModalVisible, setCategoriesModalVisible] = useState(false);
 
-  // console.log(formData);
+  console.log(formData);
   
 
   const handleInputChange = (field: string, value: string) => {
@@ -71,16 +73,21 @@ const ProfileScreen: React.FC = () => {
       [field]: value,
     });
   };
-
+  useEffect(() => {
+    if (formData.birth_date) {
+      const [year, month, day] = formData.birth_date.split('-');
+      setSelectedDate(new Date(parseInt(year), parseInt(month) - 1, parseInt(day)));
+    }
+  }, [formData.birth_date]);
   const formatDateToYYYYMMDD = (dateString: string): string => {
     const [day, month, year] = dateString.split('-');
     return `${year}-${month}-${day}`;
   };
-  const formatDateToDDMMYYYY = (dateString: string): string => {
-    if (!dateString) return '';
-    const [year, month, day] = dateString.split('-');
-    return `${day}-${month}-${year}`;
-  };
+  // const formatDateToDDMMYYYY = (dateString: string): string => {
+  //   if (!dateString) return '';
+  //   const [year, month, day] = dateString.split('-');
+  //   return `${day}-${month}-${year}`;
+  // };
   
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
@@ -163,6 +170,9 @@ const ProfileScreen: React.FC = () => {
       }
     });
   };
+  const handleCountryChange = (value: string) => {
+    handleInputChange('country', value);
+  };
   const handleSaveCategories = () => {
     setCategoriesModalVisible(false);
   };
@@ -197,12 +207,20 @@ const ProfileScreen: React.FC = () => {
         keyboardType="email-address"
         editable={false}
       />
-      <TextInput
+      <View  style={styles.inputSelect}>
+        <CountryPicker
+            selectedCountry={formData.country}
+            onCountryChange={handleCountryChange}
+            estilo={false}
+          />
+      </View>
+      
+      {/* <TextInput
         style={styles.input}
         placeholder="País"
         value={formData.country}
         onChangeText={(value) => handleInputChange('country', value)}
-      />
+      /> */}
       <TextInput
         style={styles.input}
         placeholder="Ciudad"
@@ -367,6 +385,20 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
     color: '#3179BB',
+  },
+  inputSelect:{
+    height: 40,
+    width: '90%',
+    borderColor: 'rgba(49, 121, 187,0.5)',
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 15,
+    display:'flex',
+    justifyContent:'center',
+    
+    // paddingHorizontal: 10,
+    backgroundColor: '#fff',
+    fontSize: 16,
   },
   input: {
     height: 40,
