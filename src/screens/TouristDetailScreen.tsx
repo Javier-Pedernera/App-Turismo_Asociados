@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ActivityIndicator, FlatList, StyleSheet, TextInput, TouchableOpacity, Image, ScrollView, Dimensions, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, ActivityIndicator, FlatList, StyleSheet, TextInput, TouchableOpacity, Image, ScrollView, Dimensions, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../redux/store/store';
 import {  addNewRating, fetchRatings, updateExistingRating } from '../redux/actions/touristPointActions';
@@ -13,7 +13,8 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { getMemoizedRatings } from '../redux/selectors/touristPointSelectors';
 import { Ionicons } from '@expo/vector-icons';
-
+import * as Location from 'expo-location';
+import MapSingle from '../components/MapSingle';
 
 type TouristDetailScreenRouteProp = RouteProp<RootStackParamList, 'TouristDetailScreen'>;
 type TouristDetailScreenNavigationProp = StackNavigationProp<RootStackParamList, 'TouristDetailScreen'>;
@@ -33,10 +34,31 @@ const TouristDetailScreen: React.FC<TouristDetailScreenProps> = ({ route, naviga
   const [error, setError] = useState<string | null>(null);
   const user = useSelector(getMemoizedUserData) as UserData;
   const ratings = useSelector(getMemoizedRatings);
-
-  console.log("en el formulario",newComment,newRating);
+  const [currentPosition, setCurrentPosition] = useState<{ latitude: number, longitude: number } | null>(null);
+  const [routeSelected, setRouteSelected] = useState<boolean>(false);
+  const [selectedPoint, setSelectedPoint] = useState<any>(null);
+  const [routeLoading, setRouteLoading] = useState(false);
+  const [destination, setDestination] = useState<{ latitude: number, longitude: number } | null>(null);
+  // console.log("en el formulario",newComment,newRating);
   
-  console.log("todos las valoraciones",ratings);
+  console.log("punto turistico elegido",touristPoint);
+  // console.log("todos las valoraciones",ratings);
+
+  useEffect(() => {
+    const requestLocationPermission = async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Denied', 'Location permission is required to show your current location.');
+        return;
+      }
+      const location = await Location.getCurrentPositionAsync({});
+      setCurrentPosition({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+    };
+    requestLocationPermission();
+  }, []);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -52,7 +74,16 @@ const TouristDetailScreen: React.FC<TouristDetailScreenProps> = ({ route, naviga
 
     fetchData();
   }, [touristPoint.id, dispatch]);
-
+  const handleGetDirections = () => {    
+    if (touristPoint && currentPosition) {
+      setRouteLoading(true)
+      setRouteSelected(true)
+      setDestination({
+        latitude: touristPoint.latitude,
+        longitude: touristPoint.longitude,
+      });
+    }
+  };
   const handleAddRating = () => {
     console.log("agrega valoracion???");
     
@@ -85,18 +116,21 @@ console.log(rating);
       setNewComment('');
     }
   };
-
   const renderStarRating = (rating: number) => {
-    const stars = Array.from({ length: 5 }, (_, index) => (
-      <Icon
-        key={index}
-        name={index < rating ? 'star' : 'star-o'}
-        size={20}
-        color="#FFD700"
-      />
-    ));
-    return <View style={styles.starsContainer}>{stars}</View>;
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <Ionicons
+          key={i}
+          name={i <= rating ? 'star' : i - rating <= 0.5 ? 'star-half' : 'star-outline'}
+          size={12}
+          color="#FFD700"
+        />
+      );
+    }
+    return stars;
   };
+  
 
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
@@ -105,21 +139,24 @@ console.log(rating);
   if (error) {
     return <Text>{error}</Text>;
   }
-  const renderItem = ({ item }: { item: Rating }) => (
-    <View style={styles.ratingContainer}>
-      {renderStarRating(item.rating)}
-      <Text style={styles.comment}>{item.comment}</Text>
-      {item.tourist_id === user.user_id && (
-        <TouchableOpacity onPress={() => {
-          setEditingRatingId(item.id);
-          setNewRating(item.rating);
-          setNewComment(item.comment);
-        }}>
-          <Text style={styles.editButton}>Edit</Text>
-        </TouchableOpacity>
-      )}
-    </View>
-  );
+  const handleMapPress = () => {
+    setSelectedPoint(null);
+  };
+  // const renderItem = ({ item }: { item: Rating }) => (
+  //   <View style={styles.ratingContainer}>
+  //     {renderStarRating(item.rating)}
+  //     <Text style={styles.comment}>{item.comment}</Text>
+  //     {item.tourist_id === user.user_id && (
+  //       <TouchableOpacity onPress={() => {
+  //         setEditingRatingId(item.id);
+  //         setNewRating(item.rating);
+  //         setNewComment(item.comment);
+  //       }}>
+  //         <Text style={styles.editButton}>Edit</Text>
+  //       </TouchableOpacity>
+  //     )}
+  //   </View>
+  // );
 
   return (
     <KeyboardAvoidingView
@@ -138,15 +175,41 @@ console.log(rating);
           </TouchableOpacity>
           <View style={styles.container2}>
             <Text style={styles.title}>{touristPoint.title}</Text>
-            <Text style={styles.description}>{touristPoint.description}</Text>
-            <Text style={styles.averageRating}>Valoracion:</Text>
-            {renderStarRating(touristPoint.average_rating ?? 0)}
+            {/* <Text style={styles.averageRating}>Valoracion:</Text> */}
+            <Text> {renderStarRating(touristPoint.average_rating ?? 0)}</Text>
+           
           </View>
+            <Text style={styles.description}>{touristPoint.description}</Text>
         </View>
 
-        {ratings.filter(rating => rating.tourist_point_id === touristPoint.id).map((rating) => (
+        
+        {/* Mapa */}
+        <View style={styles.descriptiontitleMapCont}>
+    {touristPoint && touristPoint.latitude !== null && touristPoint.longitude !== null && (
+        <View style={styles.descriptiontitleMap}>
+          <Text style={styles.descriptiontitleMap}>Ubicación:</Text>
+          <MapSingle
+            branch={touristPoint}
+            currentPosition={currentPosition}
+            destination={destination}
+            routeSelected={routeSelected}
+            selectedBranch={selectedPoint}
+            ratings={ratings}
+            handleMapPress={handleMapPress}
+            handleGetDirections={handleGetDirections}
+            setSelectedBranch={setSelectedPoint}
+            routeLoading={routeLoading}
+            setRouteLoading={setRouteLoading}
+          />
+        </View>
+      )}
+    </View>
+    <View style={styles.ValorContainer} >
+    <Text style={styles.averageRating}>Valoraciones:</Text>
+    {ratings.filter(rating => rating.tourist_point_id === touristPoint.id).map((rating) => (
           <View key={rating.id} style={styles.ratingContainer}>
-            {renderStarRating(rating.rating)}
+            <Text>{renderStarRating(rating.rating)}</Text>
+            
             <Text style={styles.comment}>{rating.comment}</Text>
             {rating.tourist_id === user.user_id && (
               <TouchableOpacity onPress={() => {
@@ -159,7 +222,6 @@ console.log(rating);
             )}
           </View>
         ))}
-
         <View style={styles.newRatingContainer}>
           <Text style={styles.averageRating}>Tu valoración:</Text>
           <View style={styles.starsContainer}>
@@ -175,11 +237,12 @@ console.log(rating);
             onChangeText={setNewComment}
             style={styles.input}
             multiline
-          />
+            />
           <TouchableOpacity onPress={editingRatingId === null ? handleAddRating : handleUpdateRating} style={styles.button}>
             <Text style={styles.buttonText}>{editingRatingId === null ? 'Enviar valoración' : 'Actualizar valoración'}</Text>
           </TouchableOpacity>
         </View>
+            </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -198,8 +261,14 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
       },
       container2:{
+        display:'flex',
+        justifyContent:'space-between',
+        alignContent:'center',
+        alignItems:'center',
+        flexDirection:'row',
         width: "100%",
-        padding: 16,
+        paddingHorizontal: 16,
+        
       },
       newRatingContainer: {
         marginTop: 20,
@@ -237,6 +306,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   description: {
+    padding:16,
     fontSize: 16,
     marginBottom: 8,
   },
@@ -300,6 +370,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  descriptiontitleMapCont:{
+    maxHeight: 600
+  },
+descriptiontitleMap:{
+  padding:10,
+  fontSize: 14,
+  color: '#555',
+},
+ValorContainer:{
+  padding:10,
+}
 });
 
 export default TouristDetailScreen;

@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, Dimensions, ActivityIndicator, Modal, Platform, Alert, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions, ActivityIndicator, Modal, Alert, TextInput } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Share } from 'react-native';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { AppDispatch } from '../redux/store/store';
 import { useDispatch, useSelector } from 'react-redux';
-import { getMemoizedBranches, getMemoizedBranchRatings } from '../redux/selectors/branchSelectors';
+import { getMemoizedBranches, getMemoizedBranchRatingsWithMetadata } from '../redux/selectors/branchSelectors';
 import { Branch, ImagePromotion, Promotion } from '../redux/types/types';
 import { getMemoizedFavorites, getMemoizedUserData } from '../redux/selectors/userSelectors';
 import { addFavoriteAction, removeFavoriteAction } from '../redux/actions/userActions';
@@ -15,17 +15,14 @@ import Carousel from 'react-native-reanimated-carousel';
 import QRCode from 'react-native-qrcode-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { ScrollView } from 'react-native-gesture-handler';
-import MapView, { Callout, Marker } from 'react-native-maps';
-import MapViewDirections from 'react-native-maps-directions';
 import { addRating, clearBranchRatingsAction, fetchBranchRatings } from '../redux/actions/branchActions';
 import * as Location from 'expo-location';
-import CustomCallout from '../components/CustomCallout';
+import MapSingle from '../components/MapSingle';
 
 type PromotionDetailScreenRouteProp = RouteProp<RootStackParamList, 'PromotionDetail'>;
 
 const { width: screenWidth } = Dimensions.get('window');
 const screenHeight = Dimensions.get('window').height;
-const GOOGLE_MAPS_APIKEY = process.env.EXPO_PUBLIC_API_KEYGOOGLE;
 
 const PromotionDetailScreen: React.FC = () => {
   const route = useRoute<PromotionDetailScreenRouteProp>();
@@ -45,14 +42,14 @@ const PromotionDetailScreen: React.FC = () => {
   const [routeLoading, setRouteLoading] = useState(false);
   const [newRating, setNewRating] = useState<number>(0);
   const [newComment, setNewComment] = useState<string>('');
-  const ratings = useSelector(getMemoizedBranchRatings);
+  const ratings = useSelector(getMemoizedBranchRatingsWithMetadata);
   const user = useSelector(getMemoizedUserData);
-  console.log("newRating",newRating);
-  console.log("newComment",newComment);
+  // console.log("newRating",newRating);
+  // console.log("newComment",newComment);
   const promoImage = promotion.images.length > 0 ? promotion.images[0].image_path : 'https://res.cloudinary.com/dbwmesg3e/image/upload/v1721157537/TurismoApp/no-product-image-400x400_1_ypw1vg_sw8ltj.png';
 
-  console.log("ratings en descripcion ",ratings);
-  console.log("branch en descripcion ",branch);
+  // console.log("ratings en descripcion ",ratings);
+  // console.log("branch en descripcion ",branch);
 
   useEffect(() => {
     if (branches.length) {
@@ -98,7 +95,7 @@ const PromotionDetailScreen: React.FC = () => {
 
   //mapa
   const handleGetDirections = () => {
-    console.log("dentro de la funcion de buscar ruta____________________",branch,currentPosition);
+    // console.log("dentro de la funcion de buscar ruta____________________",branch,currentPosition);n+
     
     if (branch && currentPosition) {
       setRouteLoading(true)
@@ -172,7 +169,7 @@ const PromotionDetailScreen: React.FC = () => {
     // Lógica para agregar la nueva valoración
     console.log('Nuevo comentario:', newComment, 'Puntuación:', newRating);
     // Aquí puedes agregar la lógica para enviar la valoración a la API
-    if (user.user_id === undefined) {
+    if (user?.user_id === undefined) {
       throw new Error("User ID is required");
     }
     const rating = {
@@ -182,7 +179,7 @@ const PromotionDetailScreen: React.FC = () => {
       // branch_id: branch?.branch_id,
       // Agrega cualquier otro campo necesario
     };
-    console.log("agregar rating", rating);
+    // console.log("agregar rating", rating);
     
     // Ejemplo de despachar una acción de Redux:
     if(branch && rating.user_id){
@@ -260,7 +257,6 @@ const PromotionDetailScreen: React.FC = () => {
       </View>
     </Modal>
     <View style={styles.containerText}>
-
     <Text style={styles.title}>{promotion.title}</Text>
     <View style={styles.ratingContainerTitle}>
       {renderStars(ratings.average_rating)}
@@ -281,7 +277,28 @@ const PromotionDetailScreen: React.FC = () => {
       </View>
     </View>
     </View>
+    <View style={styles.descriptiontitleMapCont}>
     {branch && branch.latitude !== null && branch.longitude !== null && (
+        <View style={styles.descriptiontitleMap}>
+          <Text style={styles.descriptiontitleMap}>Ubicación:</Text>
+          <Text style={styles.descriptiontitleMap}>{branch.address}</Text>
+          <MapSingle
+            branch={branch}
+            currentPosition={currentPosition}
+            destination={destination}
+            routeSelected={routeSelected}
+            selectedBranch={selectedBranch}
+            ratings={ratings}
+            handleMapPress={handleMapPress}
+            handleGetDirections={handleGetDirections}
+            setSelectedBranch={setSelectedBranch}
+            routeLoading={routeLoading}
+            setRouteLoading={setRouteLoading}
+          />
+        </View>
+      )}
+    </View>
+    {/* {branch && branch.latitude !== null && branch.longitude !== null && (
       <View style={styles.descriptiontitleMap}>
         <Text style={styles.descriptiontitleMap}>Ubicación:</Text>
         <Text style={styles.descriptiontitleMap}>{branch.address}</Text>
@@ -353,7 +370,7 @@ const PromotionDetailScreen: React.FC = () => {
     )}
         </View>
       </View>
-    )}
+    )} */}
      {/* Sección de valoraciones */}
      <View style={styles.ratingsContainer}>
         <Text style={styles.sectionTitle}>Valoraciones:</Text>
@@ -528,11 +545,6 @@ const styles = StyleSheet.create({
     padding: 15,
     color: '#f1ad3e',
   },
-  ratingContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginVertical: 5,
-  },
   ratingContainerTitle:{
     marginVertical:20,
     width:'100%',
@@ -542,6 +554,7 @@ const styles = StyleSheet.create({
     justifyContent:'center'
   },
   qrCode: {
+    height:screenHeight *0.35,
     display: 'flex',
     marginTop: 20,
     width: '90%',
@@ -587,88 +600,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#888',
   },
-  // mapa
-  mapContainer:{
-    padding:1
+  descriptiontitleMapCont:{
+    maxHeight: 600
   },
-  map: {
-    width: '100%',
-    height: screenHeight * 0.5,
-    marginTop: 20,
-    marginBottom: 20,
-  },
-  calloutContainer: {
-    width: 200,
-    position: 'absolute',
-    bottom: 50,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-  },
-  calloutContainerIos: {
-    width: 200,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    padding: 10,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  calloutContainerAndroid: {
-    position: 'absolute',
-    zIndex:1,
-    bottom: 100,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-  },
-  calloutContainerHide:{
-    display:'none'
-  },
-  callout: {
-    // height: '100%',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  calloutImageContainer: {
-    width: 120,
-    height: 90,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  calloutImage: {
-    width: 130,
-    height: 80,
-    borderRadius: 5,
-    marginBottom: 5,
-  },
-  calloutTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  calloutButton: {
-    backgroundColor: '#3179BB',
-    marginTop:10,
-    padding: 5,
-    borderRadius: 5,
-  },
-  calloutButtonText: {
-    color: '#fff',
-    fontSize: 12,
-  },
-  divider: {
-    height: 1,
-    width: '100%',
-    backgroundColor: 'gray',
-    opacity: 0.5,
-    marginVertical: 5,
-  },
-  calloutDescription: {
-    textAlign: 'center',
-    fontSize: 12,
-    color: 'gray',
-    marginBottom: 0,
-},
 descriptiontitleMap:{
   padding:10,
   fontSize: 14,
@@ -704,6 +638,7 @@ sectionTitle: {
   marginBottom: 10,
 },
 newRatingContainer: {
+
   padding: 20,
 },
 input: {
@@ -720,7 +655,7 @@ button: {
   padding: 10,
   borderRadius: 5,
   alignItems: 'center',
-  marginBottom:100
+  marginBottom:10
 },
 buttonText: {
   color: '#fff',

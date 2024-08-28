@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "CCTD Cobquecura",
-    "slug": "App-Turismo",
+    "name": "CCTD Cobquecura Asociados",
+    "slug": "App-Turismo-Asociados",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -13,7 +13,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.javierpedernera.Appturismo",
+      "bundleIdentifier": "com.Appturismo.asociados",
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
@@ -26,9 +26,11 @@
         "backgroundColor": "#ffffff"
       },
       "permissions": [
-        "android.permission.CAMERA"
+        "android.permission.CAMERA",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
       ],
-      "package": "com.javierpedernera.Appturismo",
+      "package": "com.Appturismo.asociados",
       "versionCode": 1,
       "config": {
         "googleMaps": {
@@ -55,10 +57,13 @@
       "expo-router"
     ],
     "extra": {
+      "router": {
+        "origin": false
+      },
       "eas": {
-        "projectId": "babd19bd-212d-44a5-b801-437e43a27deb"
+        "projectId": "40c3c1fa-3035-45ca-9485-63115a4d2d26"
       }
-    }
+    },
+    "owner": "javierprogra"
   }
 }
-

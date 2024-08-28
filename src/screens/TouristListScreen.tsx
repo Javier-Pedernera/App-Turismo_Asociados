@@ -7,6 +7,7 @@ import { fetchTouristPoints } from '../redux/actions/touristPointActions';
 import { AppDispatch } from '../redux/store/store';
 import Loader from '../components/Loader';
 import { TouristPoint } from '../redux/types/types';
+import { Ionicons } from '@expo/vector-icons';
 
 const TouristListScreen: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -33,6 +34,20 @@ const TouristListScreen: React.FC = () => {
     navigation.navigate('TouristDetailScreen', { touristPoint });
   };
 
+  const renderStarRating = (rating: number) => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <Ionicons
+          key={i}
+          name={i <= rating ? 'star' : i - rating <= 0.5 ? 'star-half' : 'star-outline'}
+          size={12}
+          color="#FFD700"
+        />
+      );
+    }
+    return stars;
+  };
   const renderItem = ({ item }: { item: TouristPoint }) => (
     <TouchableOpacity style={styles.itemContainer} onPress={() => handlePress(item)}>
       {item.images && Array.isArray(item.images) && item.images.length > 0 && (
@@ -40,6 +55,7 @@ const TouristListScreen: React.FC = () => {
       )}
       <View style={styles.textContainer}>
         <Text style={styles.title}>{item.title}</Text>
+        <Text>{renderStarRating(item.average_rating || 0)}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -65,9 +81,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+    padding:10
   },
   itemContainer: {
     flexDirection: 'row',
+    width: '100%',
+    alignSelf:'center',
     padding: 10,
     backgroundColor: '#fff',
     marginBottom: 5,
@@ -87,6 +106,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: 'bold',
+    marginBottom:10
   },
 });
 

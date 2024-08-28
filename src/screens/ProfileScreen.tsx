@@ -17,6 +17,7 @@ import { getMemoizedUserData } from '../redux/selectors/userSelectors';
 import { getMemoizedAllCategories, getMemoizedUserCategories } from '../redux/selectors/categorySelectors';
 import { formatDateToDDMMYYYY } from '../utils/formatDate';
 import CountryPicker from '../components/CountrySelect';
+import ImageCompressor from '../components/ImageCompressor';
 
 const { width: screenWidth } = Dimensions.get('window');
 // const screenHeight = Dimensions.get('window').height;
@@ -42,6 +43,7 @@ const ProfileScreen: React.FC = () => {
   useEffect(() => {
     setSelectedCategories(categories.map(cat => cat.id));
   }, [categories]);
+  console.log(user);
   
   const [formData, setFormData] = useState({
     user_id: user?.user_id || 0,
@@ -53,9 +55,10 @@ const ProfileScreen: React.FC = () => {
     phone_number: user?.phone_number || '',
     gender: user?.gender || '',
     birth_date: user?.birth_date || '',
-    image_url: user?.image_url || null,
+    image_data: user?.image_url || null,
     subscribed_to_newsletter: user?.subscribed_to_newsletter || false,
   });
+// console.log("datos a cambiar en el perfil y la imagen",formData, formData.image_data);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
@@ -64,7 +67,7 @@ const ProfileScreen: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [isCategoriesModalVisible, setCategoriesModalVisible] = useState(false);
 
-  console.log(formData);
+  // console.log(formData);
   
 
   const handleInputChange = (field: string, value: string) => {
@@ -112,17 +115,22 @@ const ProfileScreen: React.FC = () => {
     setShowDatePicker(false);
   };
 
-  const handleImagePick = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
+  // const handleImagePick = async () => {
+  //   const result = await ImagePicker.launchImageLibraryAsync({
+  //     mediaTypes: ImagePicker.MediaTypeOptions.Images,
+  //     allowsEditing: true,
+  //     aspect: [1, 1],
+  //     quality: 1,
+  //   });
 
-    if (!result.canceled) {
-      handleInputChange('image_url', result.assets[0].uri);
-    }
+  //   if (!result.canceled) {
+  //     handleInputChange('image_url', result.assets[0].uri);
+  //   }
+  // };
+  const handleImageCompressed = (uri: string) => {
+    console.log("imagencomprimida");
+    
+    handleInputChange('image_data', uri);
   };
 
   const handleUpdate = async () => {
@@ -184,9 +192,10 @@ const ProfileScreen: React.FC = () => {
         // style={styles.gradient}
       >
     <ScrollView contentContainerStyle={styles.container}>
-      <TouchableOpacity style={styles.image} onPress={handleImagePick}>
+      {/* <TouchableOpacity style={styles.image} onPress={handleImagePick}>
         <Image source={{ uri: formData.image_url || 'https://via.placeholder.com/150' }} style={styles.image} />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
+      <ImageCompressor onImageCompressed={handleImageCompressed} initialImageUri={formData.image_data || undefined} />
       <TextInput
         style={styles.input}
         placeholder="Nombre"

@@ -31,7 +31,7 @@ export const updateUserAction = (updatedUserData: UserData) => {
     try {
       const state = getState();
       const token = state.user.accessToken;
-      
+      console.log("token",token);
       if (!token) {
         throw new Error('User not authenticated');
       }
@@ -78,7 +78,8 @@ export const addFavoriteAction = (promotion: Promotion) => {
       const state = getState();
       const token = state.user.accessToken;
       const userId = state.user.userData?.user_id;
-
+      
+      
 
       if (!token || !userId) {
         throw new Error('User not authenticated');

@@ -7,6 +7,6 @@ const getPromotions = (state: RootState) => state.promotions.promotions;
 export const getMemoizedPromotions = createSelector(
   [getPromotions],
   (promotions: Promotion[]) => {
-    return promotions.slice();
+    return promotions.map(promotion => ({ ...promotion }));
   }
 );

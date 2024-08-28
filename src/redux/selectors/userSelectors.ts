@@ -10,7 +10,7 @@ const getFavorites = (state: RootState) => state.user.favorites;
 // Selectores memoizados que evitan devolver nuevas referencias innecesarias
 export const getMemoizedUserData = createSelector(
   [getUserData],
-  (userData: UserData | null) => userData || {} as UserData
+  (userData: UserData | null) => userData ? { ...userData } : null
 );
 
 export const getMemoizedAccessToken = createSelector(
