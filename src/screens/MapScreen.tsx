@@ -78,7 +78,7 @@ const MapScreen: React.FC = () => {
   if (loading) {
     return (
       <View style={styles.loaderContainer}>
-        <Loader/>
+        <Loader />
       </View>
     );
   }
@@ -143,7 +143,7 @@ const MapScreen: React.FC = () => {
     <TouchableWithoutFeedback onPress={handleMapPress}>
       <View style={styles.container}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <MaterialIcons name="arrow-back-ios-new" size={24} color="#3179BB" />
+          <MaterialIcons name="arrow-back-ios-new" size={24} color="rgb(0, 122, 140)" />
         </TouchableOpacity>
         <MapView
           ref={mapRef}
@@ -195,8 +195,8 @@ const MapScreen: React.FC = () => {
               )}
             </Marker>
           ))}
-{/* Mostrar puntos turísticos */}
-{touristPoints.map((touristPoint: any) => (
+          {/* Mostrar puntos turísticos */}
+          {touristPoints.map((touristPoint: any) => (
             <Marker
               key={touristPoint.id} // Asegúrate de usar el campo correcto como key
               coordinate={{
@@ -218,7 +218,7 @@ const MapScreen: React.FC = () => {
                     <Text style={styles.calloutTitle}>{touristPoint.title}</Text>
                     <View style={styles.divider} />
                     <View style={styles.ratingContainer}>
-                      {renderStars(touristPoint.average_rating)} 
+                      {renderStars(touristPoint.average_rating)}
                     </View>
                     {/* <Text style={styles.calloutDescription}>{touristPoint.description}</Text> */}
                     <Text style={styles.calloutDescription}>{touristPoint.address}</Text>
@@ -242,7 +242,7 @@ const MapScreen: React.FC = () => {
             }}
             title="Tu ubicación"
           >
-            <MaterialCommunityIcons name="map-marker-account" size={40} color="#3179BB" />
+            <MaterialCommunityIcons name="map-marker-account" size={40} color="rgb(0, 122, 140)" />
           </Marker>
           {destination && location && (
             <MapViewDirections
@@ -253,7 +253,7 @@ const MapScreen: React.FC = () => {
               destination={destination}
               apikey={GOOGLE_MAPS_APIKEY!}
               strokeWidth={3}
-              strokeColor="#3179BB"
+              strokeColor="rgb(0, 122, 140)"
               timePrecision="none"
               precision='high'
               onReady={() => {
@@ -268,7 +268,7 @@ const MapScreen: React.FC = () => {
         </MapView>
         {routeLoading && (
           <View style={styles.routeLoaderContainer}>
-            <ActivityIndicator size="large" color="#3179BB" />
+            <ActivityIndicator size="large" color="rgb(0, 122, 140)" />
           </View>
         )}
         {selectedBranch && Platform.OS === 'android' && (
@@ -302,11 +302,11 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  calloutContainerIos:{
-    backgroundColor:'rgba(255, 255, 255,0.7)'
+  calloutContainerIos: {
+    backgroundColor: 'rgba(255, 255, 255,0.7)'
   },
-  calloutContainerHide:{
-  display:"none"
+  calloutContainerHide: {
+    display: "none"
   },
   callout: {
     flexDirection: 'column',
@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   calloutButton: {
-    backgroundColor: '#3179BB',
+    backgroundColor: 'rgb(0, 122, 140)',
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderRadius: 5,
@@ -376,7 +376,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
     bottom: 110,
     right: 20,
-    backgroundColor: '#3179BB',
+    backgroundColor: 'rgb(0, 122, 140)',
     padding: 10,
     borderRadius: 25,
     justifyContent: 'center',
@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 5,
   },
-  referButton:{
+  referButton: {
     position: 'absolute',
     zIndex: 1,
     bottom: 30,
@@ -426,21 +426,21 @@ const styles = StyleSheet.create({
     transform: [{ translateX: -25 }, { translateY: -25 }],
     zIndex: 3,
   },
-  backButton:{
-    position:'absolute',
+  backButton: {
+    position: 'absolute',
     // alignSelf:'center',
-    zIndex:1,
-    width:45,
-    top:30,
-    height:35,
+    zIndex: 1,
+    width: 45,
+    top: 30,
+    height: 35,
     left: 10,
     backgroundColor: 'rgb(255, 255, 255)',
     padding: 5,
     borderRadius: 5,
     flexDirection: 'column',
     alignItems: 'center',
-    justifyContent:'center',
-    alignContent:'center',
+    justifyContent: 'center',
+    alignContent: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,

@@ -1,13 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Platform, Dimensions, ActivityIndicator } from 'react-native';
 import MapView, { Marker, Callout } from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import CustomCallout from '../components/CustomCallout';
-import { Branch } from '../redux/types/types';
 import { Ionicons } from '@expo/vector-icons';
-
-
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
 const GOOGLE_MAPS_APIKEY = process.env.EXPO_PUBLIC_API_KEYGOOGLE;
 const { width: screenWidth } = Dimensions.get('window');
@@ -19,12 +17,19 @@ interface MapComponentProps {
   destination: { latitude: number, longitude: number } | null;
   routeSelected: boolean;
   selectedBranch: any;
-  handleMapPress: () => void;
+  onMapPress: () => void;
   handleGetDirections: () => void;
   setSelectedBranch: (branch: any) => void;
   routeLoading: boolean;
+  isEditing: boolean;
   setRouteLoading: (loading: boolean) => void;
-  ratings: any
+  ratings: any;
+  initialRegion: {
+    latitude: number;
+    longitude: number;
+    latitudeDelta: number;
+    longitudeDelta: number;
+  };
 }
 
 const MapSingle: React.FC<MapComponentProps> = ({
@@ -34,43 +39,82 @@ const MapSingle: React.FC<MapComponentProps> = ({
   destination,
   routeSelected,
   selectedBranch,
-  handleMapPress,
+  onMapPress,
   handleGetDirections,
   setSelectedBranch,
   routeLoading,
+  isEditing,
   setRouteLoading,
+  initialRegion
 }) => {
+  const [searchLocation, setSearchLocation] = useState({
+    latitude: branch?.latitude || initialRegion.latitude,
+    longitude: branch?.longitude || initialRegion.longitude,
+    address: branch?.address || '',
+  });
 
-    const renderStars = (rating: number) => {
-        const stars = [];
-        for (let i = 1; i <= 5; i++) {
-          stars.push(
-            <Ionicons
-              key={i}
-              name={i <= rating ? 'star' : i - rating <= 0.5 ? 'star-half' : 'star-outline'}
-              size={16}
-              color="#FFD700"
-            />
-          );
-        }
-        return stars;
-      };
+  const handlePlaceSelected = (data: any, details: any = null) => {
+    if (details && details.geometry && details.geometry.location) {
+      const { lat, lng } = details.geometry.location;
+      console.log('Selected location:', lat, lng);
+    } else {
+      console.log('Details are not available');
+    }
+  };
+
+  const handleMapPress = (e: any) => {
+    console.log("funcion pressmap", e.nativeEvent);
+    const { latitude, longitude } = e.nativeEvent.coordinate;
+    setSearchLocation({ ...searchLocation, latitude, longitude });
+    setSelectedBranch({ ...branch, latitude, longitude });
+  };
+  console.log("selected branch", selectedBranch);
+
+  const renderStars = (rating: number) => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <Ionicons
+          key={i}
+          name={i <= rating ? 'star' : i - rating <= 0.5 ? 'star-half' : 'star-outline'}
+          size={16}
+          color="#FFD700"
+        />
+      );
+    }
+    return stars;
+  };
 
   return (
     <View style={styles.mapContainer}>
+      {/* <GooglePlacesAutocomplete
+        placeholder="Buscar"
+        fetchDetails
+        onPress={handlePlaceSelected}
+        query={{
+          key: GOOGLE_MAPS_APIKEY,
+          language: 'es',
+        }}
+        styles={{
+          container: { flex: 0, zIndex: 1 },
+          textInput: { height: 40, borderRadius: 5, paddingHorizontal: 10 },
+        }}
+      /> */}
+
       <MapView
         style={styles.map}
-        initialRegion={{
-          latitude: branch?.latitude || 0,
-          longitude: branch?.longitude || 0,
+        region={{
+          latitude: searchLocation.latitude,
+          longitude: searchLocation.longitude,
           latitudeDelta: 0.01,
           longitudeDelta: 0.01,
         }}
-        onPress={handleMapPress}
+        onPress={isEditing? handleMapPress: undefined}
+        scrollEnabled={isEditing}
       >
         {branch && (
           <Marker
-            coordinate={{ latitude: branch.latitude, longitude: branch.longitude }}
+            coordinate={{ latitude: searchLocation.latitude, longitude: searchLocation.longitude }}
             onPress={() => setSelectedBranch(branch)}
           >
             <MaterialCommunityIcons name="map-marker" size={40} color="#F1AD3E" />
@@ -82,12 +126,10 @@ const MapSingle: React.FC<MapComponentProps> = ({
                   </View>
                   <Text style={styles.calloutTitle}>{branch.name}</Text>
                   <View style={styles.divider}></View>
-                  <View style={styles.ratingContainer}>
-                    {renderStars(ratings.average_rating)}
-                  </View>
+                  <View style={styles.ratingContainer}>{renderStars(ratings.average_rating)}</View>
                   <Text style={styles.calloutDescription}>{branch.description}</Text>
                   <Text style={styles.calloutDescription}>{branch.address}</Text>
-                  <TouchableOpacity style={styles.calloutButton} onPress={handleGetDirections}>
+                  <TouchableOpacity style={styles.calloutButton} >
                     <Text style={styles.calloutButtonText}>Cómo llegar?</Text>
                   </TouchableOpacity>
                 </View>
@@ -97,33 +139,18 @@ const MapSingle: React.FC<MapComponentProps> = ({
         )}
         {currentPosition && (
           <Marker coordinate={currentPosition} title="Mi ubicación" pinColor="blue">
-            <MaterialCommunityIcons name="map-marker-radius" size={40} color="#3179BB" />
+            <MaterialCommunityIcons name="map-marker-radius" size={40} color="rgb(0, 122, 140)" />
           </Marker>
         )}
-        {destination && currentPosition && (
-          <MapViewDirections
-            origin={{
-              latitude: currentPosition.latitude,
-              longitude: currentPosition.longitude,
-            }}
-            destination={destination}
-            apikey={GOOGLE_MAPS_APIKEY!}
-            strokeWidth={3}
-            strokeColor="#3179BB"
-            timePrecision="none"
-            precision="high"
-            onStart={() => setRouteLoading(true)}
-            onReady={() => setRouteLoading(false)}
-          />
-        )}
       </MapView>
-        {routeLoading && (
-          <View style={styles.loader}>
-            <ActivityIndicator size="large" color="#64C9ED" />
-          </View>
-        )}
+      {routeLoading && (
+        <View style={styles.loader}>
+          <ActivityIndicator size="large" color="#64C9ED" />
+        </View>
+      )}
       {selectedBranch && !routeSelected && Platform.OS === 'android' && (
         <View style={styles.calloutContainer}>
+         {isEditing? <Text style={styles.labelMap}>Ejemplo de marcador</Text>:<></>} 
           <CustomCallout branch={selectedBranch} handleRoutePress={handleGetDirections} />
         </View>
       )}
@@ -137,9 +164,15 @@ const styles = StyleSheet.create({
   },
   map: {
     width: '100%',
-    height:screenHeight *0.5,
-    // height: 400,
+    height: screenHeight * 0.5,
     marginTop: 20,
+  },
+  labelMap: {
+    textAlign:'center',
+    marginTop: 30,
+    marginBottom: -20,
+    color: '#007a8c',
+    alignSelf: 'center'
   },
   ratingContainer: {
     flexDirection: 'row',
@@ -179,7 +212,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   calloutButton: {
-    backgroundColor: '#3179BB',
+    backgroundColor: 'rgb(0, 122, 140)',
     marginTop: 10,
     padding: 5,
     borderRadius: 5,
@@ -203,10 +236,6 @@ const styles = StyleSheet.create({
   },
   calloutContainer: {
     width: 200,
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     alignItems: 'center',
   },
   loader: {

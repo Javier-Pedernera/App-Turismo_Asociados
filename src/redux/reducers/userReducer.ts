@@ -1,17 +1,19 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Promotion, UserData } from '../types/types';
+import { PartnerData, Promotion, UserData } from '../types/types';
 import { UserStorageData } from '../../utils/storage';
 
 export interface UserState {
   userData: UserData | null;
   accessToken: string | null;
   favorites: number[];
+  partner: PartnerData | null;
 }
 
 const initialState: UserState = {
   userData: null,
   accessToken: null,
   favorites: [],
+  partner: null,
 };
 
 const userSlice = createSlice({
@@ -36,6 +38,12 @@ const userSlice = createSlice({
       userData: action.payload
       }
     },
+    setPartner: (state, action: PayloadAction<PartnerData>) => {
+      return {
+        ...state,
+        partner: action.payload,
+      };
+    },
     setFavorites: (state, action: PayloadAction<number[]>) => {
       state.favorites = action.payload;
     },
@@ -48,5 +56,5 @@ const userSlice = createSlice({
   },
 });
 
-export const { loginUser, logOut, setUser,setFavorites ,addFavorite, removeFavorite } = userSlice.actions;
+export const { loginUser, logOut, setUser,setFavorites ,addFavorite, removeFavorite, setPartner } = userSlice.actions;
 export default userSlice.reducer;

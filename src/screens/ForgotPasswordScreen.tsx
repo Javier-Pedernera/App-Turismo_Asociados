@@ -73,13 +73,13 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 20,
-    marginTop:50,
+    marginTop: 50,
     color: '#333',
   },
-  logoHome:{
+  logoHome: {
     width: 70,
     height: 70,
-      marginTop:20
+    marginTop: 20
   },
   input: {
     height: 50,
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   button: {
-    backgroundColor: '#3179BB',
+    backgroundColor: 'rgb(0, 122, 140)',
     paddingVertical: 10,
     paddingHorizontal: 30,
     borderRadius: 8,

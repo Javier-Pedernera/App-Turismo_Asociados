@@ -2,9 +2,9 @@ import React, { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useDispatch, useSelector } from 'react-redux';
-import { getMemoizedCountries } from '../redux/selectors/countrySelectors';
+// import { getMemoizedCountries } from '../redux/selectors/countrySelectors';
 import { AppDispatch, RootState } from '../redux/store/store';
-import { fetchCountries } from '../redux/actions/countryActions';
+import { getMemoizedCountries } from '../redux/selectors/globalSelectors';
 
 interface CountryPickerProps {
   selectedCountry: string;
@@ -16,9 +16,7 @@ const CountryPicker: React.FC<CountryPickerProps> = ({ selectedCountry, onCountr
   const dispatch = useDispatch<AppDispatch>();
   const countries = useSelector((state: RootState) => getMemoizedCountries(state));
 
-  useEffect(() => {
-    dispatch(fetchCountries());
-  }, [dispatch]);
+ 
 
   return (
     <View style={styles.container}>

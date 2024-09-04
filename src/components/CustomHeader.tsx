@@ -1,23 +1,29 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, Platform, StatusBar, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, Platform, StatusBar, TouchableOpacity, Dimensions } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { UserData } from '../redux/types/types';
 import { logoutUser } from '../services/authService';
 import { SimpleLineIcons } from '@expo/vector-icons';
 import { getMemoizedUserData } from '../redux/selectors/userSelectors';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { RootStackParamList } from '../navigation/AppNavigator';
+
+const { width: screenWidth } = Dimensions.get('window');
 
 const CustomHeader: React.FC = () => {
   const dispatch = useDispatch();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const user = useSelector(getMemoizedUserData);
   if (!user) return null;
 
   const handleLogout = () => {
     dispatch(logoutUser() as any);
   };
-// console.log(user.image_url?.slice(0,4));
-
+ 
   return (
     <View style={styles.headerContainer}>
+        <Text style={styles.userName}>Hola, {user.first_name}</Text>
+        <TouchableOpacity style={styles.imageCont}>
       <View style={styles.avatarContainer}>
         {user?.image_url ? (
           <Image source={{ uri: user.image_url }} style={styles.avatar} />
@@ -28,48 +34,58 @@ const CustomHeader: React.FC = () => {
           />
         )}
       </View>
-      <View style={styles.nameContainer}>
-        <Text style={styles.userName}>{user.first_name}</Text>
-        {/* <Text style={styles.appName}>TuApp</Text> */}
-      </View>
-      <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-      <SimpleLineIcons name="logout" size={20} color="#fff" />
       </TouchableOpacity>
+      {/* <View style={styles.nameContainer}> */}
+        {/* <Text style={styles.appName}>TuApp</Text> */}
+      {/* </View> */}
+      {/* <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+        <SimpleLineIcons name="logout" size={20} color="#fff" />
+      </TouchableOpacity> */}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   headerContainer: {
+    minWidth:screenWidth*0.9,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent:'space-around',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 40,
-    padding: 10,
-    backgroundColor: '#3179BB', 
+    padding: 5,
+    backgroundColor: '#007a8c',
     paddingHorizontal: 20,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 0.5,
+    height:85,
+    // elevation: 5,
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.2,
+    // shadowRadius: 0.5,
+  },
+  imageCont:{
+    width:screenWidth * 0.3,
   },
   avatarContainer: {
+    position:'relative',  
     flexDirection: 'row',
-    alignItems: 'center',
-    marginLeft:10,
+    right:0,
+    width:45,
+    height:45,
+    marginLeft:'60%',
+    // alignItems: 'center',
+    // marginLeft: 10,
     borderColor: '#fff', // Usar color naranja de la paleta
     borderWidth: 1,
     borderRadius: 25,
   },
   avatar: {
-    width: 40,
-    height: 40,
+    width: '100%',
+    // height: 40,
     borderRadius: 25,
-   
+
   },
   nameContainer: {
-    flex: 1,
+    width:screenWidth * 0.7,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -79,21 +95,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   appName: {
-    color: '#fff', // Usar color naranja de la paleta
+    color: '#fff',
     fontSize: 14,
     fontWeight: 'bold',
   },
   logoutButton: {
-    // backgroundColor: '#64C9ED', // Usar color celeste de la paleta
     paddingVertical: 5,
     paddingHorizontal: 5,
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
-    // borderRadius: 25,
-    // borderColor: '#fff',
-    // borderWidth: 0.5,
-    // marginRight:10
   },
 });
 

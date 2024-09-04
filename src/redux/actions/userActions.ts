@@ -1,6 +1,6 @@
 import { Dispatch } from 'redux';
-import { Promotion, UserActionTypes, UserData } from '../types/types'; 
-import {  addFavorite, loginUser, logOut, removeFavorite, setFavorites, setUser } from '../reducers/userReducer';
+import { PartnerData, Promotion, UpdatePartnerPayload, UserActionTypes, UserData } from '../types/types'; 
+import {  addFavorite, loginUser, logOut, removeFavorite, setFavorites, setPartner, setUser } from '../reducers/userReducer';
 import { loginUserAuth } from '../../services/authService';
 import { RootState } from '../store/store';
 import axios from 'axios';
@@ -12,6 +12,24 @@ export const userLogIn = (email: string, password: string) => {
   return async (dispatch: Dispatch) => {
     try {
       const data = await loginUserAuth(email, password);
+
+      // Verificar si data.user y data.user.status existen
+      if (!data.user || !data.user.status) {
+        throw new Error('Error en la respuesta del servidor. No se pudo obtener el estado del usuario.');
+      }
+
+      // Validación del estado del usuario
+      if (data.user.status.name !== 'active') {
+        throw new Error('Tu cuenta está inactiva. Contacta al soporte para más información.');
+      }
+
+      // Validación del rol del usuario
+      const hasAssociatedRole = data.user.roles?.some((role: { role_name: string }) => role.role_name === 'associated');
+      if (!hasAssociatedRole) {
+        throw new Error('Solo se permite el ingreso a los asociados.');
+      }
+
+      // Si pasa todas las validaciones, guardar los datos en el estado global
       dispatch(loginUser(data));
       return data;
     } catch (error) {
@@ -35,9 +53,9 @@ export const updateUserAction = (updatedUserData: UserData) => {
       if (!token) {
         throw new Error('User not authenticated');
       }
-      const { user_id, ...dataToSend } = updatedUserData;
+      const { user_id, ...updatedDataToSend } = updatedUserData;
 
-      const response = await axios.put(`${API_URL}/user/${user_id}`, dataToSend, {
+      const response = await axios.put(`${API_URL}/user/${user_id}`, updatedDataToSend, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -122,6 +140,53 @@ export const removeFavoriteAction = (promotionId: number) => {
       });
       dispatch(removeFavorite(promotionId));
     } catch (error) {
+      throw error;
+    }
+  };
+};
+
+export const fetchPartnerById = (partnerId: number) => {
+  return async (dispatch: Dispatch, getState: () => RootState) => {
+    try {
+      const state = getState();
+      const token = state.user.accessToken;
+
+      if (!token) {
+        throw new Error('User not authenticated');
+      }
+
+      const response = await axios.get(`${API_URL}/partners/${partnerId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      dispatch(setPartner(response.data));
+    } catch (error) {
+      console.error('Error fetching partner:', error);
+      throw error;
+    }
+  };
+};
+
+export const updatePartner = (user_id: number, partnerData: UpdatePartnerPayload) => {
+  return async (dispatch: Dispatch, getState: () => RootState) => {
+    try {
+      const state = getState();
+      const token = state.user.accessToken;
+
+      if (!token) {
+        throw new Error('User not authenticated');
+      }
+      const response = await axios.put(`${API_URL}/partners/${user_id}`, partnerData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      dispatch(setPartner(response.data));
+      return response    
+    } catch (error) {
+      console.error('Error updating partner:', error);
       throw error;
     }
   };

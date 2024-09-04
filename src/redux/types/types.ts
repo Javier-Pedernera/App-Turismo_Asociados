@@ -20,25 +20,41 @@ export enum UserActionTypes {
     category_id?: number;
     name: string;
   }
-  
+  //EStados
+  export interface Status {
+    id: number;
+    name: string;
+    description: string | null;
+  }
+  //Funcionalidades
+  export interface Functionality {
+    id: number;
+    name: string;
+    description: string;
+    platform: string;
+  }
+  //Roles
+  export interface Role {
+    role_id: number;
+    role_name: string;
+    functionalities: Functionality[];
+  }
   // Definición de la estructura de los datos del usuario
   export interface UserData {
-    user_id?: number;
-    public_id?: string;
-    password?: string;
-    role?: string;
+    user_id: number;
     first_name: string;
     last_name: string;
     country: string;
     city: string;
-    birth_date?: string;
+    birth_date: string;
     email: string;
-    phone_number?: string;
-    gender?: string;
-    status?: string;
-    subscribed_to_newsletter?: boolean;
+    phone_number: string;
+    gender: string;
     image_url?: string | null;
-    categories?: number[];
+    status?: Status;
+    subscribed_to_newsletter: boolean;
+    roles?: Role[];
+    categories?: any
   }
 
 
@@ -61,13 +77,30 @@ export enum UserActionTypes {
     partner_id: number;
     categories: Category[];
     images: ImagePromotion[];
-    latitude?: number,
-    longitude?: number,
-    discount_percentage?:number,
-    branch_id?:number,
-    available_quantity?: number
+    discount_percentage?: number;
+    branch_id: number ;
+    available_quantity?: number;
+    status?: Status;
+    favorites?: any[];
+    partner_details?: any;
   }
-
+  export interface PromotionUpdate {
+    promotion_id?: number;
+    title: string;
+    description: string;
+    start_date: string;
+    expiration_date: string;
+    partner_id: number;
+    category_ids: number[];
+    images: ImagePromotionUpdate[];
+    discount_percentage?: number;
+    branch_id: number;
+    available_quantity?: number;
+  }
+  export interface ImagePromotionUpdate{
+    filename: string;
+    data:string
+  }
   export interface Branch {
     branch_id: number;
     partner_id: number;
@@ -76,7 +109,7 @@ export enum UserActionTypes {
     address: string;
     latitude: number;
     longitude: number;
-    status: 'active' | 'inactive' | 'paused';
+    status: Status;
     image_url: string;
   }
   export interface Favorite{
@@ -123,4 +156,25 @@ export enum UserActionTypes {
     id: number; 
     name: string;
     phone_code: string;
+  }
+  export interface Partner {
+    address: string;
+    contact_info: string;
+    business_type: string;
+    category_ids: number[];
+  }
+
+  export interface PartnerData {
+    address: string;
+    branches: Array<{ branch_id: number; name: string; description: string; address: string }>;
+    business_type: string;
+    categories: Array<{ category_id: number; name: string }>;
+    contact_info: string;
+    user: UserData;
+  }
+  export interface UpdatePartnerPayload {
+    address: string;
+    contact_info: string;
+    business_type: string;
+    category_ids: number[];
   }

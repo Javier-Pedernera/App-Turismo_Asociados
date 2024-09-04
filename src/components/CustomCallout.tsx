@@ -9,17 +9,17 @@ interface CustomCalloutProps {
   handleRoutePress: () => void;
 }
 
-const CustomCallout: React.FC<CustomCalloutProps> = ({ branch, handleRoutePress}) => {
-  console.log("punto turistico",branch);
-  const imageUrl = branch.branch_id 
-  ? branch.image_url 
-  : branch.images && branch.images.length > 0 
-    ? branch.images[0].image_path 
-    : null; 
+const CustomCallout: React.FC<CustomCalloutProps> = ({ branch, handleRoutePress }) => {
+  console.log("punto turistico", branch);
+  const imageUrl = branch.branch_id
+    ? branch.image_url
+    : branch.images && branch.images.length > 0
+      ? branch.images[0].image_path
+      : null;
 
-const displayName = branch.branch_id 
-  ? branch.name 
-  : branch.title;
+  const displayName = branch.branch_id
+    ? branch.name
+    : branch.title;
   const renderStars = (rating: number) => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
@@ -34,7 +34,7 @@ const displayName = branch.branch_id
     }
     return stars;
   };
-  
+
   return (
     <View style={styles.calloutContainer}>
       <View style={styles.calloutBack}>
@@ -51,20 +51,20 @@ const displayName = branch.branch_id
           <Text style={styles.calloutTitle}>{displayName}</Text>
           <View style={styles.divider}></View>
           <View style={styles.ratingContainer}>
-          {/* <Text style={styles.calloutDescription}>{branch.description}</Text> */}
-          <View style={styles.starsContainer}>
-            {renderStars(3.5)}
+            {/* <Text style={styles.calloutDescription}>{branch.description}</Text> */}
+            <View style={styles.starsContainer}>
+              {renderStars(3.5)}
+            </View>
           </View>
+          <View style={styles.addressBttn}>
+            <Text style={styles.calloutadress}>{branch.address}</Text>
+            <TouchableOpacity style={styles.calloutButton}>
+              <MaterialCommunityIcons name="directions" size={24} color="rgb(49, 121, 187)" />
+              <Text style={styles.calloutButtonText}>Cómo llegar?</Text>
+            </TouchableOpacity>
           </View>
-        <View style={styles.addressBttn}>
-          <Text style={styles.calloutadress}>{branch.address}</Text>
-          <TouchableOpacity style={styles.calloutButton} onPress={handleRoutePress}>
-        <MaterialCommunityIcons name="directions" size={24} color="rgb(49, 121, 187)" />
-          <Text style={styles.calloutButtonText}>Cómo llegar?</Text>
-        </TouchableOpacity>
         </View>
-        </View>
-        
+
       </View>
     </View>
   );
@@ -72,19 +72,11 @@ const displayName = branch.branch_id
 
 const styles = StyleSheet.create({
   calloutContainer: {
-    position: 'absolute',
-    bottom: 150, 
-    left: 50, 
+    marginBottom: 50,
+    marginTop: 50,
+    left: '30%',
     zIndex: 999,
     width: 250,
-    // borderRadius: 10,
-    // backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    // padding: 10,
-    // shadowColor: '#000',
-    // shadowOffset: { width: 0, height: 2 },
-    // shadowOpacity: 0.3,
-    // shadowRadius: 3,
-    // elevation: 5,
   },
   calloutBack: {
     height: 280,
@@ -103,7 +95,7 @@ const styles = StyleSheet.create({
   },
   callout: {
     width: '90%',
-    display:'flex',
+    display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     alignContent: 'center',
@@ -121,34 +113,34 @@ const styles = StyleSheet.create({
   },
 
   ratingContainer: {
-    width:'100%',
-    display:'flex',
+    width: '100%',
+    display: 'flex',
     flexDirection: 'row',
     // justifyContent:'space-evenly',
   },
   calloutDescription: {
-    width:'60%',
+    width: '60%',
     textAlign: 'left',
     fontSize: 14,
     color: 'gray',
     marginBottom: 0,
   },
-  starsContainer:{
-    width:'30%',
-    display:'flex',
+  starsContainer: {
+    width: '30%',
+    display: 'flex',
     flexDirection: 'row',
   },
   calloutButton: {
-    width:'35%',
+    width: '35%',
     paddingVertical: 5,
     paddingHorizontal: 5,
     borderRadius: 5,
     alignItems: 'center',
-    
+
   },
   calloutButtonText: {
     fontSize: 12,
-    color: '#3179BB',
+    color: 'rgb(0, 122, 140)',
     marginBottom: 0,
   },
   calloutImageContainer: {
@@ -165,7 +157,7 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   calloutImageAndroidCont: {
-    marginBottom:15,
+    marginBottom: 15,
     width: 200,
     height: 100,
     backgroundColor: 'white',
@@ -175,14 +167,14 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  addressBttn:{
-    width:'100%',
-    display:'flex',
-    flexDirection:'row',
-    alignItems:'center'
+  addressBttn: {
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center'
   },
-  calloutadress:{
-    width:'68%',
+  calloutadress: {
+    width: '68%',
     fontSize: 14,
     color: 'gray',
     marginBottom: 0,

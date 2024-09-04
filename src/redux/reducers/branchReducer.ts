@@ -9,6 +9,12 @@ export interface BranchState {
     loading: boolean;
     error: string | null;
   };
+  addBranch: {
+    loading: boolean;
+    error: string | null;
+  };
+  isLoading: boolean;
+  error: string | null;
 }
 
 const initialState: BranchState = {
@@ -19,6 +25,12 @@ const initialState: BranchState = {
     loading: false,
     error: null,
   },
+  addBranch: {
+    loading: false,
+    error: null,
+  },
+  isLoading: false,
+  error: null,
 };
 
 const branchSlice = createSlice({
@@ -60,6 +72,34 @@ const branchSlice = createSlice({
       state.branchRatings.ratings = [];
       state.branchRatings.average_rating = 0
     },
+     // Actions para agregar una sucursal
+     addBranchRequest: (state) => {
+      state.addBranch.loading = true;
+      state.addBranch.error = null;
+    },
+    addBranchSuccess: (state, action: PayloadAction<Branch>) => {
+      state.branches = state.branches ? [...state.branches, action.payload] : [action.payload];
+      state.addBranch.loading = false;
+    },
+    addBranchFailure: (state, action: PayloadAction<string>) => {
+      state.addBranch.loading = false;
+      state.addBranch.error = action.payload;
+    },
+    updateBranchRequest(state) {
+      state.isLoading = true;
+    },
+    updateBranchSuccess(state, action: PayloadAction<Branch>) {
+      state.isLoading = false;
+      const updatedBranch = action.payload;
+      const index = state.branches?.findIndex(branch => branch.branch_id === updatedBranch.branch_id) || 0;
+      if (state.branches && index !== -1) {
+        state.branches[index ] = updatedBranch;
+      }
+    },
+    updateBranchFailure(state, action: PayloadAction<string>) {
+      state.isLoading = false;
+      state.error = action.payload;
+    },
   },
 });
 
@@ -72,6 +112,12 @@ export const {
   addBranchRating,
   editBranchRating,
   deleteBranchRating,
-  clearBranchRatings
+  clearBranchRatings,
+  addBranchRequest,
+  addBranchSuccess,
+  addBranchFailure,
+  updateBranchRequest,
+  updateBranchSuccess,
+  updateBranchFailure
 } = branchSlice.actions;
 export default branchSlice.reducer;

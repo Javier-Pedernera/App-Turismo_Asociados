@@ -1,24 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { DrawerActions, useNavigation } from '@react-navigation/native';
-import { createDrawerNavigator, DrawerContentComponentProps, useDrawerStatus } from '@react-navigation/drawer';
+import {  useNavigation } from '@react-navigation/native';
+import { createDrawerNavigator, useDrawerStatus } from '@react-navigation/drawer';
 import { StyleSheet, TouchableOpacity } from 'react-native';
-import HomeScreen from '../screens/HomeScreen';
+import ScanMe from '../screens/ScanMe';
 import ProfileScreen from '../screens/ProfileScreen';
 import { FontAwesome } from '@expo/vector-icons';
-import UserCredential from './UserCredential';
 import PromotionsScreen from './PromotionsScreen';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import Sidebar from '../components/Sidebar';
-import PlaceholderScreen from './PlaceholderScreen';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '../redux/store/store';
-import { fetchBranches } from '../redux/actions/branchActions';
-import MapScreen from './MapScreen';
-import FavoritesScreen from './FavoritesScreen';
-import ContactComponent from './ContactoScreen';
-import TouristListScreen from './TouristListScreen';
-import TouristDetailScreen from './TouristDetailScreen';
+import SimpleLineIcons from '@expo/vector-icons/SimpleLineIcons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import Branches from './Branches';
 
 const Tab = createBottomTabNavigator();
 const Drawer = createDrawerNavigator();
@@ -30,50 +23,51 @@ const MainTabs = () => {
 
   const getIconName = (routeName: string): any => {
     switch (routeName) {
-      case 'Inicio':
-        return 'home';
-      case 'Mapa':
-        return 'map-o';
-      case 'Descuentos':
-        return 'ticket';
-      case 'Credencial':
+      case 'QR-Scanner':
+        return 'qr-code-scanner';
+      case 'Ajustes':
+        return 'settings';
+      case 'Promociones':
+        return 'ticket-percent-outline';
+      case 'Sucursal':
+        return 'storefront-outline';
+      case 'Perfil':
         return 'address-card';
-      case 'Más':
-        return 'more-horiz';
       default:
         return 'circle';
     }
   };
-
-  useEffect(() => {
-    if (drawerStatus === 'open') {
-      setFocusedTab('Más');
-    } else {
-      setFocusedTab(null);
-    }
-  }, [drawerStatus]);
 
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color, size }) => {
           const iconName = getIconName(route.name);
-          if (route.name === 'Más') {
-            const isFocused = focusedTab === 'Más';
+          const isFocused = focusedTab === route.name;
+          if (route.name === 'QR-Scanner') {
             return (
-              <TouchableOpacity
-                onPress={() => {
-                  navigation.dispatch(DrawerActions.toggleDrawer());
-                }}
-              >
-                <MaterialIcons name={isFocused ? 'read-more' : iconName} size={size} color={isFocused ? '#3179BB' : '#aaa'} />
-              </TouchableOpacity>
+              <MaterialIcons name={iconName} size={size} color={isFocused ? 'rgb(0, 122, 140)' : color} />
             );
           }
-          const isFocused = focusedTab === route.name;
-          return <FontAwesome name={iconName} size={size} color={isFocused ? '#3179BB' : color} />;
+          if (route.name === 'Promociones') {
+            return (
+              <MaterialCommunityIcons name={iconName} size={size} color={isFocused ? 'rgb(0, 122, 140)' : color} />
+            );
+          }
+          if (route.name === 'Ajustes') {
+            return (
+              <SimpleLineIcons name={iconName} size={size} color={isFocused ? 'rgb(0, 122, 140)' : color} />
+            );
+          }
+          if (route.name === 'Sucursal') {
+            return (
+              <Ionicons name={iconName} size={size} color={isFocused ? 'rgb(0, 122, 140)' : color} />
+            );
+          }
+
+          return <FontAwesome name={iconName} size={size} color={isFocused ? 'rgb(0, 122, 140)' : color} />;
         },
-        tabBarActiveTintColor: '#3179BB',
+        tabBarActiveTintColor: 'rgb(0, 122, 140)',
         tabBarInactiveTintColor: '#aaa',
         tabBarStyle: {
           backgroundColor: '#fff',
@@ -97,23 +91,15 @@ const MainTabs = () => {
       })}
     >
       <Tab.Screen
-        name="Inicio"
-        component={HomeScreen}
+        name="QR-Scanner"
+        component={ScanMe}
         options={{ headerShown: false }}
         listeners={{
           tabPress: () => setFocusedTab('Inicio'),
         }}
       />
-       <Tab.Screen
-        name="Mapa"
-        component={MapScreen}
-        options={{ headerShown: false }}
-        listeners={{
-          tabPress: () => setFocusedTab('Mapa'),
-        }}
-      />
       <Tab.Screen
-        name="Descuentos"
+        name="Promociones"
         component={PromotionsScreen}
         options={{ headerShown: false }}
         listeners={{
@@ -121,61 +107,39 @@ const MainTabs = () => {
         }}
       />
       <Tab.Screen
-        name="Credencial"
-        component={UserCredential}
+        name="Sucursal"
+        component={Branches}
+        options={{ headerShown: false }}
+        listeners={{
+          tabPress: () => setFocusedTab('Sucursal'),
+        }}
+      />
+      <Tab.Screen
+        name="Perfil"
+        component={ProfileScreen}
         options={{ headerShown: false }}
         listeners={{
           tabPress: () => setFocusedTab('Credencial'),
         }}
       />
-      <Tab.Screen
-        name="Más"
-        component={PlaceholderScreen}
-        options={{ headerShown: false }}
-        listeners={({ navigation }) => ({
-          tabPress: (e) => {
-            e.preventDefault();
-            navigation.dispatch(DrawerActions.toggleDrawer());
-          },
-        })}
-      />
-     <Tab.Screen
-        name="Perfil"
-        component={ProfileScreen}
-        options={{ tabBarButton: () => null, headerShown: false  }}
-      />
-      <Tab.Screen
-        name="Favoritos"
-        component={FavoritesScreen}
-        options={{ tabBarButton: () => null, headerShown: false }}
-      />
-      <Tab.Screen
-        name="Contacto"
-        component={ContactComponent}
-        options={{ tabBarButton: () => null, headerShown: false }}
-      />
-      <Tab.Screen
-        name="PuntosTuristicos"
-        component={TouristListScreen}
-        options={{ tabBarButton: () => null, headerShown: false  }}
-      />
       {/* <Tab.Screen
-        name="DetallePuntoTuristico"
-        component={TouristDetailScreen}
-        options={{ tabBarButton: () => null, headerShown: false  }}
-      /> */}
-      
+         name="Ajustes"
+         component={MapScreen}
+         options={{ headerShown: false }}
+         listeners={{
+           tabPress: () => setFocusedTab('Mapa'),
+         }}
+       />       */}
     </Tab.Navigator>
-    
+
   );
 };
 
 const MainAppScreen: React.FC = () => {
-  
+
 
   return (
     <Drawer.Navigator
-      drawerContent={(props: DrawerContentComponentProps) => <Sidebar {...props} />}
       screenOptions={{
         drawerPosition: 'right',
         drawerStyle: {

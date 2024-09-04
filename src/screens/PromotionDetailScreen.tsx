@@ -61,9 +61,9 @@ const PromotionDetailScreen: React.FC = () => {
     }
   }, [branches]);
   useEffect(() => {
-      if (branch) {
-        dispatch(fetchBranchRatings(branch.branch_id));
-      }
+    if (branch) {
+      dispatch(fetchBranchRatings(branch.branch_id));
+    }
   }, [branch]);
 
 
@@ -96,7 +96,7 @@ const PromotionDetailScreen: React.FC = () => {
   //mapa
   const handleGetDirections = () => {
     // console.log("dentro de la funcion de buscar ruta____________________",branch,currentPosition);n+
-    
+
     if (branch && currentPosition) {
       setRouteLoading(true)
       setRouteSelected(true)
@@ -108,8 +108,8 @@ const PromotionDetailScreen: React.FC = () => {
   };
 
 
-   // Favoritos
-   const isFavorite = (promotionId: number) => {
+  // Favoritos
+  const isFavorite = (promotionId: number) => {
     return userFavorites.includes(promotionId);
   };
 
@@ -132,14 +132,14 @@ const PromotionDetailScreen: React.FC = () => {
     setModalVisible(false);
     setSelectedImage(null);
   };
-  const Touchmarker = (branch:any) =>{
+  const Touchmarker = (branch: any) => {
     setSelectedBranch(branch);
     setRouteSelected(false)
   }
   const handleMapPress = () => {
     setSelectedBranch(null);
   };
-  
+
   const handleBackPress = () => {
     dispatch(clearBranchRatingsAction());
     navigation.goBack();
@@ -159,7 +159,7 @@ const PromotionDetailScreen: React.FC = () => {
     }
     return stars;
   };
-  
+
   const renderItem = ({ item }: { item: ImagePromotion }) => (
     <View style={styles.carouselItem}>
       <Image source={{ uri: item.image_path }} style={styles.carouselImage} onLoadStart={handleImageLoadStart} onLoadEnd={handleImageLoadEnd} />
@@ -180,9 +180,9 @@ const PromotionDetailScreen: React.FC = () => {
       // Agrega cualquier otro campo necesario
     };
     // console.log("agregar rating", rating);
-    
+
     // Ejemplo de despachar una acción de Redux:
-    if(branch && rating.user_id){
+    if (branch && rating.user_id) {
       dispatch(addRating(branch.branch_id, rating))
     }
     // Limpiar los campos después de enviar
@@ -192,113 +192,113 @@ const PromotionDetailScreen: React.FC = () => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-      <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-      <MaterialIcons name="arrow-back-ios-new" size={24} color="#3179BB" />
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
-      <MaterialCommunityIcons name="share-variant" size={24} color="#3179BB" />
-    </TouchableOpacity>
-    <TouchableOpacity style={styles.favoriteButton} onPress={() => handleFavoritePress(promotion)}>
-      <MaterialCommunityIcons name={isFavorite(promotion.promotion_id) ? 'cards-heart' : 'cards-heart-outline'} size={24} color="#3179BB" />
-    </TouchableOpacity>
+        <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+          <MaterialIcons name="arrow-back-ios-new" size={24} color="rgb(0, 122, 140)" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
+          <MaterialCommunityIcons name="share-variant" size={24} color="rgb(0, 122, 140)" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.favoriteButton} onPress={() => handleFavoritePress(promotion)}>
+          <MaterialCommunityIcons name={isFavorite(promotion.promotion_id) ? 'cards-heart' : 'cards-heart-outline'} size={24} color="rgb(0, 122, 140)" />
+        </TouchableOpacity>
       </View>
       {loading && (
-      <View style={styles.loaderImgLarge}>
-        <ActivityIndicator size="large" color="#F1AD3E" />
-      </View>
-    )}
-    <Image
-      source={{ uri: promoImage }}
-      style={styles.mainImage}
-      onLoadStart={handleImageLoadStart}
-      onLoadEnd={handleImageLoadEnd}
-    />
-    <View style={styles.thumbnailsContainer}>
-  {promotion.images.length > 1 && 
-    promotion.images.slice(1).map((item) => (
-      <TouchableOpacity key={item.image_id} onPress={() => openModal(item.image_path)}>
-        {loading && (
-          <View style={styles.loader}>
-            <ActivityIndicator size="large" color="#F1AD3E" />
-          </View>
-        )}
-        <Image source={{ uri: item.image_path }} style={styles.thumbnail} onLoadStart={handleImageLoadStart} onLoadEnd={handleImageLoadEnd} />
-      </TouchableOpacity>
-    ))
-  }
-</View>
-      
-      {/* Modal de imagenes */}
-      <Modal visible={modalVisible} transparent={true} animationType="slide" onRequestClose={closeModal}>
-      <View style={styles.modalContainer}>
-        <View style={styles.modalContainer2}>
-          <Carousel
-            loop
-            width={screenWidth}
-            height={screenWidth * 0.75}
-            autoPlay={true}
-            data={promotion.images}
-            scrollAnimationDuration={3000}
-            mode="parallax"
-            modeConfig={{
-              parallaxScrollingScale: 0.8,
-              parallaxScrollingOffset: 50,
-            }}
-            renderItem={renderItem}
-            style={styles.carousel}
-            panGestureHandlerProps={{
-              activeOffsetX: [-10, 10],
-            }}
-          />
-          <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
-            <MaterialCommunityIcons name="close" size={24} color="#f1ad3e" />
-          </TouchableOpacity>
-        </View>
-      </View>
-    </Modal>
-    <View style={styles.containerText}>
-    <Text style={styles.title}>{promotion.title}</Text>
-    <View style={styles.ratingContainerTitle}>
-      {renderStars(ratings.average_rating)}
-    </View>
-    <Text style={styles.descriptiontitle}>Descripción:</Text>
-    <Text style={styles.description}>{promotion.description}</Text>
-    <View style={styles.qrCode}>
-      <QRCode
-        value={promotion.qr_code}
-        size={screenWidth * 0.5}
-        color="black"
-        backgroundColor="white"
-      />
-      <Text style={styles.dates}>Validez:</Text>
-      <View style={styles.dates2}>
-        <Text style={styles.dates}>Desde: {promotion.start_date}</Text>
-        <Text style={styles.dates}>Hasta: {promotion.expiration_date}</Text>
-      </View>
-    </View>
-    </View>
-    <View style={styles.descriptiontitleMapCont}>
-    {branch && branch.latitude !== null && branch.longitude !== null && (
-        <View style={styles.descriptiontitleMap}>
-          <Text style={styles.descriptiontitleMap}>Ubicación:</Text>
-          <Text style={styles.descriptiontitleMap}>{branch.address}</Text>
-          <MapSingle
-            branch={branch}
-            currentPosition={currentPosition}
-            destination={destination}
-            routeSelected={routeSelected}
-            selectedBranch={selectedBranch}
-            ratings={ratings}
-            handleMapPress={handleMapPress}
-            handleGetDirections={handleGetDirections}
-            setSelectedBranch={setSelectedBranch}
-            routeLoading={routeLoading}
-            setRouteLoading={setRouteLoading}
-          />
+        <View style={styles.loaderImgLarge}>
+          <ActivityIndicator size="large" color="#F1AD3E" />
         </View>
       )}
-    </View>
-    {/* {branch && branch.latitude !== null && branch.longitude !== null && (
+      <Image
+        source={{ uri: promoImage }}
+        style={styles.mainImage}
+        onLoadStart={handleImageLoadStart}
+        onLoadEnd={handleImageLoadEnd}
+      />
+      <View style={styles.thumbnailsContainer}>
+        {promotion.images.length > 1 &&
+          promotion.images.slice(1).map((item) => (
+            <TouchableOpacity key={item.image_id} onPress={() => openModal(item.image_path)}>
+              {loading && (
+                <View style={styles.loader}>
+                  <ActivityIndicator size="large" color="#F1AD3E" />
+                </View>
+              )}
+              <Image source={{ uri: item.image_path }} style={styles.thumbnail} onLoadStart={handleImageLoadStart} onLoadEnd={handleImageLoadEnd} />
+            </TouchableOpacity>
+          ))
+        }
+      </View>
+
+      {/* Modal de imagenes */}
+      <Modal visible={modalVisible} transparent={true} animationType="slide" onRequestClose={closeModal}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContainer2}>
+            <Carousel
+              loop
+              width={screenWidth}
+              height={screenWidth * 0.75}
+              autoPlay={true}
+              data={promotion.images}
+              scrollAnimationDuration={3000}
+              mode="parallax"
+              modeConfig={{
+                parallaxScrollingScale: 0.8,
+                parallaxScrollingOffset: 50,
+              }}
+              renderItem={renderItem}
+              style={styles.carousel}
+              panGestureHandlerProps={{
+                activeOffsetX: [-10, 10],
+              }}
+            />
+            <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
+              <MaterialCommunityIcons name="close" size={24} color="#f1ad3e" />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      <View style={styles.containerText}>
+        <Text style={styles.title}>{promotion.title}</Text>
+        <View style={styles.ratingContainerTitle}>
+          {renderStars(ratings.average_rating)}
+        </View>
+        <Text style={styles.descriptiontitle}>Descripción:</Text>
+        <Text style={styles.description}>{promotion.description}</Text>
+        <View style={styles.qrCode}>
+          <QRCode
+            value={promotion.qr_code}
+            size={screenWidth * 0.5}
+            color="black"
+            backgroundColor="white"
+          />
+          <Text style={styles.dates}>Validez:</Text>
+          <View style={styles.dates2}>
+            <Text style={styles.dates}>Desde: {promotion.start_date}</Text>
+            <Text style={styles.dates}>Hasta: {promotion.expiration_date}</Text>
+          </View>
+        </View>
+      </View>
+      <View style={styles.descriptiontitleMapCont}>
+        {branch && branch.latitude !== null && branch.longitude !== null && (
+          <View style={styles.descriptiontitleMap}>
+            <Text style={styles.descriptiontitleMap}>Ubicación:</Text>
+            <Text style={styles.descriptiontitleMap}>{branch.address}</Text>
+            <MapSingle
+              branch={branch}
+              currentPosition={currentPosition}
+              destination={destination}
+              routeSelected={routeSelected}
+              selectedBranch={selectedBranch}
+              ratings={ratings}
+              handleMapPress={handleMapPress}
+              handleGetDirections={handleGetDirections}
+              setSelectedBranch={setSelectedBranch}
+              routeLoading={routeLoading}
+              setRouteLoading={setRouteLoading}
+            />
+          </View>
+        )}
+      </View>
+      {/* {branch && branch.latitude !== null && branch.longitude !== null && (
       <View style={styles.descriptiontitleMap}>
         <Text style={styles.descriptiontitleMap}>Ubicación:</Text>
         <Text style={styles.descriptiontitleMap}>{branch.address}</Text>
@@ -342,7 +342,7 @@ const PromotionDetailScreen: React.FC = () => {
           </Marker>
           {currentPosition && (
             <Marker coordinate={currentPosition} title="Mi ubicación" pinColor="blue">
-              <MaterialCommunityIcons name="map-marker-radius" size={40} color="#3179BB" />
+              <MaterialCommunityIcons name="map-marker-radius" size={40} color="rgb(0, 122, 140)" />
             </Marker>
           )}
           {destination && currentPosition && (
@@ -354,7 +354,7 @@ const PromotionDetailScreen: React.FC = () => {
               destination={destination}
               apikey={GOOGLE_MAPS_APIKEY!}
               strokeWidth={3}
-              strokeColor="#3179BB"
+              strokeColor="rgb(0, 122, 140)"
               timePrecision="none"
               precision="high"
               onReady={() => {
@@ -371,18 +371,18 @@ const PromotionDetailScreen: React.FC = () => {
         </View>
       </View>
     )} */}
-     {/* Sección de valoraciones */}
-     <View style={styles.ratingsContainer}>
+      {/* Sección de valoraciones */}
+      <View style={styles.ratingsContainer}>
         <Text style={styles.sectionTitle}>Valoraciones:</Text>
         {ratings.ratings.map((rating) => (
           <View key={rating.id} style={styles.ratingItem}>
             <View style={styles.starsTextContainer}>
               <Text style={styles.starsContainer}>{renderStars(rating.rating)} </Text>
-              </View>
+            </View>
             <Text style={styles.comment}>{rating.comment}</Text>
-            {rating.first_name &&  <Text style={styles.commentDate}>{rating.first_name}</Text>}
-            {rating.created_at &&  <Text style={styles.commentDate}>{new Date(rating.created_at).toLocaleDateString()}</Text>}
-           
+            {rating.first_name && <Text style={styles.commentDate}>{rating.first_name}</Text>}
+            {rating.created_at && <Text style={styles.commentDate}>{new Date(rating.created_at).toLocaleDateString()}</Text>}
+
           </View>
         ))}
       </View>
@@ -413,29 +413,29 @@ const PromotionDetailScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    height:screenHeight,
+    height: screenHeight,
     backgroundColor: '#fff',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     // padding: 16,
-    // backgroundColor: '#3179BB',
+    // backgroundColor: 'rgb(0, 122, 140)',
   },
   iconButton: {
     padding: 8,
   },
   mainImage: {
-    zIndex:-1,
+    zIndex: -1,
     width: screenWidth,
     height: screenWidth * 0.75,
     resizeMode: 'cover',
   },
   thumbnailsContainer: {
-    display:'flex',
-    flexDirection:'row',
+    display: 'flex',
+    flexDirection: 'row',
     marginTop: 16,
-    marginBottom:16,
+    marginBottom: 16,
     paddingHorizontal: 16,
   },
   thumbnail: {
@@ -501,7 +501,7 @@ const styles = StyleSheet.create({
     shadowRadius: 1,
     elevation: 3,
   },
-  loaderImgLarge:{
+  loaderImgLarge: {
     position: 'absolute',
     top: '8%',
     left: '45%',
@@ -545,16 +545,16 @@ const styles = StyleSheet.create({
     padding: 15,
     color: '#f1ad3e',
   },
-  ratingContainerTitle:{
-    marginVertical:20,
-    width:'100%',
-    display:'flex',
-    flexDirection:'row',
+  ratingContainerTitle: {
+    marginVertical: 20,
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'row',
     // justifyContent:'flex-end',
-    justifyContent:'center'
+    justifyContent: 'center'
   },
   qrCode: {
-    height:screenHeight *0.35,
+    height: screenHeight * 0.35,
     display: 'flex',
     marginTop: 20,
     width: '90%',
@@ -564,13 +564,13 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginVertical: 20,
   },
-  containerText:{
-    padding:20
+  containerText: {
+    padding: 20
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#3179BB',
+    color: 'rgb(0, 122, 140)',
     marginBottom: 10,
     textAlign: 'center',
   },
@@ -600,67 +600,67 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#888',
   },
-  descriptiontitleMapCont:{
+  descriptiontitleMapCont: {
     maxHeight: 600
   },
-descriptiontitleMap:{
-  padding:10,
-  fontSize: 14,
-  color: '#555',
-},
+  descriptiontitleMap: {
+    padding: 10,
+    fontSize: 14,
+    color: '#555',
+  },
 
-ratingsContainer: {
-  padding: 20,
-},
-ratingItem: {
-  marginBottom: 10,
-},
-starsTextContainer:{
-  display:'flex',
+  ratingsContainer: {
+    padding: 20,
+  },
+  ratingItem: {
+    marginBottom: 10,
+  },
+  starsTextContainer: {
+    display: 'flex',
 
-},
-starsContainer: {
-  flexDirection: 'row',
-},
-comment: {
-  fontSize: 16,
-  color: '#555',
-  marginTop: 5,
-},
-commentDate: {
-  fontSize: 14,
-  color: '#888',
-  marginTop: 5,
-},
-sectionTitle: {
-  fontSize: 14,
-  fontWeight: 'bold',
-  marginBottom: 10,
-},
-newRatingContainer: {
+  },
+  starsContainer: {
+    flexDirection: 'row',
+  },
+  comment: {
+    fontSize: 16,
+    color: '#555',
+    marginTop: 5,
+  },
+  commentDate: {
+    fontSize: 14,
+    color: '#888',
+    marginTop: 5,
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  newRatingContainer: {
 
-  padding: 20,
-},
-input: {
-  height: 40,
-  borderColor: '#ccc',
-  borderWidth: 1,
-  borderRadius: 5,
-  paddingHorizontal: 10,
-  marginTop: 10,
-  marginBottom: 10,
-},
-button: {
-  backgroundColor: '#3179BB',
-  padding: 10,
-  borderRadius: 5,
-  alignItems: 'center',
-  marginBottom:10
-},
-buttonText: {
-  color: '#fff',
-  fontSize: 16,
-},
+    padding: 20,
+  },
+  input: {
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  button: {
+    backgroundColor: 'rgb(0, 122, 140)',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginBottom: 10
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
 });
 
 export default PromotionDetailScreen;

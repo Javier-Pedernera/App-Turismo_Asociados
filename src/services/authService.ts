@@ -19,21 +19,21 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL;
     }
   };
   
-export const registerUser = async (userData: UserData) => {
-  try {
-    // console.log("datos del formulario en el registro",userData);
+// export const registerUser = async (userData: UserData) => {
+//   try {
+//     // console.log("datos del formulario en el registro",userData);
     
-    const response = await axios.post(`${API_URL}/signup`, userData);
-    console.log("respuesta del registro",response);
+//     const response = await axios.post(`${API_URL}/signup`, userData);
+//     console.log("respuesta del registro",response);
     
-    if(response.status === 201 ){
+//     if(response.status === 201 ){
 
-    }
-    return response;
-  } catch (error) {
-    throw new Error('Registration failed');
-  }
-};
+//     }
+//     return response;
+//   } catch (error) {
+//     throw new Error('Registration failed');
+//   }
+// };
 
 export const logoutUser = () => {
   return async (dispatch: Dispatch) => {

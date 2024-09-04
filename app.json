@@ -43,6 +43,12 @@
     },
     "plugins": [
       [
+        "expo-font",
+        {
+          "fonts": ["./assets/fonts/Buckwheat-TC-Sans-Rg.otf"]
+        }
+      ],
+      [
         "expo-barcode-scanner",
         {
           "cameraPermission": "Allow $(PRODUCT_NAME) to access camera."
@@ -54,7 +60,8 @@
           "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
         }
       ],
-      "expo-router"
+      "expo-router",
+      "expo-font"
     ],
     "extra": {
       "router": {

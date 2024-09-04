@@ -1,13 +1,14 @@
 import { Dispatch } from 'redux';
-import { setBranches, clearBranches, fetchBranchRatingsRequest, fetchBranchRatingsSuccess, fetchBranchRatingsFailure, addBranchRating, editBranchRating, deleteBranchRating, clearBranchRatings } from '../reducers/branchReducer';
+import { setBranches, clearBranches, fetchBranchRatingsRequest, fetchBranchRatingsSuccess, fetchBranchRatingsFailure, addBranchRating, editBranchRating, deleteBranchRating, clearBranchRatings, addBranchRequest, addBranchSuccess, addBranchFailure, updateBranchSuccess, updateBranchFailure, updateBranchRequest } from '../reducers/branchReducer';
 import { RootState } from '../store/store';
 import axios from 'axios';
 import { Branch, Rating, RatingBranch } from '../types/types';
+import { BranchCreate } from '../../components/BranchForm';
 
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
-export const fetchBranches = () => {
+export const fetchBranches = (partnerId: number) => {
   return async (dispatch: Dispatch, getState: () => RootState) => {
     try {
       const state = getState();
@@ -16,17 +17,67 @@ export const fetchBranches = () => {
       if (!token) {
         throw new Error('User not authenticated');
       }
-
-      const response = await axios.get<Branch[]>(`${API_URL}/branches`);
-      // console.log(response);
+      const response = await axios.get<Branch[]>(`${API_URL}/partners/${partnerId}/branches`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      });
       
       dispatch(setBranches(response.data));
     } catch (error) {
-      throw error;
+      console.error('Error fetching branches:', error);
+      throw error; 
     }
   };
 };
+export const addBranch = (branchData: any) => {
+  return async (dispatch: Dispatch, getState: () => RootState) => {
+    dispatch(addBranchRequest());
+    try {
+      const state = getState();
+      const token = state.user.accessToken;
 
+      if (!token) {
+        throw new Error('User not authenticated');
+      }
+
+      const response = await axios.post<any>(`${API_URL}/branches`, branchData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log("respuesta en la action",response);
+      
+      dispatch(addBranchSuccess(response.data));
+    } catch (error: any) {
+      dispatch(addBranchFailure(error.toString()));
+    }
+  };
+};
+export const updateBranch = (branchId: number, branchData: BranchCreate) => {
+  return async (dispatch: Dispatch, getState: () => RootState) => {
+    dispatch(updateBranchRequest());
+    try {
+      const state = getState();
+      const token = state.user.accessToken;
+
+      if (!token) {
+        throw new Error('User not authenticated');
+      }
+
+      const response = await axios.put(`${API_URL}/branches/${branchId}`, branchData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log('Respuesta de actualización de sucursal:', response);
+      dispatch(updateBranchSuccess(response.data));
+    } catch (error: any) {
+      console.error('Error al actualizar la sucursal:', error);
+      dispatch(updateBranchFailure(error.toString()));
+    }
+  };
+};
 export const clearAllBranches = () => {
   return (dispatch: Dispatch) => {
     dispatch(clearBranches());

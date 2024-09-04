@@ -21,32 +21,32 @@ const ImageCompressor: React.FC<ImageCompressorProps> = ({ onImageCompressed, in
     });
 
     if (!result.canceled) {
-        const compressedImage = await ImageManipulator.manipulateAsync(
-          result.assets[0].uri,
-          [{ resize: { width: 300, height: 300 } }], // Redimensiona la imagen a 100x100 px
-          { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG } // Ajusta la calidad de compresión si es necesario
-        );
-  
-        // Obtener el tamaño del archivo comprimido
-        const fileInfo = await FileSystem.getInfoAsync(compressedImage.uri);
-  
-        if (fileInfo.exists && !fileInfo.isDirectory) {
-          const fileSize = fileInfo.size || 0;
-  
-          const base64 = await FileSystem.readAsStringAsync(compressedImage.uri, {
-            encoding: FileSystem.EncodingType.Base64,
-          });
-            // console.log("imagen en base 64------------------------", base64);
-            
-          // Actualizar la vista y pasar la imagen comprimida en base64
-          setImageUri(`${compressedImage.uri}?timestamp=${new Date().getTime()}`);
-          onImageCompressed(base64);
+      const compressedImage = await ImageManipulator.manipulateAsync(
+        result.assets[0].uri,
+        [{ resize: { width: 300, height: 300 } }],
+        { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+      );
+
+      // Obtener el tamaño del archivo comprimido
+      const fileInfo = await FileSystem.getInfoAsync(compressedImage.uri);
+
+      if (fileInfo.exists && !fileInfo.isDirectory) {
+        const fileSize = fileInfo.size || 0;
+
+        const base64 = await FileSystem.readAsStringAsync(compressedImage.uri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        // console.log("imagen en base 64------------------------", base64);
+
+        // Actualizar la vista y pasar la imagen comprimida en base64
+        setImageUri(`${compressedImage.uri}?timestamp=${new Date().getTime()}`);
+        onImageCompressed(base64);
         //   Alert.alert('Imagen comprimida', `Tamaño: ${fileSize} bytes`);
-        } else {
-          Alert.alert('Error', 'No se pudo obtener el tamaño del archivo.');
-        }
+      } else {
+        Alert.alert('Error', 'No se pudo obtener el tamaño del archivo.');
       }
-    };
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -55,7 +55,7 @@ const ImageCompressor: React.FC<ImageCompressorProps> = ({ onImageCompressed, in
         {imageUri && <Image source={{ uri: imageUri }} style={styles.imagePreview} />}
       </TouchableOpacity>
 
-      
+
     </View>
   );
 };
@@ -63,12 +63,12 @@ const ImageCompressor: React.FC<ImageCompressorProps> = ({ onImageCompressed, in
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 0,
   },
   imagePickerButton: {
-    // backgroundColor: '#3179BB',
-    
-    padding: 10,
+    // backgroundColor: 'rgb(0, 122, 140)',
+
+    padding: 0,
     borderRadius: 50,
     alignItems: 'center',
     marginBottom: 10,
@@ -79,8 +79,8 @@ const styles = StyleSheet.create({
   },
   imagePreview: {
     alignSelf: 'center',
-    borderColor: '#3179bb',
-    borderWidth: 1,
+    borderColor: 'rgba(172, 208, 213,0.2)',
+    borderWidth: 0.5,
     width: 100,
     height: 100,
     borderRadius: 50,

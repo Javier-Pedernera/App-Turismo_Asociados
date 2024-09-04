@@ -1,32 +1,33 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, ScrollView, TextInput, FlatList, ActivityIndicator, Platform } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { Promotion, ImagePromotion as PromotionImage, UserData } from '../redux/types/types';
+import { Promotion, PromotionUpdate, ImagePromotion as UserData } from '../redux/types/types';
 import { AppDispatch } from '../redux/store/store';
-import { fetchPromotions } from '../redux/actions/promotionsActions';
 import { RootStackParamList } from '../navigation/AppNavigator';
-import Checkbox from 'expo-checkbox';
 import Modal from 'react-native-modal';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { fetchAllCategories, fetchUserCategories } from '../redux/actions/categoryActions';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { getMemoizedPromotions } from '../redux/selectors/promotionSelectors';
 import { getMemoizedAllCategories, getMemoizedUserCategories } from '../redux/selectors/categorySelectors';
-import {  getMemoizedUserData } from '../redux/selectors/userSelectors';
-import {  fetchUserFavorites } from '../redux/actions/userActions';
+import { getMemoizedUserData } from '../redux/selectors/userSelectors';
+import { fetchUserFavorites } from '../redux/actions/userActions';
 import PromotionCard from '../components/PromotionCard';
 import Loader from '../components/Loader';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import PromotionForm from '../components/PromotionForm';
+import { getMemoizedCountries, getMemoizedRoles, getMemoizedStates } from '../redux/selectors/globalSelectors';
+import { updatePromotion } from '../redux/reducers/promotionReducer';
+import { deletePromotion } from '../redux/actions/promotionsActions';
+import EditPromotionForm from '../components/EditPromotionForm';
 
 const { width: screenWidth } = Dimensions.get('window');
 
 const PromotionsScreen: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const promotions = useSelector(getMemoizedPromotions);
-  const categories = useSelector(getMemoizedAllCategories);
+  // const categories = useSelector(getMemoizedAllCategories);
   const user_categories = useSelector(getMemoizedUserCategories);
-  const user = useSelector(getMemoizedUserData) as UserData;
+  const user = useSelector(getMemoizedUserData);
   const [filteredPromotions, setFilteredPromotions] = useState<Promotion[]>(promotions);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const [keyword, setKeyword] = useState('');
@@ -37,7 +38,16 @@ const PromotionsScreen: React.FC = () => {
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const statuses = useSelector(getMemoizedStates);
+  const countries = useSelector(getMemoizedCountries);
+  const roles = useSelector(getMemoizedRoles);
+  const [selectedPromotion, setSelectedPromotion] = useState<Promotion | null>(null);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  // console.log("statuses en card", statuses);
+  // console.log("countries en card", countries);
+  // console.log("roles en card", roles);
 
   useEffect(() => {
     const loadData = async () => {
@@ -48,17 +58,17 @@ const PromotionsScreen: React.FC = () => {
           await dispatch(fetchUserFavorites());
         }
         await dispatch(fetchAllCategories());
-        await dispatch(fetchPromotions());
       } finally {
         setLoading(false);
       }
     };
-  
+
     loadData();
   }, [dispatch, user]);
 
   useEffect(() => {
-    setFilteredPromotions(promotions);
+    const activePromotions = promotions.filter(promotion => promotion.status?.name !== 'deleted');
+    setFilteredPromotions(activePromotions);
   }, [promotions]);
 
   const handlePress = useCallback((promotion: Promotion) => {
@@ -153,118 +163,71 @@ const PromotionsScreen: React.FC = () => {
     setFilteredPromotions(promotions);
   }, [promotions]);
 
+  const handleEditPromotion = (promotion: Promotion) => {
+    setSelectedPromotion(promotion);
+    setIsEditModalVisible(true);
+  };
+
+  const handleDeletePromotion = async (promotionId: number) => {
+    // Busca el estado "deleted"
+    const deletedState = statuses.find(status => status.name === 'deleted');
+    if (deletedState) {
+      const status_id = deletedState.id;
+      // Despacha la acción para actualizar la promoción con el estado "deleted"
+      await dispatch(deletePromotion(promotionId, status_id));
+    } else {
+      console.error('Estado "deleted" no encontrado');
+    }
+  };
+  const handleCloseEditModal = () => {
+    setIsEditModalVisible(false);
+    setSelectedPromotion(null);
+  };
+
   return (
     <View style={styles.gradient}
     >
       <View style={styles.btns}>
-        <TouchableOpacity style={styles.filterButton} onPress={() => setIsModalVisible(true)}>
-          <MaterialCommunityIcons name="filter-outline" size={24} color="#fff" />
-          <Text style={styles.filterButtonText}>Mostrar Filtros</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.clearFiltersButton} onPress={clearFilters}>
-          <MaterialCommunityIcons name="filter-remove-outline" size={24} color="#fff" />
-          <Text style={styles.clearFiltersButtonText}>Limpiar Filtros</Text>
+        <TouchableOpacity style={styles.createButton} onPress={() => setIsCreateModalVisible(true)}>
+          <MaterialIcons name="assignment-add" size={24} color="#fff" />
+          <Text style={styles.createButtonText}>Nueva</Text>
         </TouchableOpacity>
       </View>
       <ScrollView contentContainerStyle={styles.container}>
-        <Modal isVisible={isModalVisible} style={styles.modal}>
+
+        <Modal isVisible={isCreateModalVisible} style={styles.modal}>
           <View style={styles.modalContent}>
-            <View style={styles.misPrefe}>
-              <Checkbox
-                style={styles.checkbox}
-                value={filterByPreferences}
-                onValueChange={setFilterByPreferences}
+            <PromotionForm onClose={() => setIsCreateModalVisible(false)} />
+          </View>
+        </Modal>
+        <Modal isVisible={isEditModalVisible} style={styles.modal}>
+          <View style={styles.modalContent}>
+            {selectedPromotion && (
+              <EditPromotionForm
+                promotion={selectedPromotion}
+                onClose={handleCloseEditModal}
               />
-              <Text style={styles.labelMisprefer}>Filtrar por mis preferencias</Text>
-            </View>
-            <FlatList
-              data={categories}
-              keyExtractor={(item) => item.category_id.toString()}
-              numColumns={2}
-              renderItem={({ item }) => (
-                <View style={styles.checkboxContainer}>
-                  <Checkbox
-                    style={styles.checkbox}
-                    value={selectedCategories.includes(item.category_id)}
-                    onValueChange={() => toggleCategory(item.category_id)}
-                  />
-                  <Text style={styles.label}>{item.name}</Text>
-                </View>
-              )}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Palabra clave"
-              value={keyword}
-              placeholderTextColor="#888"
-              onChangeText={setKeyword}
-            />
-            <View style={styles.containerDate}>
-              {!showStartDatePicker && (
-                <TouchableOpacity onPress={() => setShowStartDatePicker(true)} style={styles.inputdate}>
-                  <Text style={styles.textDate}>
-                    {startDate ? formatDateString(startDate) : 'Fecha de Inicio'}
-                  </Text>
-                </TouchableOpacity>
-              )}
-              {showStartDatePicker && (
-                <View>
-                  <DateTimePicker
-                    value={startDate || new Date()}
-                    mode="date"
-                    display="spinner"
-                    onChange={handleStartDateChange}
-                  />
-                  {Platform.OS === 'ios' && (
-                    <TouchableOpacity onPress={confirmStartDate} style={styles.confirmButton}>
-                      <Text style={styles.confirmButtonText}>Confirmar fecha de inicio</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              )}
-              {!showEndDatePicker && (
-                <TouchableOpacity onPress={() => setShowEndDatePicker(true)} style={styles.inputdate}>
-                  <Text style={styles.textDate}>
-                    {endDate ? formatDateString(endDate) : 'Fecha de Fin'}
-                  </Text>
-                </TouchableOpacity>
-              )}
-              {showEndDatePicker && (
-                <View>
-                  <DateTimePicker
-                    value={endDate || new Date()}
-                    mode="date"
-                    display="spinner"
-                    onChange={handleEndDateChange}
-                  />
-                  {Platform.OS === 'ios' && (
-                    <TouchableOpacity onPress={confirmEndDate} style={styles.confirmButton}>
-                      <Text style={styles.confirmButtonText}>Confirmar fecha de fin</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              )}
-            </View>
-            <TouchableOpacity style={styles.filteraplyButton} onPress={applyFilters}>
-              <Text style={styles.filterButtonText}>Aplicar Filtros</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.closeButton} onPress={() => setIsModalVisible(false)}>
-              <Text style={styles.filterButtonText}>Cerrar</Text>
-            </TouchableOpacity>
+            )}
           </View>
         </Modal>
         {loading ? (
           <Loader></Loader>
-        ) : (
-          filteredPromotions.map((promotion: Promotion, index:number) => (
+        ) : (filteredPromotions.length > 0 ? (
+          filteredPromotions.map((promotion: Promotion, index: number) => (
             <PromotionCard
               key={promotion.promotion_id}
               promotion={promotion}
               index={index}
               handlePress={handlePress}
+              handleEdit={handleEditPromotion}
+              handleDelete={handleDeletePromotion}
             />
           ))
-        )}
+        ) : (
+          <View style={styles.noPromotionsContainer}>
+            <Text style={styles.noPromotionsText}>No hay promociones creadas.</Text>
+          </View>
+        ))}
       </ScrollView>
     </View>
   );
@@ -283,40 +246,32 @@ const styles = StyleSheet.create({
   },
   btns: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
+    bottom: 0,
+    left: 20,
+    // right: 0,
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     alignItems: 'center', // Fondo blanco para la barra de botones
     paddingVertical: 10,
-    // borderTopWidth: 1,
-    // borderTopColor: '#ddd',
-    borderRadius:25,
-    // shadowColor: '#000',
-    // shadowOffset: { width: 0, height: -1 },
-    // shadowOpacity: 0.1,
-    // shadowRadius: 5,
-    // elevation: 2,
-    zIndex:1,
-    // backgroundColor: 'rgba(255, 252, 247, 0.1)'
+    borderRadius: 25,
+    zIndex: 1,
   },
-  labelMisprefer:{
+  labelMisprefer: {
     color: '#f1ad3e',
     marginLeft: 8,
-    fontWeight:'bold'
+    fontWeight: 'bold'
   },
-  misPrefe:{
-    
-    display:'flex',
-    flexDirection:'row',
-    width:'70%',
-    marginBottom:20,
-    alignSelf:'center'
+  misPrefe: {
+
+    display: 'flex',
+    flexDirection: 'row',
+    width: '70%',
+    marginBottom: 20,
+    alignSelf: 'center'
   },
   checkbox: {
     borderRadius: 8,
-    borderColor: 'rgba(49, 121, 187,0.5)',
+    borderColor: 'rgb(172, 208, 213)',
   },
   checkboxContainer: {
     height: 20,
@@ -324,26 +279,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
     width: '50%',
-    paddingHorizontal: 5, 
+    paddingHorizontal: 5,
   },
   label: {
     marginLeft: 8,
   },
   input: {
-    alignSelf:'center',
-    width:'70%',
+    alignSelf: 'center',
+    width: '70%',
     backgroundColor: '#fff',
     borderRadius: 8,
     padding: 10,
     marginTop: 10,
-    borderColor: 'rgba(49, 121, 187,0.5)',
+    borderColor: 'rgb(172, 208, 213)',
     borderWidth: 1,
-    color:"#000"
+    color: "#000"
   },
   filteraplyButton: {
-    width:'60%',
-    alignSelf:'center',
-    backgroundColor: '#3179BB',
+    width: '60%',
+    alignSelf: 'center',
+    backgroundColor: 'rgb(0, 122, 140)',
     padding: 10,
     borderRadius: 8,
     alignItems: 'center',
@@ -357,8 +312,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   filterButton: {
-    width:'45%',
-    alignSelf:'center',
+    width: '45%',
+    alignSelf: 'center',
     backgroundColor: 'rgba(49, 121, 187, 1)',
     padding: 4,
     borderRadius: 8,
@@ -377,7 +332,20 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginLeft: 5,
   },
-  
+  createButton: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F1AD3E',
+    padding: 10,
+    height: 70,
+    width: 70,
+    borderRadius: 50,
+  },
+  createButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
   promotionCard: {
     backgroundColor: 'rgba(255, 255, 255, 0)',
     borderRadius: 10,
@@ -392,7 +360,7 @@ const styles = StyleSheet.create({
   promotionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#3179BB',
+    color: 'rgb(0, 122, 140)',
   },
   promotionDates: {
     marginTop: 10,
@@ -401,7 +369,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: 'rgba(49, 121, 187,0.5)',
+    backgroundColor: 'rgb(172, 208, 213)',
     marginHorizontal: 15,
   },
   carouselItem: {
@@ -416,32 +384,32 @@ const styles = StyleSheet.create({
   carousel: {
     alignSelf: 'center',
   },
-  discountContainerText:{
-    width:'80%',
-    
+  discountContainerText: {
+    width: '80%',
+
   },
   discountContainer: {
     // height:'50%',
-    display:'flex',
-    flexDirection:'column',
-    justifyContent:'space-evenly',
-    alignContent:'center',
-    alignItems:'center',
-    width:'20%',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-evenly',
+    alignContent: 'center',
+    alignItems: 'center',
+    width: '20%',
   },
-  discountContText:{
+  discountContText: {
     backgroundColor: '#FF6347',
-    width:'85%',
+    width: '85%',
     borderRadius: 10,
     paddingVertical: 5,
     paddingHorizontal: 8,
-    textAlign:'center'
+    textAlign: 'center'
   },
   discountText: {
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
-    
+
   },
   modal: {
     justifyContent: 'flex-end',
@@ -450,12 +418,12 @@ const styles = StyleSheet.create({
   modalContent: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     padding: 20,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    // borderTopLeftRadius: 20,
+    // borderTopRightRadius: 20,
   },
   closeButton: {
-    width:'60%',
-    alignSelf:'center',
+    width: '60%',
+    alignSelf: 'center',
     backgroundColor: '#f1ad3e',
     padding: 10,
     borderRadius: 8,
@@ -469,8 +437,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   clearFiltersButton: {
-    width:'45%',
-    alignSelf:'center',
+    width: '45%',
+    alignSelf: 'center',
     backgroundColor: '#f1ad3e',
     padding: 4,
     borderRadius: 8,
@@ -487,16 +455,16 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     marginLeft: 5,
-  }, 
+  },
   containerDate: {
     padding: 20,
   },
   inputdate: {
-    alignSelf:'center',
-    width:'80%',
+    alignSelf: 'center',
+    width: '80%',
     padding: 10,
     borderRadius: 8,
-    borderColor: 'rgba(49, 121, 187,0.5)',
+    borderColor: 'rgb(172, 208, 213)',
     borderWidth: 1,
     marginBottom: 10,
     backgroundColor: '#fff',
@@ -522,32 +490,37 @@ const styles = StyleSheet.create({
   },
   loader: {
     justifyContent: 'flex-start',
-    alignContent:'flex-start',
+    alignContent: 'flex-start',
     alignItems: 'center',
-    alignSelf:'flex-start',
+    alignSelf: 'flex-start',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 3,
     elevation: 5,
   },
-  starCont:{
-    marginTop:20,
-    zIndex:10,
+  starCont: {
+    marginTop: 20,
+    zIndex: 10,
   },
-  star:{
+  star: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 0.5,
     elevation: 1,
-  }
+  },
+  noPromotionsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 50,
+  },
+  noPromotionsText: {
+    fontSize: 18,
+    color: '#888',
+    textAlign: 'center',
+  },
 });
 
 export default PromotionsScreen;
-
- // console.log("categorias del usuario",user_categories);
-//  console.log("favoritos del usuario en promotions screen",userFavorites);
-  // console.log("filterByPreferences",filterByPreferences);
-  // console.log("selectedCategories",selectedCategories);
-  // console.log("filteredPromotions",filteredPromotions);

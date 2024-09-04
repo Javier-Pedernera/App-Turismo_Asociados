@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from '../screens/HomeScreen';
 import LoginScreen from '../screens/LoginScreen';
-import RegisterScreen from '../screens/RegisterScreen';
+// import RegisterScreen from '../screens/RegisterScreen';
 import MainAppScreen from '../screens/MainAppScreen';
 import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
 import ProfileScreen from '../screens/ProfileScreen';
@@ -16,16 +16,16 @@ import ResetPasswordScreen from '../screens/ResetPasswordScreen';
 import PromotionDetailScreen from '../screens/PromotionDetailScreen';
 import { Promotion, TouristPoint } from '../redux/types/types';
 import { getMemoizedAccessToken } from '../redux/selectors/userSelectors';
-import FavoritesScreen from '../screens/FavoritesScreen';
-import TouristDetailScreen from '../screens/TouristDetailScreen';
+
+
 
 export type RootStackParamList = {
   MainAppScreen: undefined;
   Home: undefined;
   Login: undefined;
-  Register: undefined;
+  // Register: undefined;
   ForgotPassword: undefined;
-  Profile: undefined; 
+  Profile: undefined;
   FavoritesScreen: undefined;
   PromotionsScreen: undefined;
   ResetPassword: undefined;
@@ -38,7 +38,7 @@ const Stack = createStackNavigator<RootStackParamList>();
 const AppNavigator = () => {
   const accessToken = useSelector(getMemoizedAccessToken);
   const isAuthenticated = !!accessToken;
-// console.log("isAuthenticated en appnavigator",isAuthenticated);
+  // console.log("isAuthenticated en appnavigator",isAuthenticated);
 
   return (
     <NavigationContainer>
@@ -47,7 +47,7 @@ const AppNavigator = () => {
           <>
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="Register" component={RegisterScreen} />
+            {/* <Stack.Screen name="Register" component={RegisterScreen} /> */}
             <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
             <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
           </>
@@ -67,39 +67,19 @@ const AppNavigator = () => {
               options={{
                 headerShown: false,
                 headerTitle: 'Perfil',
-                headerStyle: { backgroundColor: '#3179BB' },
+                headerStyle: { backgroundColor: 'rgb(0, 122, 140)' },
                 headerTintColor: '#fff',
               }}
             />
             <Stack.Screen
-              name="FavoritesScreen"
-              component={FavoritesScreen}
-              options={{
-                headerShown: false,
-                headerTitle: 'Promociones Favoritas',
-                headerStyle: { backgroundColor: '#3179BB' },
-                headerTintColor: '#fff',
-              }}
-            />
-            <Stack.Screen
-              name="TouristDetailScreen"
-              component={TouristDetailScreen}
+              name="PromotionDetail"
+              component={PromotionDetailScreen}
               options={{
                 headerShown: false,
                 headerTitle: "Detalles",
-                headerStyle: { backgroundColor: '#3179BB' },
+                headerStyle: { backgroundColor: 'rgb(0, 122, 140)' },
                 headerTintColor: '#fff',
-            }}
-            />
-            <Stack.Screen 
-              name="PromotionDetail" 
-              component={PromotionDetailScreen} 
-              options={{
-                headerShown: false,
-                headerTitle: "Detalles",
-                headerStyle: { backgroundColor: '#3179BB' },
-                headerTintColor: '#fff',
-            }}/>
+              }} />
           </>
         )}
       </Stack.Navigator>

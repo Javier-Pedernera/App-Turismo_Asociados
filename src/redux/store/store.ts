@@ -4,7 +4,8 @@ import categoryReducer from '../reducers/categoryReducer';
 import promotionReducer from '../reducers/promotionReducer';
 import branchReducer from '../reducers/branchReducer';
 import touristPointReducer from '../reducers/touristPointReducer';
-import countriesReducer from '../reducers/redux/countriesReducer';
+// import countriesReducer from '../reducers/redux/countriesReducer';
+import globalReducer from '../reducers/redux/globalReducer';
 
 const store = configureStore({
   reducer: {
@@ -13,7 +14,8 @@ const store = configureStore({
     promotions: promotionReducer,
     branch: branchReducer,
     touristPoints: touristPointReducer,
-    countries: countriesReducer,
+    // countries: countriesReducer,
+    global: globalReducer,
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware(),
 });

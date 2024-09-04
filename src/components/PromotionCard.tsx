@@ -1,14 +1,16 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity } from 'react-native';
-import Carousel from 'react-native-reanimated-carousel';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Promotion, ImagePromotion as PromotionImage } from '../redux/types/types';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch } from '../redux/store/store';
-import { addFavoriteAction, removeFavoriteAction } from '../redux/actions/userActions';
 import { getMemoizedFavorites } from '../redux/selectors/userSelectors';
 import * as Animatable from 'react-native-animatable';
 import type { View as AnimatableView } from 'react-native-animatable';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { getMemoizedStates } from '../redux/selectors/globalSelectors';
+import { formatDateToDDMMYYYY } from '../utils/formatDate';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -16,38 +18,20 @@ interface PromotionCardProps {
   promotion: Promotion;
   index: number;
   handlePress: (promotion: Promotion) => void;
+  handleEdit: (promotion: Promotion) => void;
+  handleDelete: (promotionId: number) => void;
 }
 
-const PromotionCard: React.FC<PromotionCardProps> = ({ promotion, index, handlePress }) => {
+const PromotionCard: React.FC<PromotionCardProps> = ({ promotion, index, handlePress, handleEdit, handleDelete }) => {
   const dispatch: AppDispatch = useDispatch();
-  const userFavorites = useSelector(getMemoizedFavorites);
   const [loadingImg, setLoadingImg] = useState(false);
   const heartRefs = useRef<Animatable.View[]>([]);
-  const isFavorite = userFavorites.includes(promotion.promotion_id);
-// console.log("pormocion en card", promotion);
+
 
   const handleImageLoadStart = () => setLoadingImg(true);
   const handleImageLoadEnd = () => setLoadingImg(false);
 
-  const renderItem = ({ item }: { item: PromotionImage }) => (
-    <View style={styles.carouselItem}>
-      <Image
-        source={{ uri: item.image_path }}
-        style={styles.carouselImage}
-        onLoadStart={handleImageLoadStart}
-        onLoadEnd={handleImageLoadEnd}
-      />
-    </View>
-  );
 
-  const handleFavoritePress = useCallback(() => {
-    if (isFavorite) {
-      dispatch(removeFavoriteAction(promotion.promotion_id));
-    } else {
-      dispatch(addFavoriteAction(promotion));
-      animateHeart(index);
-    }
-  }, [dispatch, isFavorite, promotion, index]);
 
   const animateHeart = (index: number) => {
     if (heartRefs.current[index]?.rubberBand) {
@@ -61,14 +45,22 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ promotion, index, handleP
       style={styles.promotionCard}
       onPress={() => handlePress(promotion)}
     >
-        <View style={styles.carouselItem}>
-      <Image
-        source={{ uri: promotion.images[0].image_path }}
-        style={styles.carouselImage}
-        onLoadStart={handleImageLoadStart}
-        onLoadEnd={handleImageLoadEnd}
-      />
-    </View>
+      <View style={styles.carouselItem}>
+        <Image
+          source={
+            promotion.images.length > 0
+              ? { uri: promotion.images[0].image_path }
+              : require('../../assets/images/images.png')
+          }
+          style={styles.carouselImage}
+          onLoadStart={handleImageLoadStart}
+          onLoadEnd={handleImageLoadEnd}
+        />
+        <View style={styles.previewOverlay}>
+          <Ionicons name="eye" size={24} color="rgba(244, 244, 244,0.7)" />
+          <Text style={styles.previewText}>Vista Previa</Text>
+        </View>
+      </View>
       {/* <Carousel
         loop
         width={screenWidth}
@@ -92,10 +84,10 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ promotion, index, handleP
         <View style={styles.discountContainerText}>
           <Text style={styles.promotionTitle}>{promotion.title}</Text>
           <Text style={styles.promotionDates}>
-            Desde: {promotion.start_date}
+            Desde: {formatDateToDDMMYYYY(promotion.start_date)}
           </Text>
           <Text style={styles.promotionDates}>
-            Hasta: {promotion.expiration_date}
+            Hasta: {formatDateToDDMMYYYY(promotion.expiration_date)}
           </Text>
         </View>
         <View style={styles.discountContainer}>
@@ -106,14 +98,14 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ promotion, index, handleP
             <Animatable.View ref={(ref: AnimatableView | null) => {
               heartRefs.current[index] = ref as Animatable.View;
             }}>
-              <TouchableOpacity onPress={handleFavoritePress}>
-                <MaterialCommunityIcons
-                  name={isFavorite ? 'cards-heart' : 'cards-heart-outline'}
-                  size={35}
-                  color={isFavorite ? '#3179BB' : '#3179BB'}
-                  style={styles.star}
-                />
-              </TouchableOpacity>
+              <View style={styles.actionsContainer}>
+                <TouchableOpacity onPress={() => handleEdit(promotion)}>
+                  <MaterialCommunityIcons name="square-edit-outline" size={28} color="rgb(0, 122, 140)" style={styles.actionIcon} />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => handleDelete(promotion.promotion_id)}>
+                  <Ionicons name="trash-outline" size={25} color="#e04545" />
+                </TouchableOpacity>
+              </View>
             </Animatable.View>
           </View>
         </View>
@@ -138,7 +130,7 @@ const styles = StyleSheet.create({
   promotionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#3179BB',
+    color: 'rgb(0, 122, 140)',
   },
   promotionDates: {
     marginTop: 10,
@@ -147,12 +139,12 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: 'rgba(49, 121, 187,0.5)',
+    backgroundColor: 'rgb(172, 208, 213)',
     marginHorizontal: 15,
   },
   carouselItem: {
-    height:150,
-    width:'100%',
+    height: 150,
+    width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -172,16 +164,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
     alignItems: 'center',
     width: '20%',
+    height: 'auto'
   },
   discountContText: {
     backgroundColor: '#FF6347',
-    width: '85%',
+    width: '80%',
     borderRadius: 10,
     paddingVertical: 5,
     paddingHorizontal: 8,
     textAlign: 'center',
   },
   discountText: {
+
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
@@ -190,12 +184,34 @@ const styles = StyleSheet.create({
     marginTop: 20,
     zIndex: 10,
   },
-  star: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 0.5,
-    elevation: 1,
+  actionsContainer: {
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    alignContent: 'flex-start',
+    alignItems: 'flex-start'
+  },
+  actionIcon: {
+    marginBottom: 10,
+    marginLeft: 0,
+  },
+  previewOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: '5%',
+    right: 0,
+    height: 150,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '90%',
+    alignSelf: 'center',
+    borderRadius: 10
+  },
+  previewText: {
+    fontWeight: 'bold',
+    color: " rgba(244, 244, 244,0.7)"
   },
 });
 

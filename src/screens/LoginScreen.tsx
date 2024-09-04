@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert, Image } from 'react-native';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert, Image, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useDispatch } from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Modal from 'react-native-modal';
-
 import { userLogIn } from '../redux/actions/userActions';
 import Loader from '../components/Loader';
+
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 type LoginScreenProp = StackNavigationProp<RootStackParamList, 'Login'>;
 
@@ -21,7 +22,7 @@ const LoginScreen: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isModalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
   const toggleModal = () => {
     setModalVisible(!isModalVisible);
   };
@@ -31,31 +32,56 @@ const LoginScreen: React.FC = () => {
       Alert.alert('Error', 'Por favor ingresa tu correo electrónico y contraseña.');
       return;
     }
+
     try {
       setLoading(true);
       const response = await dispatch<any>(userLogIn(email, password));
-      console.log("respuesta en la funcion handle login", response);
+      console.log("Respuesta en la función handleLogin", response);
+
+      // Validación del estado del usuario
+      if (response.user.status.name !== 'active') {
+        Alert.alert('Asociado inactivo', 'Tu cuenta está inactiva. Contacta al soporte para más información.');
+        return;
+      }
+
+      // Validación del rol del usuario
+      const hasAssociatedRole = response.user.roles.some((role: { role_name: string }) => role.role_name === 'associated');
+      if (!hasAssociatedRole) {
+
+        Alert.alert('Acceso restringido', 'Solo se permite el ingreso a los asociados.');
+
+        return;
+      }
+
+      // Si pasa todas las validaciones
       setError(null);
       setModalMessage('Bienvenido ' + response.user.first_name + '!');
       toggleModal();
-      setEmail('')
-      setPassword('')
+      setEmail('');
+      setPassword('');
       setTimeout(() => {
-        setModalVisible(false)
-        navigation.navigate('MainAppScreen'); 
-        // Es el nombre del  componente principal cuando esta logueado
-      }, 1500); 
+        setModalVisible(false);
+        navigation.navigate('MainAppScreen');
+      }, 1500);
     } catch (err: any) {
+      setEmail('');
+      setPassword('');
       setError(err.message);
-      setModalMessage('Error: ' + err.message);
+      setModalMessage(err.message);
       toggleModal();
     } finally {
+
       setLoading(false);
     }
   };
 
   return (
     <View style={styles.container}>
+      <Image
+        source={{ uri: 'https://res.cloudinary.com/dbwmesg3e/image/upload/v1724860673/TurismoApp/Puntos%20turisticos/AdobeStock_501242485_Preview_xfgtpa.jpg' }}
+        style={styles.backgroundImage}
+        resizeMode="cover"
+      />
       <Image source={require('../../assets/logo.png')} style={styles.logoLog} />
       <TextInput
         style={styles.input}
@@ -82,9 +108,9 @@ const LoginScreen: React.FC = () => {
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Ingresar</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.buttonSecondary} onPress={() => navigation.navigate('Register')}>
+      {/* <TouchableOpacity style={styles.buttonSecondary} onPress={() => navigation.navigate('Register')}>
         <Text style={styles.buttonSecondaryText}>Registrarse</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
       <TouchableOpacity style={styles.forgotPasswordButton} onPress={() => navigation.navigate('ForgotPassword')}>
         <Text style={styles.forgotPasswordText}>Olvidaste tu contraseña?</Text>
       </TouchableOpacity>
@@ -109,6 +135,13 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#f7f7f7',
   },
+  backgroundImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: screenWidth,
+    height: screenHeight,
+  },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
@@ -128,13 +161,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 15,
     paddingHorizontal: 15,
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(76, 76, 76,0.7)',
     fontSize: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 1,
     elevation: 2,
+    color: '#fff'
   },
   passwordContainer: {
     flexDirection: 'row',
@@ -146,7 +180,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 15,
     paddingHorizontal: 15,
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(76, 76, 76,0.7)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
@@ -156,14 +190,14 @@ const styles = StyleSheet.create({
   inputPassword: {
     flex: 1,
     fontSize: 16,
-    
+    color: '#fff'
   },
   error: {
     color: '#F1AD3E',
     marginBottom: 15,
   },
   button: {
-    backgroundColor: '#3179BB',
+    backgroundColor: 'rgb(0, 122, 140)',
     paddingVertical: 10,
     paddingHorizontal: 30,
     borderRadius: 8,
@@ -210,12 +244,12 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: 'rgba(49, 121, 187, 0.7)',
-    color:'white',
+    color: 'white',
     padding: 20,
     borderRadius: 10,
     alignItems: 'center',
-    width:"70%",
-    alignSelf:'center'
+    width: "70%",
+    alignSelf: 'center'
   },
   // modalBackdrop: {
   //   backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fondo negro con 50% de opacidad
