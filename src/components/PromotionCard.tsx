@@ -61,25 +61,6 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ promotion, index, handleP
           <Text style={styles.previewText}>Vista Previa</Text>
         </View>
       </View>
-      {/* <Carousel
-        loop
-        width={screenWidth}
-        height={screenWidth / 2}
-        autoPlay={true}
-        autoPlayInterval={5000}
-        data={promotion.images}
-        scrollAnimationDuration={3000}
-        mode="parallax"
-        modeConfig={{
-          parallaxScrollingScale: 0.8,
-          parallaxScrollingOffset: 50,
-        }}
-        renderItem={renderItem}
-        style={styles.carousel}
-        panGestureHandlerProps={{
-          activeOffsetX: [-10, 10],
-        }}
-      /> */}
       <View style={styles.promotionContent}>
         <View style={styles.discountContainerText}>
           <Text style={styles.promotionTitle}>{promotion.title}</Text>
@@ -133,7 +114,7 @@ const styles = StyleSheet.create({
     color: 'rgb(0, 122, 140)',
   },
   promotionDates: {
-    marginTop: 10,
+    marginTop: 5,
     fontSize: 14,
     color: '#888',
   },
@@ -167,7 +148,7 @@ const styles = StyleSheet.create({
     height: 'auto'
   },
   discountContText: {
-    backgroundColor: '#FF6347',
+    backgroundColor: '#007a8c',
     width: '80%',
     borderRadius: 10,
     paddingVertical: 5,

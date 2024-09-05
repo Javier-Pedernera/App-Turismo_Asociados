@@ -8,6 +8,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import Modal from 'react-native-modal';
 import { userLogIn } from '../redux/actions/userActions';
 import Loader from '../components/Loader';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -28,14 +29,15 @@ const LoginScreen: React.FC = () => {
   };
 
   const handleLogin = async () => {
-    if (email === '' || password === '') {
+    const lowerCaseEmail = email.trim().toLowerCase();
+    if (lowerCaseEmail === '' || password === '') {
       Alert.alert('Error', 'Por favor ingresa tu correo electrónico y contraseña.');
       return;
     }
 
     try {
       setLoading(true);
-      const response = await dispatch<any>(userLogIn(email, password));
+      const response = await dispatch<any>(userLogIn(lowerCaseEmail, password));
       console.log("Respuesta en la función handleLogin", response);
 
       // Validación del estado del usuario
@@ -76,45 +78,48 @@ const LoginScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Image
-        source={{ uri: 'https://res.cloudinary.com/dbwmesg3e/image/upload/v1724860673/TurismoApp/Puntos%20turisticos/AdobeStock_501242485_Preview_xfgtpa.jpg' }}
-        style={styles.backgroundImage}
-        resizeMode="cover"
-      />
-      <Image source={require('../../assets/logo.png')} style={styles.logoLog} />
-      <TextInput
-        style={styles.input}
-        placeholder="Correo Electrónico"
-        placeholderTextColor="#aaa"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-      />
-      <View style={styles.passwordContainer}>
+    <LinearGradient
+      colors={['#007a8c', '#f6f6f6']}
+      style={styles.container}
+    >
+      <View style={styles.card}>
+        <Image source={require('../../assets/logo.png')} style={styles.logoLog} />
         <TextInput
-          style={styles.inputPassword}
-          placeholder="Contraseña"
+          style={styles.input}
+          placeholder="Correo Electrónico"
           placeholderTextColor="#aaa"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry={!showPassword}
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
         />
-        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-          <Icon name={showPassword ? 'eye-off' : 'eye'} size={20} color="#aaa" />
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={styles.inputPassword}
+            placeholder="Contraseña"
+            placeholderTextColor="#aaa"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+          />
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <Icon name={showPassword ? 'eye-off' : 'eye'} size={20} color="#acd0d5" />
+          </TouchableOpacity>
+        </View>
+        {error && <Text style={styles.error}>{error}</Text>}
+        <TouchableOpacity style={styles.forgotPasswordButton} onPress={() => navigation.navigate('ForgotPassword')}>
+          <Text style={styles.forgotPasswordText}>Olvidaste tu contraseña?</Text>
         </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+          <Text style={styles.buttonText}>Ingresar</Text>
+        </TouchableOpacity>
+        <View  style={styles.asociadosCont} >
+        <Image source={require('../../assets/images/LOGOASOCIADOS.png')} style={styles.logoAsociados} />
+        <Text  style={styles.asociadostext} >ASOCIADOS</Text>
+        </View>
+
+        {/* <Text style={styles.forgotPasswordText}>No tienes cuenta? Contáctanos</Text> */}
+        {loading && <Loader />}
       </View>
-      {error && <Text style={styles.error}>{error}</Text>}
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Ingresar</Text>
-      </TouchableOpacity>
-      {/* <TouchableOpacity style={styles.buttonSecondary} onPress={() => navigation.navigate('Register')}>
-        <Text style={styles.buttonSecondaryText}>Registrarse</Text>
-      </TouchableOpacity> */}
-      <TouchableOpacity style={styles.forgotPasswordButton} onPress={() => navigation.navigate('ForgotPassword')}>
-        <Text style={styles.forgotPasswordText}>Olvidaste tu contraseña?</Text>
-      </TouchableOpacity>
-      {loading && <Loader />}
       <Modal isVisible={isModalVisible}>
         <View style={styles.modalContent}>
           <Text style={styles.modalMessage}>{modalMessage}</Text>
@@ -123,7 +128,7 @@ const LoginScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
       </Modal>
-    </View>
+    </LinearGradient>
   );
 };
 
@@ -132,78 +137,90 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  card: {
+    backgroundColor: '#f6f6f6',
     padding: 20,
-    backgroundColor: '#f7f7f7',
-  },
-  backgroundImage: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: screenWidth,
-    height: screenHeight,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#333',
+    borderRadius: 25,
+    width: '90%',
+    alignItems: 'center',
+
+    // Sombra
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 10,
   },
   logoLog: {
-    height: 130,
-    width: 130,
-    marginBottom: 50
+    height: 110,
+    width: 110,
+    marginBottom: 30,
+  },
+  asociadosCont:{
+    position:'relative',
+    height:50,
+    width:screenWidth*0.8,
+  },
+  logoAsociados:{
+    position:'absolute',
+    height:120,
+    width:100,
+    top:-50,
+    left:50
+
+  },
+  asociadostext:{
+      position:'absolute',
+      height:50,
+      top:0,
+      left:110,
+      fontFamily: 'Inter-Regular-400',
+      color: '#007a8c',
+      fontWeight:'700'
   },
   input: {
-    height: 50,
-    width: '80%',
-    borderColor: '#ddd',
+    height: 40,
+    width: '100%',
+    borderColor: 'rgb(172, 208, 213)',
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 15,
     marginBottom: 15,
     paddingHorizontal: 15,
-    backgroundColor: 'rgba(76, 76, 76,0.7)',
-    fontSize: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 1,
-    elevation: 2,
-    color: '#fff'
+    backgroundColor: '#fff',
+    fontSize: 14,
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 50,
-    width: '80%',
-    borderColor: '#ddd',
+    height: 40,
+    width: '100%',
+    borderColor: 'rgb(172, 208, 213)',
     borderWidth: 1,
-    borderRadius: 8,
-    marginBottom: 15,
+    borderRadius: 15,
+    marginBottom: 0,
     paddingHorizontal: 15,
-    backgroundColor: 'rgba(76, 76, 76,0.7)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 1,
-    elevation: 2,
+    backgroundColor: '#fff',
   },
   inputPassword: {
     flex: 1,
-    fontSize: 16,
-    color: '#fff'
+    fontSize: 14,
   },
   error: {
-    color: '#F1AD3E',
+    color: '#007a8c',
     marginBottom: 15,
   },
   button: {
-    backgroundColor: 'rgb(0, 122, 140)',
+    backgroundColor: '#007a8c',
     paddingVertical: 10,
     paddingHorizontal: 30,
-    borderRadius: 8,
-    marginTop: 10,
-    width: '50%',
+    borderRadius: 25,
+    marginTop: 30,
+    marginBottom: 30,
+    width: '100%',
     alignItems: 'center',
+    fontFamily: 'Inter-Regular-400',
+    // Sombra en el botón
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.8,
@@ -214,53 +231,57 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+    fontFamily: 'Inter-Regular-400',
   },
   buttonSecondary: {
-    backgroundColor: '#ddd',
+    backgroundColor: '#f6f6f6',
     paddingVertical: 10,
     paddingHorizontal: 30,
-    borderRadius: 8,
+    borderRadius: 25,
     marginTop: 10,
-    width: '50%',
+    width: '90%',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 5,
   },
   buttonSecondaryText: {
-    color: '#333',
+    color: '#007a8c',
     fontSize: 16,
     fontWeight: 'bold',
+    fontFamily: 'Inter-Regular-400',
   },
   forgotPasswordButton: {
+
     marginTop: 20,
+    width: '95%',
+    justifyContent: 'flex-end',
+    alignContent: 'flex-end',
+    alignItems: 'flex-end'
   },
   forgotPasswordText: {
-    color: '#F1AD3E',
-    fontSize: 14,
-    fontWeight: 'bold',
+    color: '#007a8c',
+    fontSize: 12,
+    fontFamily: 'Inter-Regular-400',
   },
   modalContent: {
-    backgroundColor: 'rgba(49, 121, 187, 0.7)',
+    backgroundColor: 'rgba(246, 246, 246, 0.9)',
     color: 'white',
+    display:'flex',
+    alignSelf:'center',
+    flexDirection:'column',
     padding: 20,
     borderRadius: 10,
     alignItems: 'center',
-    width: "70%",
-    alignSelf: 'center'
+    width: '70%',
+    height:'30%',
+    justifyContent:'space-evenly'
   },
-  // modalBackdrop: {
-  //   backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fondo negro con 50% de opacidad
-  // },
   modalMessage: {
     fontSize: 18,
     marginBottom: 20,
-    color: 'white',
+    fontWeight:'600',
+    color: '#007a8c',
   },
   modalButton: {
-    backgroundColor: '#F1AD3E',
+    backgroundColor: '#007a8c',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,

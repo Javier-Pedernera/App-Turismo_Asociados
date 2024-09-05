@@ -7,34 +7,26 @@ import { Dispatch } from "@reduxjs/toolkit";
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
   
-  export const loginUserAuth = async (email: string, password: string): Promise<LoginResponse> => {
-    try {
-      const response = await axios.post<LoginResponse>(`${API_URL}/login`, { email, password });
-      console.log(response.data);
-      return response.data;
-      
-      
-    } catch (error) {
-      throw new Error('Login failed');
+export const loginUserAuth = async (email: string, password: string): Promise<LoginResponse> => {
+  try {
+    const response = await axios.post<LoginResponse>(`${API_URL}/login`, { email, password });
+    // Guardar el token en AsyncStorage
+    // if (response.data.token) {
+    //   await AsyncStorage.setItem('token', response.data.token);
+    // }
+    return response.data;
+  } catch (error: any) {
+    if (error.response && error.response.data) {
+      const backendMessage = error.response.data.message || 'Error desconocido del servidor';
+      throw new Error(backendMessage);
+    } else if (error.request) {
+      throw new Error('No se recibió respuesta del servidor');
+    } else {
+      throw new Error(error.message); 
     }
-  };
+  }
+};
   
-// export const registerUser = async (userData: UserData) => {
-//   try {
-//     // console.log("datos del formulario en el registro",userData);
-    
-//     const response = await axios.post(`${API_URL}/signup`, userData);
-//     console.log("respuesta del registro",response);
-    
-//     if(response.status === 201 ){
-
-//     }
-//     return response;
-//   } catch (error) {
-//     throw new Error('Registration failed');
-//   }
-// };
-
 export const logoutUser = () => {
   return async (dispatch: Dispatch) => {
     try {

@@ -12,7 +12,8 @@ export const userLogIn = (email: string, password: string) => {
   return async (dispatch: Dispatch) => {
     try {
       const data = await loginUserAuth(email, password);
-
+      console.log("data en la action de login", data);
+      
       // Verificar si data.user y data.user.status existen
       if (!data.user || !data.user.status) {
         throw new Error('Error en la respuesta del servidor. No se pudo obtener el estado del usuario.');

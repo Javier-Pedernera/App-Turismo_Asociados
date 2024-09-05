@@ -19,6 +19,7 @@ import { getMemoizedCountries, getMemoizedRoles, getMemoizedStates } from '../re
 import { updatePromotion } from '../redux/reducers/promotionReducer';
 import { deletePromotion } from '../redux/actions/promotionsActions';
 import EditPromotionForm from '../components/EditPromotionForm';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -189,8 +190,13 @@ const PromotionsScreen: React.FC = () => {
     >
       <View style={styles.btns}>
         <TouchableOpacity style={styles.createButton} onPress={() => setIsCreateModalVisible(true)}>
-          <MaterialIcons name="assignment-add" size={24} color="#fff" />
-          <Text style={styles.createButtonText}>Nueva</Text>
+          {/* <MaterialIcons name="assignment-add" size={24} color="#fff" /> */}
+          <View style={styles.createButtonmas}>
+            <Text style={styles.createButtonText}>+</Text>
+          <MaterialCommunityIcons name="ticket-percent-outline" size={24} color="#fff" />
+          </View>
+          
+          <Text style={styles.createButtonText}>Crear</Text>
         </TouchableOpacity>
       </View>
       <ScrollView contentContainerStyle={styles.container}>
@@ -336,11 +342,18 @@ const styles = StyleSheet.create({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F1AD3E',
+    backgroundColor: '#007a8c',
     padding: 10,
-    height: 70,
-    width: 70,
+    height: 65,
+    width: 65,
     borderRadius: 50,
+  },
+  createButtonmas:{
+    display:'flex',
+    flexDirection:'row',
+    justifyContent:'center',
+    alignContent:'center',
+    alignItems:'center'
   },
   createButtonText: {
     color: '#fff',

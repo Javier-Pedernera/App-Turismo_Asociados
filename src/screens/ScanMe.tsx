@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Animated, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Animated, Image, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useDispatch, useSelector } from 'react-redux';
@@ -12,6 +12,8 @@ import { getMemoizedPromotions } from '../redux/selectors/promotionSelectors';
 import { loadData } from '../redux/actions/dataLoader';
 import { fetchBranches } from '../redux/actions/branchActions';
 import { getMemoizedBranches } from '../redux/selectors/branchSelectors';
+import Feather from '@expo/vector-icons/Feather';
+import SemicirclesOverlay from '../components/SemicirclesOverlay';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -32,8 +34,8 @@ const QRScanButton = () => {
   const dispatch: AppDispatch = useDispatch();
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   //   console.log("promociones scan", promotions);
-
-  //   console.log("sucursales", branches);
+  // const token = await AsyncStorage.getItem('token');
+  //   console.log("token en el sacanner", token);
 
   useEffect(() => {
     dispatch(loadData());
@@ -103,6 +105,13 @@ const QRScanButton = () => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
+    Alert.alert('Código escaneado', `\nUsuario: ${data}`);
+  };
+  const handleCloseCamera = () => {
+    setCameraVisible(false);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
   };
   const ScannerFrame = () => (
     <View style={styles.frameContainer}>
@@ -125,6 +134,10 @@ const QRScanButton = () => {
           onBarcodeScanned={handleBarCodeScanned}
         />
         <ScannerFrame />
+        <TouchableOpacity style={styles.closeButton} onPress={handleCloseCamera}>
+        <Feather name="camera-off" size={24} color="rgb(0, 122, 140)" />
+          {/* <Text style={styles.closeButtonText}>Cerrar</Text> */}
+        </TouchableOpacity>
       </View>
     );
   }
@@ -132,6 +145,9 @@ const QRScanButton = () => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.containercircle}>
+        <SemicirclesOverlay/>
+      </View>
       <View style={styles.iconContainer}>
         <Image source={require('../../assets/images/QR-Scan.png')} style={styles.icon} />
         {/* <Icon name="qrcode-scan" size={200} color="rgb(0, 122, 140)" /> */}
@@ -154,9 +170,18 @@ const QRScanButton = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    height:screenHeight,
+    display:'flex',
+    flexDirection:'column',
     justifyContent: 'center',
     alignItems: 'center',
+    alignContent:'center'
+  },
+  containercircle:{
+    position:'absolute',
+    top:-20,
+    height:screenHeight *0.2,
+    width:screenWidth
   },
   iconContainer: {
     marginBottom: 20,
@@ -192,8 +217,8 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   buttonPressed: {
-    backgroundColor: '#275d8e', // Cambia el fondo al presionar
-    transform: [{ scale: 0.98 }], // Efecto de presión con escala
+    backgroundColor: '#275d8e', 
+    transform: [{ scale: 0.98 }],
   },
   frameContainer: {
     position: 'absolute',
@@ -253,6 +278,18 @@ const styles = StyleSheet.create({
     borderColor: '#acd0d5',
     borderStyle: 'solid',
     borderBottomRightRadius: 10,
+  },
+  closeButton: {
+    position: 'absolute',
+    bottom: 50,
+    right: screenWidth*0.5,
+    padding: 0,
+    // backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 0,
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontSize: 16,
   },
 });
 
