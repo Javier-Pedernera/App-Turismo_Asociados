@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Animated, Image, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
+import { CameraView, CameraType, useCameraPermissions } from 'expo-camera'; // Asegúrate de que 'useCameraPermissions' esté importado
 import { useDispatch, useSelector } from 'react-redux';
 import { UserData } from '../redux/types/types';
 import { getMemoizedUserData } from '../redux/selectors/userSelectors';
@@ -23,7 +23,6 @@ interface ScanData {
 }
 
 const QRScanButton = () => {
-
   const user = useSelector(getMemoizedUserData) as UserData;
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [cameraVisible, setCameraVisible] = useState(false);
@@ -33,9 +32,6 @@ const QRScanButton = () => {
   const [permission, requestPermission] = useCameraPermissions();
   const dispatch: AppDispatch = useDispatch();
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  //   console.log("promociones scan", promotions);
-  // const token = await AsyncStorage.getItem('token');
-  //   console.log("token en el sacanner", token);
 
   useEffect(() => {
     dispatch(loadData());
@@ -45,19 +41,37 @@ const QRScanButton = () => {
       dispatch(fetchBranches(user.user_id));
     }
 
-    if (permission?.granted === false && !permission) {
+    // Solicitar permiso de la cámara si no está concedido
+    if (!permission) {
       requestPermission();
+    } else if (!permission.granted) {
+      Alert.alert(
+        "Permiso de cámara necesario",
+        "Se requiere acceso a la cámara para escanear el código QR.",
+        [
+          {
+            text: "Solicitar permiso",
+            onPress: requestPermission,
+          },
+          {
+            text: "Cancelar",
+            style: "cancel",
+          },
+        ]
+      );
+    } else {
+      setHasPermission(permission.granted);
     }
-    setHasPermission(permission?.granted ?? null);
   }, [permission]);
+
   useEffect(() => {
-    // Limpiar el timeout si el componente se desmonta
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
     };
   }, []);
+
   useEffect(() => {
     startLineAnimation();
   }, [cameraVisible]);
@@ -93,10 +107,14 @@ const QRScanButton = () => {
   });
 
   const handleQRScan = () => {
-    setCameraVisible(true);
-    timeoutRef.current = setTimeout(() => {
-      setCameraVisible(false);
-    }, 10000);
+    if (hasPermission) {
+      setCameraVisible(true);
+      timeoutRef.current = setTimeout(() => {
+        setCameraVisible(false);
+      }, 10000);
+    } else {
+      Alert.alert("Permiso denegado", "Por favor, habilita el permiso de la cámara en la configuración.");
+    }
   };
 
   const handleBarCodeScanned = ({ type, data }: ScanData) => {
@@ -107,12 +125,14 @@ const QRScanButton = () => {
     }
     Alert.alert('Código escaneado', `\nUsuario: ${data}`);
   };
+
   const handleCloseCamera = () => {
     setCameraVisible(false);
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
   };
+
   const ScannerFrame = () => (
     <View style={styles.frameContainer}>
       <View style={styles.frameCornerTopLeft} />
@@ -121,7 +141,7 @@ const QRScanButton = () => {
       <View style={styles.frameCornerBottomRight} />
     </View>
   );
-  
+
   if (cameraVisible && hasPermission) {
     return (
       <View style={StyleSheet.absoluteFillObject}>
@@ -135,13 +155,11 @@ const QRScanButton = () => {
         />
         <ScannerFrame />
         <TouchableOpacity style={styles.closeButton} onPress={handleCloseCamera}>
-        <Feather name="camera-off" size={24} color="rgb(0, 122, 140)" />
-          {/* <Text style={styles.closeButtonText}>Cerrar</Text> */}
+          <Feather name="camera-off" size={24} color="rgb(0, 122, 140)" />
         </TouchableOpacity>
       </View>
     );
   }
-  
 
   return (
     <View style={styles.container}>
@@ -150,7 +168,6 @@ const QRScanButton = () => {
       </View>
       <View style={styles.iconContainer}>
         <Image source={require('../../assets/images/QR-Scan.png')} style={styles.icon} />
-        {/* <Icon name="qrcode-scan" size={200} color="rgb(0, 122, 140)" /> */}
         <Animated.View
           style={[
             styles.scanLine,
@@ -167,7 +184,6 @@ const QRScanButton = () => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     height:screenHeight,

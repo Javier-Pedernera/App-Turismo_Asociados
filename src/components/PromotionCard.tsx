@@ -68,7 +68,10 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ promotion, index, handleP
             Desde: {formatDateToDDMMYYYY(promotion.start_date)}
           </Text>
           <Text style={styles.promotionDates}>
-            Hasta: {formatDateToDDMMYYYY(promotion.expiration_date)}
+            Hasta: {formatDateToDDMMYYYY(promotion.expiration_date) }
+          </Text>
+          <Text style={styles.promotionDates}>
+            Disponibles: {promotion.available_quantity}
           </Text>
         </View>
         <View style={styles.discountContainer}>
@@ -109,13 +112,13 @@ const styles = StyleSheet.create({
     padding: 15,
   },
   promotionTitle: {
-    fontSize: 18,
+    fontSize: screenWidth * 0.045,
     fontWeight: 'bold',
     color: 'rgb(0, 122, 140)',
   },
   promotionDates: {
-    marginTop: 5,
-    fontSize: 14,
+    marginTop: 3,
+    fontSize: screenWidth * 0.035,
     color: '#888',
   },
   divider: {

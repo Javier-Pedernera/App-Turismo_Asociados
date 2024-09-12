@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, ScrollView, Platform, Alert } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { Promotion, PromotionUpdate, ImagePromotion as UserData } from '../redux/types/types';
@@ -9,7 +9,7 @@ import Modal from 'react-native-modal';
 import { fetchAllCategories, fetchUserCategories } from '../redux/actions/categoryActions';
 import { getMemoizedPromotions } from '../redux/selectors/promotionSelectors';
 import { getMemoizedAllCategories, getMemoizedUserCategories } from '../redux/selectors/categorySelectors';
-import { getMemoizedUserData } from '../redux/selectors/userSelectors';
+import { getMemoizedPartner, getMemoizedUserData } from '../redux/selectors/userSelectors';
 import { fetchUserFavorites } from '../redux/actions/userActions';
 import PromotionCard from '../components/PromotionCard';
 import Loader from '../components/Loader';
@@ -46,6 +46,7 @@ const PromotionsScreen: React.FC = () => {
   const roles = useSelector(getMemoizedRoles);
   const [selectedPromotion, setSelectedPromotion] = useState<Promotion | null>(null);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const partner = useSelector(getMemoizedPartner);
   // console.log("statuses en card", statuses);
   // console.log("countries en card", countries);
   // console.log("roles en card", roles);
@@ -184,12 +185,18 @@ const PromotionsScreen: React.FC = () => {
     setIsEditModalVisible(false);
     setSelectedPromotion(null);
   };
-
+  const handleCreatePress = useCallback(() => {
+    if (partner && partner.branches.length === 0) {
+      Alert.alert("Error", "Primero debes crear una sucursal");
+    } else {
+      setIsCreateModalVisible(true);
+    }
+  }, [partner]);
   return (
     <View style={styles.gradient}
     >
       <View style={styles.btns}>
-        <TouchableOpacity style={styles.createButton} onPress={() => setIsCreateModalVisible(true)}>
+        <TouchableOpacity style={styles.createButton} onPress={handleCreatePress}>
           {/* <MaterialIcons name="assignment-add" size={24} color="#fff" /> */}
           <View style={styles.createButtonmas}>
             <Text style={styles.createButtonText}>+</Text>
@@ -200,7 +207,7 @@ const PromotionsScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
       <ScrollView contentContainerStyle={styles.container}>
-
+      
         <Modal isVisible={isCreateModalVisible} style={styles.modal}>
           <View style={styles.modalContent}>
             <PromotionForm onClose={() => setIsCreateModalVisible(false)} />

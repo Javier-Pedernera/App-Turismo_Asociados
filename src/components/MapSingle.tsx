@@ -17,14 +17,14 @@ interface MapComponentProps {
   destination: { latitude: number, longitude: number } | null;
   routeSelected: boolean;
   selectedBranch: any;
-  onMapPress: () => void;
+  onMapPress?: () => void;
   handleGetDirections: () => void;
   setSelectedBranch: (branch: any) => void;
   routeLoading: boolean;
-  isEditing: boolean;
+  isEditing?: boolean;
   setRouteLoading: (loading: boolean) => void;
   ratings: any;
-  initialRegion: {
+  initialRegion?: {
     latitude: number;
     longitude: number;
     latitudeDelta: number;
@@ -48,8 +48,8 @@ const MapSingle: React.FC<MapComponentProps> = ({
   initialRegion
 }) => {
   const [searchLocation, setSearchLocation] = useState({
-    latitude: branch?.latitude || initialRegion.latitude,
-    longitude: branch?.longitude || initialRegion.longitude,
+    latitude: branch?.latitude || initialRegion?.latitude,
+    longitude: branch?.longitude || initialRegion?.longitude,
     address: branch?.address || '',
   });
 

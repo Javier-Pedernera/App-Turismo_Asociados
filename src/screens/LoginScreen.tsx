@@ -57,8 +57,8 @@ const LoginScreen: React.FC = () => {
 
       // Si pasa todas las validaciones
       setError(null);
-      setModalMessage('Bienvenido ' + response.user.first_name + '!');
-      toggleModal();
+      // setModalMessage('Bienvenido ' + response.user.first_name + '!');
+      // toggleModal();
       setEmail('');
       setPassword('');
       setTimeout(() => {

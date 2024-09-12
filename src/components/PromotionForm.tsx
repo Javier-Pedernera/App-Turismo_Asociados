@@ -22,7 +22,7 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
   const user = useSelector(getMemoizedUserData);
   const allCategories = useSelector(getMemoizedAllCategories);
   const partner = useSelector(getMemoizedPartner);
-  console.log("partner actual", partner?.branches[0].branch_id);
+  console.log("partner actual", partner?.branches);
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -118,6 +118,7 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
     setShowEndDatePicker(false);
   };
   return (
+    
     <ScrollView contentContainerStyle={styles.formContainer}>
       <TextInput
         style={styles.input}
@@ -227,6 +228,16 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
 };
 
 const styles = StyleSheet.create({
+  contTextSucursal:{
+    width: '100%',
+    height:'80%',
+    display:'flex',
+    justifyContent:'center',
+    alignContent:'center',
+    textAlign:'center',
+    alignItems:'center',
+    backgroundColor: 'rgba(172, 208, 213,0.5)'
+  },
   formContainer: {
     padding: 20,
     backgroundColor: '#fff',

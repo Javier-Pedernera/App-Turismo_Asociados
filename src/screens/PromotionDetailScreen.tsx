@@ -289,7 +289,6 @@ const PromotionDetailScreen: React.FC = () => {
               routeSelected={routeSelected}
               selectedBranch={selectedBranch}
               ratings={ratings}
-              handleMapPress={handleMapPress}
               handleGetDirections={handleGetDirections}
               setSelectedBranch={setSelectedBranch}
               routeLoading={routeLoading}

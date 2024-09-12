@@ -2,15 +2,38 @@
   "cli": {
     "version": ">= 11.0.2"
   },
-  "build": {
+ "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://app-turismo-backend.vercel.app",
+        "EXPO_PUBLIC_API_KEYGOOGLE" : "AIzaSyCT_n-0KfURHxeSE04sZlmAdWeUwaGQ1Ek"
+      }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://app-turismo-backend.vercel.app",
+        "EXPO_PUBLIC_API_KEYGOOGLE" : "AIzaSyCT_n-0KfURHxeSE04sZlmAdWeUwaGQ1Ek"
+      }
     },
-    "production": {}
+    "production": {
+      "android": {
+        "buildType": "app-bundle",
+        "image": "latest"
+      },
+      "ios": {
+        "image": "latest"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://app-turismo-backend.vercel.app",
+        "EXPO_PUBLIC_API_KEYGOOGLE" : "AIzaSyCT_n-0KfURHxeSE04sZlmAdWeUwaGQ1Ek"
+      }
+    }
   },
   "submit": {
     "production": {}

@@ -10,6 +10,9 @@ import { getMemoizedUserData } from '../redux/selectors/userSelectors';
 import * as Location from 'expo-location';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Loader from './Loader';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 interface BranchFormProps {
   branch: any;
@@ -61,9 +64,9 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
       image_data: image_data.length? image_data : undefined,
     };
      try {
-    console.log('Enviando datos de la sucursal:', branchData);
-    console.log('Tiene branch id:', branch.branch_id);
-    console.log('imagen nueva?:', image_data.length);
+    // console.log('Enviando datos de la sucursal:', branchData);
+    // console.log('Tiene branch id:', branch.branch_id);
+    // console.log('imagen nueva?:', image_data.length);
     let resp;
     if (branch.branch_id) {
       resp = await dispatch(updateBranch(branch.branch_id, branchData));
@@ -278,6 +281,9 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
   return (
     <View>
       {isLoading? <Loader />:<></>}
+      <TouchableOpacity onPress={onClose} style={styles.backbutton}>
+          <MaterialIcons name="arrow-back-ios-new" size={22} color="#fff" />
+      </TouchableOpacity>
       <FlatList
         data={formItems}
         keyExtractor={item => item.id}
@@ -288,13 +294,24 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
   );
 };
 
-const { height: screenHeight } = Dimensions.get('window');
-
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: 16,
     backgroundColor: '#fff',
+  },
+  backbutton:{
+    position:'absolute',
+    backgroundColor:'#007a8c',
+    justifyContent:'center',
+    textAlign:'center',
+    alignItems:'center',
+    top: 20,
+    left:25,
+    width:35,
+    height:30,
+    borderRadius:5,
+    zIndex:1
   },
   image: {
     width: '100%',
