@@ -38,7 +38,7 @@ const LoginScreen: React.FC = () => {
     try {
       setLoading(true);
       const response = await dispatch<any>(userLogIn(lowerCaseEmail, password));
-      console.log("Respuesta en la función handleLogin", response);
+      // console.log("Respuesta en la función handleLogin", response);
 
       // Validación del estado del usuario
       if (response.user.status.name !== 'active') {
@@ -116,10 +116,10 @@ const LoginScreen: React.FC = () => {
         <Image source={require('../../assets/images/LOGOASOCIADOS.png')} style={styles.logoAsociados} />
         <Text  style={styles.asociadostext} >ASOCIADOS</Text>
         </View>
-
         {/* <Text style={styles.forgotPasswordText}>No tienes cuenta? Contáctanos</Text> */}
         {loading && <Loader />}
       </View>
+        <Text  style={styles.versionText} >Version Beta 0.1.1</Text>
       <Modal isVisible={isModalVisible}>
         <View style={styles.modalContent}>
           <Text style={styles.modalMessage}>{modalMessage}</Text>
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: screenWidth*0.045,
     fontWeight: 'bold',
     fontFamily: 'Inter-Regular-400',
   },
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
   },
   forgotPasswordText: {
     color: '#007a8c',
-    fontSize: 12,
+    fontSize: screenWidth*0.035,
     fontFamily: 'Inter-Regular-400',
   },
   modalContent: {
@@ -290,6 +290,13 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
+  versionText:{
+    marginTop:20,
+    fontSize: screenWidth*0.035,
+    fontFamily: 'Inter-Regular-400',
+    color: '#007a8c',
+    fontWeight:'400'
+  }
 });
 
 export default LoginScreen;

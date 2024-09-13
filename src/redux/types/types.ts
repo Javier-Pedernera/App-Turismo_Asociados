@@ -97,6 +97,28 @@ export enum UserActionTypes {
     branch_id: number;
     available_quantity?: number;
   }
+  export interface PromotionCreate {
+    promotion_id?: number;
+    title: string;
+    description: string;
+    start_date: string | null;
+    expiration_date: string | null;
+    partner_id: number;
+    category_ids: number[];
+    images: ImagePromotionUpdate[];
+    discount_percentage?: number;
+    branch_id: number;
+    available_quantity?: number | null;
+  }
+  export interface PromotionConsumed {
+    id: number;
+    user_id: number;
+    promotion_id: number;
+    status_id: number;
+    quantity_consumed: number;
+    consumption_date: string;
+    description?: string;
+  }
   export interface ImagePromotionUpdate{
     filename: string;
     data:string

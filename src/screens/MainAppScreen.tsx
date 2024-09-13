@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import {  useNavigation } from '@react-navigation/native';
 import { createDrawerNavigator, useDrawerStatus } from '@react-navigation/drawer';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet } from 'react-native';
 import ScanMe from '../screens/ScanMe';
 import ProfileScreen from '../screens/ProfileScreen';
 import { FontAwesome } from '@expo/vector-icons';

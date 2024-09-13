@@ -1,19 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Animated, Image, Alert } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { CameraView, CameraType, useCameraPermissions } from 'expo-camera'; // Asegúrate de que 'useCameraPermissions' esté importado
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Animated, Image, Alert, TextInput } from 'react-native';
+import { CameraView, CameraType, useCameraPermissions } from 'expo-camera'; 
 import { useDispatch, useSelector } from 'react-redux';
-import { UserData } from '../redux/types/types';
+import { Promotion, UserData } from '../redux/types/types';
 import { getMemoizedUserData } from '../redux/selectors/userSelectors';
 import { fetchPartnerById } from '../redux/actions/userActions';
 import { AppDispatch } from '../redux/store/store';
-import { fetchPromotions } from '../redux/actions/promotionsActions';
-import { getMemoizedPromotions } from '../redux/selectors/promotionSelectors';
+import { fetchConsumedPromotions, fetchPromotions, submitConsumption } from '../redux/actions/promotionsActions';
+import { getMemoizedConsumedPromotions, getMemoizedPromotions } from '../redux/selectors/promotionSelectors';
 import { loadData } from '../redux/actions/dataLoader';
 import { fetchBranches } from '../redux/actions/branchActions';
-import { getMemoizedBranches } from '../redux/selectors/branchSelectors';
 import Feather from '@expo/vector-icons/Feather';
 import SemicirclesOverlay from '../components/SemicirclesOverlay';
+import { Modal } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
+import { getMemoizedStates } from '../redux/selectors/globalSelectors';
+import ConsumedPromotionsModal from '../components/ConsumedPromotionsModalProps ';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -24,6 +26,7 @@ interface ScanData {
 
 const QRScanButton = () => {
   const user = useSelector(getMemoizedUserData) as UserData;
+  const statuses = useSelector(getMemoizedStates);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [cameraVisible, setCameraVisible] = useState(false);
   const [facing, setFacing] = useState<CameraType>('back');
@@ -32,6 +35,26 @@ const QRScanButton = () => {
   const [permission, requestPermission] = useCameraPermissions();
   const dispatch: AppDispatch = useDispatch();
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const promotions = useSelector(getMemoizedPromotions);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [scannedEmail, setScannedEmail] = useState<string | null>(null);
+  const [selectedPromotion, setSelectedPromotion] = useState<Promotion | null>(null);
+  const [scannedUser, setScannedUser] = useState<string | null>(null);
+  const [quantityConsumed, setQuantityConsumed] = useState('');
+  const [amountSpent, setAmountSpent] = useState('');
+  const [description, setDescription] = useState('');
+  const currentDate = new Date();
+  const promotionsConsumed = useSelector(getMemoizedConsumedPromotions);
+  const [modalConsumedVisible, setModalConsumedVisible] = useState<boolean>(false);
+  // console.log("promotions",promotions[0]);
+// console.log("statuses",statuses);
+console.log("promotions consumidas",promotionsConsumed);
+const filteredPromotions = promotions.filter(promotion => {
+  const startDate = new Date(promotion.start_date);
+  const expirationDate = new Date(promotion.expiration_date);
+  return promotion.status?.name === 'active' && currentDate >= startDate && currentDate <= expirationDate;
+});
+// console.log("filteredPromotions",filteredPromotions);
 
   useEffect(() => {
     dispatch(loadData());
@@ -39,6 +62,8 @@ const QRScanButton = () => {
       dispatch(fetchPartnerById(user.user_id));
       dispatch(fetchPromotions(user.user_id));
       dispatch(fetchBranches(user.user_id));
+      dispatch(fetchConsumedPromotions(user.user_id));
+      
     }
 
     // Solicitar permiso de la cámara si no está concedido
@@ -120,19 +145,93 @@ const QRScanButton = () => {
   const handleBarCodeScanned = ({ type, data }: ScanData) => {
     console.log('Scanned QR Code:', data);
     setCameraVisible(false);
+    const [userId, email] = data.split('-'); // Divide el string en `id` y `email`
+      setScannedUser(userId);
+      setScannedEmail(email)
+    setModalVisible(true);
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-    Alert.alert('Código escaneado', `\nUsuario: ${data}`);
+  };
+  const handlePromotionSelect = (promotion: any) => {
+    setSelectedPromotion(promotion);
   };
 
+  const handleConfirm = async () => {
+    const status = statuses.find(status => status.name === 'active');
+
+    if (!selectedPromotion || !quantityConsumed || !amountSpent) {
+      Alert.alert("Error", "Debes completar todos los campos.");
+      return;
+    }
+  
+    const data = {
+      user_id: scannedUser && parseInt(scannedUser, 10), 
+      promotion_id: selectedPromotion?.promotion_id,
+      status_id: status?.id, 
+      quantity_consumed: parseInt(quantityConsumed, 10),
+      consumption_date: new Date().toISOString(),
+      description,
+      amount_consumed: parseFloat(amountSpent),
+    };
+  
+    console.log("datos de la consumition",data);
+    
+    try {
+      // Enviar los datos al backend usando dispatch
+      const result = await dispatch(submitConsumption(data));
+  
+      if (result?.status == 200) {
+        dispatch(fetchPromotions(user.user_id));
+        setSelectedPromotion(null);
+        setQuantityConsumed('');
+        setAmountSpent('');
+        setDescription('');
+        setScannedUser(null);
+        setScannedEmail(null);
+        Alert.alert("Éxito", "Consumo de promoción registrado correctamente.");
+      } else {
+        Alert.alert("Error", "No se pudo registrar el consumo de la promoción. Intenta de nuevo.");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Ocurrió un error al registrar el consumo de la promoción.");
+    }
+
+    setModalVisible(false);
+  };
+
+  const handleCancel = () => {
+    setModalVisible(false);
+    setSelectedPromotion(null);
+      setQuantityConsumed('');
+      setAmountSpent('');
+      setDescription('');
+      setScannedUser(null);
+      setScannedEmail(null);
+  };
   const handleCloseCamera = () => {
     setCameraVisible(false);
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
   };
+  const handleQuantityChange = (text: string) => {
+    const quantity = parseInt(text, 10);
+    if (selectedPromotion && selectedPromotion.available_quantity && quantity > selectedPromotion.available_quantity) {
+      Alert.alert("Error", `No puedes consumir más de ${selectedPromotion.available_quantity} promociones.`);
+      return;
+    }
+    setQuantityConsumed(text);
+  };
 
+  const openConsumedPromotionsModal = () => {
+    setModalConsumedVisible(true);
+  };
+
+  // Función para cerrar el modal
+  const closeConsumedPromotionsModal = () => {
+    setModalConsumedVisible(false);
+  };
   const ScannerFrame = () => (
     <View style={styles.frameContainer}>
       <View style={styles.frameCornerTopLeft} />
@@ -181,6 +280,100 @@ const QRScanButton = () => {
       <TouchableOpacity style={styles.button} onPress={handleQRScan}>
         <Text style={styles.buttonText}>Escanear QR</Text>
       </TouchableOpacity>
+      <TouchableOpacity 
+        style={styles.buttonconsumidas} 
+        onPress={() => setModalConsumedVisible(true)}
+      >
+        <Text style={styles.buttonTextconsum}>Consumos</Text>
+      </TouchableOpacity>
+      <Modal visible={modalVisible} animationType="slide" transparent={true}>
+        <View style={styles.modalContainer}>
+          <View style={styles.formContainer}>
+          <View style={styles.userName}>
+  <Text style={styles.userText}>
+    Cliente:
+  </Text>
+  {scannedEmail ? (
+    <Text style={styles.userText2}>
+      {scannedEmail}
+    </Text>
+  ) : (
+    <Text style={styles.quantityTextError}>
+      Usuario no detectado
+    </Text>
+  )}
+</View>
+
+{/* Línea horizontal */}
+<View style={styles.line} />
+        <Text style={styles.modalTitle}>Selecciona la promoción a consumir</Text>
+<View style={styles.pickerContainer}>
+  <Picker
+    selectedValue={selectedPromotion}
+    onValueChange={(itemValue) => handlePromotionSelect(itemValue)}
+    style={styles.picker}
+  ><Picker.Item label="* Selecciona una promoción" value={null} />
+    {filteredPromotions.map((promotion) => (
+      <Picker.Item
+        key={promotion.promotion_id}
+        label={promotion.title}
+        value={promotion}
+        style={styles.pickerItem}
+      />
+    ))}
+  </Picker>
+</View>
+  {
+    selectedPromotion &&
+    <View style={styles.quantity}>
+    <Text style={styles.quantityText}>
+  Disponibles:
+  </Text>
+  <Text style={styles.quantityText2}>
+  {selectedPromotion.available_quantity?  selectedPromotion.available_quantity:'Sin límite' }
+  </Text>
+    </View>
+  }
+          <TextInput
+            style={styles.input}
+            placeholder="Cantidad de promociones consumidas"
+            keyboardType="numeric"
+            value={quantityConsumed}
+            onChangeText={handleQuantityChange}
+            editable={!!selectedPromotion}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Monto consumido"
+            keyboardType="numeric"
+            value={amountSpent}
+            onChangeText={setAmountSpent}
+            editable={!!selectedPromotion}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Descripción"
+            value={description}
+            onChangeText={setDescription}
+            editable={!!selectedPromotion}
+          />
+          <TouchableOpacity onPress={handleConfirm} style={[
+    styles.confirmButton,
+    !selectedPromotion && styles.disabledButton
+  ]} disabled={!selectedPromotion}>
+            <Text style={styles.confirmButtonText}>Confirmar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleCancel} style={styles.cancelButton}>
+              <Text style={styles.cancelButtonText}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      <ConsumedPromotionsModal
+        visible={modalConsumedVisible}
+        onClose={closeConsumedPromotionsModal}
+        consumedPromotions={promotionsConsumed}
+      />
     </View>
   );
 };
@@ -207,7 +400,7 @@ const styles = StyleSheet.create({
   },
   icon: {
     width: 200,
-    height: 200, // Tamaño del PNG
+    height: 200, 
   },
   scanLine: {
     position: 'absolute',
@@ -225,6 +418,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'rgb(0, 122, 140)',
     elevation: 3,
+  },
+  buttonconsumidas:{
+    marginTop: 20,
+    paddingVertical: 5,
+    paddingHorizontal: 25,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth:1,
+    borderColor: 'rgb(0, 122, 140)',
+    color: 'rgb(0, 122, 140)',
+  },
+  buttonTextconsum: {
+    color: 'rgb(0, 122, 140)',
+    fontSize: 14,
+    fontWeight: '600',
+    letterSpacing: 0.5,
   },
   buttonText: {
     color: '#FFFFFF',
@@ -306,6 +516,155 @@ const styles = StyleSheet.create({
   closeButtonText: {
     color: '#fff',
     fontSize: 16,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)', // Fondo semitransparente
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  formContainer:{
+    display:'flex',
+    flexDirection:'column',
+    width:screenWidth *0.9,
+    height:screenHeight*0.8,
+    borderRadius:20,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    justifyContent:'center',
+    alignContent:'center',
+    alignItems:'center'
+  },
+  modalTitle: {
+    width:screenWidth *0.8,
+    textAlign:'center',
+    fontSize: screenWidth * 0.04,
+    fontWeight: 'bold',
+    color: '#007a8c',
+    marginVertical: screenWidth * 0.04,
+  },
+  promotionItem: {
+    padding: 15,
+    backgroundColor: '#007A8C',
+    borderRadius: 5,
+    marginVertical: 10,
+    width: '80%',
+    alignItems: 'center',
+  },
+  promotionText: {
+    color: '#fff',
+    marginTop:screenWidth *0.01,
+    fontWeight: 'bold',
+  },
+  input: {
+    width:screenWidth *0.8,
+    backgroundColor: '#fff',
+    borderRadius: 5,
+    paddingVertical: 5,
+    paddingHorizontal: 15,
+    fontSize: screenWidth * 0.04,
+    marginVertical: 8,
+  },
+  confirmButton: {
+    backgroundColor: 'rgb(0, 122, 140)',
+    padding: 10,
+    borderRadius: 5,
+    marginHorizontal: 5,
+    width:screenWidth *0.5,
+    marginTop:screenWidth *0.04,
+  },
+  disabledButton: {
+    opacity: 0.5, 
+  },
+  confirmButtonText: {
+    textAlign:'center',
+    color: '#fff',
+    fontSize: screenWidth *0.04,
+    fontWeight: 'bold',
+  },
+  cancelButton: {
+    backgroundColor: '#686868',
+    padding: 10,
+    borderRadius: 5,
+    marginHorizontal: 5,
+    width:screenWidth *0.5,
+    marginTop:screenWidth *0.04,
+  },
+  cancelButtonText: {
+    
+    textAlign:'center',
+    color: '#fff',
+    fontSize: screenWidth *0.04,
+    fontWeight: 'bold',
+  },
+  pickerContainer: {
+    width:screenWidth *0.8,
+    fontSize: screenWidth * 0.02,
+    backgroundColor:'#fff',
+    alignContent:'center',
+    alignItems:'center',
+    justifyContent:'center',
+    // borderWidth: 1,
+    // borderColor: '#ccc',
+    borderRadius: 5,
+    marginBottom: 10,
+    padding: 5,
+  },
+  picker: {
+    fontSize: screenWidth * 0.04,
+    height: 35,
+    width: '100%',
+  },
+  pickerItem:{
+    fontSize: screenWidth * 0.04,
+    color:'#336749',
+  },
+  quantity:{
+    display:'flex',
+    flexDirection:'row',
+    alignContent:'center',
+    width:screenWidth * 0.78,
+  },
+  quantityText:{
+    fontSize: screenWidth * 0.04,
+    width:screenWidth*0.24,
+    color:'#336749',
+  },
+  quantityText2:{
+    fontWeight:'600',
+    fontSize: screenWidth * 0.04,
+    color:'#007a8c',
+    width:screenWidth*0.6,
+  },
+  quantityTextError:{
+    fontWeight:'600',
+    fontSize: screenWidth * 0.04,
+    color:'rgb(193, 34, 34)',
+    width:screenWidth*0.6,
+  },
+  userName:{
+    display:'flex',
+    flexDirection:'row',
+    alignContent:'center',
+    justifyContent:'center',
+    width:screenWidth * 0.78,
+    marginVertical:screenWidth * 0.03,
+  },
+  userText:{
+    fontSize: screenWidth * 0.04,
+    width:screenWidth*0.18,
+    color:'#336749',
+  },
+  userText2:{
+    fontWeight:'600',
+    fontSize: screenWidth * 0.04,
+    color:'#007a8c',
+    width:screenWidth*0.6,
+  },
+  line: {
+    height: 1, 
+    backgroundColor: '#acd0d5', 
+    marginVertical: 10, 
+    width:screenWidth * 0.78,
   },
 });
 

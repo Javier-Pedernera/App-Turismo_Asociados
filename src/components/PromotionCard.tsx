@@ -71,7 +71,7 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ promotion, index, handleP
             Hasta: {formatDateToDDMMYYYY(promotion.expiration_date) }
           </Text>
           <Text style={styles.promotionDates}>
-            Disponibles: {promotion.available_quantity}
+            Disponibles: {promotion.available_quantity? promotion.available_quantity:'sin límite'}
           </Text>
         </View>
         <View style={styles.discountContainer}>

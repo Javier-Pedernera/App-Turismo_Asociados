@@ -52,7 +52,7 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
       Alert.alert('Error', 'No se pudo obtener el ID del socio o la sucursal. Intente de nuevo.');
       return;
     }
-    if (!title || !description || !startDate || !endDate || discountPercentage === null || availableQuantity === null || selectedCategories.length === 0 || imagePaths.length === 0) {
+    if (!title || !description || !startDate || !endDate || discountPercentage === null || selectedCategories.length === 0 || imagePaths.length === 0) {
       Alert.alert('Error', 'Por favor complete todos los campos');
       return;
     }
