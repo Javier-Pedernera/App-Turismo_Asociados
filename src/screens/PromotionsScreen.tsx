@@ -42,8 +42,6 @@ const PromotionsScreen: React.FC = () => {
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const statuses = useSelector(getMemoizedStates);
-  const countries = useSelector(getMemoizedCountries);
-  const roles = useSelector(getMemoizedRoles);
   const [selectedPromotion, setSelectedPromotion] = useState<Promotion | null>(null);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const partner = useSelector(getMemoizedPartner);

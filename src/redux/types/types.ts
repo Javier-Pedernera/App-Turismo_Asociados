@@ -39,6 +39,13 @@ export enum UserActionTypes {
     role_name: string;
     functionalities: Functionality[];
   }
+    //terminos
+    export interface Terms {
+      content: string;
+      created_at: string;
+      id: number;
+      version: string;
+    };
   // Definición de la estructura de los datos del usuario
   export interface UserData {
     user_id: number;
@@ -54,7 +61,9 @@ export enum UserActionTypes {
     status?: Status;
     subscribed_to_newsletter: boolean;
     roles?: Role[];
-    categories?: any
+    categories?: any;
+    terms?: Terms | null;
+    terms_accepted_at?: string; 
   }
 
 

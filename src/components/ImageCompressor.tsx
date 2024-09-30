@@ -7,11 +7,12 @@ import * as FileSystem from 'expo-file-system';
 interface ImageCompressorProps {
   onImageCompressed: (uri: string) => void;
   initialImageUri?: string;
+  isButtonDisabled?:boolean;
 }
 
-const ImageCompressor: React.FC<ImageCompressorProps> = ({ onImageCompressed, initialImageUri }) => {
+const ImageCompressor: React.FC<ImageCompressorProps> = ({ onImageCompressed, initialImageUri, isButtonDisabled }) => {
   const [imageUri, setImageUri] = useState<string | null>(`${initialImageUri}?timestamp=${new Date().getTime()}` || null);
-
+  // console.log("imagen inicial",imageUri);
   const pickAndCompressImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -36,8 +37,6 @@ const ImageCompressor: React.FC<ImageCompressorProps> = ({ onImageCompressed, in
         const base64 = await FileSystem.readAsStringAsync(compressedImage.uri, {
           encoding: FileSystem.EncodingType.Base64,
         });
-        // console.log("imagen en base 64------------------------", base64);
-
         // Actualizar la vista y pasar la imagen comprimida en base64
         setImageUri(`${compressedImage.uri}?timestamp=${new Date().getTime()}`);
         onImageCompressed(base64);
@@ -50,7 +49,7 @@ const ImageCompressor: React.FC<ImageCompressorProps> = ({ onImageCompressed, in
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={pickAndCompressImage} style={styles.imagePickerButton}>
+      <TouchableOpacity onPress={pickAndCompressImage} style={styles.imagePickerButton} disabled={!isButtonDisabled}>
         {/* <Text style={styles.imagePickerButtonText}>Seleccionar Imagen</Text> */}
         {imageUri && <Image source={{ uri: imageUri }} style={styles.imagePreview} />}
       </TouchableOpacity>
@@ -79,7 +78,7 @@ const styles = StyleSheet.create({
   },
   imagePreview: {
     alignSelf: 'center',
-    borderColor: 'rgba(172, 208, 213,0.2)',
+    borderColor: 'rgba(206, 206, 206,0.5)',
     borderWidth: 0.5,
     width: 100,
     height: 100,

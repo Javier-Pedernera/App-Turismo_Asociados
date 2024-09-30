@@ -248,6 +248,7 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
             ratings={{ average_rating: 0 }}
             initialRegion={initialRegion}
             isEditing={isEditing}
+            justSee={false}
           />
         </View>
       ),

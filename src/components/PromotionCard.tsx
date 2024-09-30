@@ -11,6 +11,7 @@ import { getMemoizedStates } from '../redux/selectors/globalSelectors';
 import { formatDateToDDMMYYYY } from '../utils/formatDate';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Modal } from 'react-native';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -25,21 +26,32 @@ interface PromotionCardProps {
 const PromotionCard: React.FC<PromotionCardProps> = ({ promotion, index, handlePress, handleEdit, handleDelete }) => {
   const dispatch: AppDispatch = useDispatch();
   const [loadingImg, setLoadingImg] = useState(false);
-  const heartRefs = useRef<Animatable.View[]>([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedPromotionId, setSelectedPromotionId] = useState<number | null>(null);
 
 
   const handleImageLoadStart = () => setLoadingImg(true);
   const handleImageLoadEnd = () => setLoadingImg(false);
 
 
+  const showDeleteConfirmation = (promotionId: number) => {
+    setSelectedPromotionId(promotionId); // Guarda la promoción seleccionada
+    setIsModalVisible(true); // Muestra el modal
+  };
 
-  const animateHeart = (index: number) => {
-    if (heartRefs.current[index]?.rubberBand) {
-      heartRefs.current[index].rubberBand(1000);
+  const confirmDelete = () => {
+    if (selectedPromotionId) {
+      handleDelete(selectedPromotionId); // Llama a la función handleDelete solo si hay confirmación
     }
+    setIsModalVisible(false); // Oculta el modal
+  };
+  const cancelDelete = () => {
+    setSelectedPromotionId(null); // Limpia la promoción seleccionada
+    setIsModalVisible(false); // Oculta el modal
   };
 
   return (
+    <>
     <TouchableOpacity
       key={promotion.promotion_id}
       style={styles.promotionCard}
@@ -79,23 +91,37 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ promotion, index, handleP
             <Text style={styles.discountText}>{promotion.discount_percentage}%</Text>
           </View>
           <View style={styles.starCont}>
-            <Animatable.View ref={(ref: AnimatableView | null) => {
-              heartRefs.current[index] = ref as Animatable.View;
-            }}>
+           
               <View style={styles.actionsContainer}>
                 <TouchableOpacity onPress={() => handleEdit(promotion)}>
                   <MaterialCommunityIcons name="square-edit-outline" size={28} color="rgb(0, 122, 140)" style={styles.actionIcon} />
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleDelete(promotion.promotion_id)}>
+                <TouchableOpacity  onPress={() => showDeleteConfirmation(promotion.promotion_id)}>
                   <Ionicons name="trash-outline" size={25} color="#e04545" />
                 </TouchableOpacity>
               </View>
-            </Animatable.View>
           </View>
         </View>
       </View>
       <View style={styles.divider} />
     </TouchableOpacity>
+    {/* Modal de confirmación */}
+    <Modal visible={isModalVisible} transparent={true} animationType="slide">
+    <View style={styles.modalContainer}>
+      <View style={styles.modalContent}>
+        <Text style={styles.modalText}>¿Estás seguro de que deseas eliminar esta promoción?</Text>
+        <View style={styles.modalButtons}>
+          <TouchableOpacity onPress={confirmDelete} style={styles.confirmButton}>
+            <Text style={styles.buttonText}>Sí</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={cancelDelete} style={styles.cancelButton}>
+            <Text style={styles.buttonText}>No</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  </Modal>
+  </>
   );
 };
 
@@ -196,6 +222,48 @@ const styles = StyleSheet.create({
   previewText: {
     fontWeight: 'bold',
     color: " rgba(244, 244, 244,0.7)"
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: 300,
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalText: {
+    color:'#007a8b',
+    fontSize: 18,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  confirmButton: {
+    padding: 10,
+    backgroundColor: '#e04545',
+    borderRadius: 5,
+    marginRight: 10,
+    width:50,
+  },
+  cancelButton: {
+    padding: 10,
+    width:50,
+    textAlign:'center',
+    backgroundColor: '#ccc',
+    borderRadius: 5,
+  },
+  buttonText: {
+    textAlign:'center',
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
 

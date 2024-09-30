@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Animated, Image, Alert, TextInput } from 'react-native';
-import { CameraView, CameraType, useCameraPermissions } from 'expo-camera'; 
+import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useDispatch, useSelector } from 'react-redux';
 import { Promotion, UserData } from '../redux/types/types';
-import { getMemoizedUserData } from '../redux/selectors/userSelectors';
-import { fetchPartnerById } from '../redux/actions/userActions';
+import { getMemoizedAccessToken, getMemoizedUserData } from '../redux/selectors/userSelectors';
+import { fetchPartnerById, getUserInfo, logOutUser } from '../redux/actions/userActions';
 import { AppDispatch } from '../redux/store/store';
 import { fetchConsumedPromotions, fetchPromotions, submitConsumption } from '../redux/actions/promotionsActions';
 import { getMemoizedConsumedPromotions, getMemoizedPromotions } from '../redux/selectors/promotionSelectors';
@@ -16,9 +16,16 @@ import { Modal } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { getMemoizedStates } from '../redux/selectors/globalSelectors';
 import ConsumedPromotionsModal from '../components/ConsumedPromotionsModalProps ';
+import axios from 'axios';
+import { useNavigation } from '@react-navigation/native';
+import { RootStackParamList } from '../navigation/AppNavigator';
+import { StackNavigationProp } from '@react-navigation/stack';
+import TermsModal from '../components/TermsModal';
+import Loader from '../components/Loader';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
-
+type homeScreenProp = StackNavigationProp<RootStackParamList>;
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 interface ScanData {
   type: string;
   data: string;
@@ -27,6 +34,8 @@ interface ScanData {
 const QRScanButton = () => {
   const user = useSelector(getMemoizedUserData) as UserData;
   const statuses = useSelector(getMemoizedStates);
+  const accessToken = useSelector(getMemoizedAccessToken);
+
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [cameraVisible, setCameraVisible] = useState(false);
   const [facing, setFacing] = useState<CameraType>('back');
@@ -34,6 +43,7 @@ const QRScanButton = () => {
   const opacity = useRef(new Animated.Value(1)).current;
   const [permission, requestPermission] = useCameraPermissions();
   const dispatch: AppDispatch = useDispatch();
+  const navigation = useNavigation<homeScreenProp>();
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const promotions = useSelector(getMemoizedPromotions);
   const [modalVisible, setModalVisible] = useState(false);
@@ -46,24 +56,31 @@ const QRScanButton = () => {
   const currentDate = new Date();
   const promotionsConsumed = useSelector(getMemoizedConsumedPromotions);
   const [modalConsumedVisible, setModalConsumedVisible] = useState<boolean>(false);
+  const [isModalTermsVisible, setModalTermsVisible] = useState(false);
+  const [currentTerms, setCurrentTerms] = useState<any>(undefined);
+  const [isloading, setIsLoading] = useState(false);
+
+  // console.log("access token",accessToken);
+  // console.log("terminos actuales",currentTerms);
   // console.log("promotions",promotions[0]);
-// console.log("statuses",statuses);
-console.log("promotions consumidas",promotionsConsumed);
-const filteredPromotions = promotions.filter(promotion => {
-  const startDate = new Date(promotion.start_date);
-  const expirationDate = new Date(promotion.expiration_date);
-  return promotion.status?.name === 'active' && currentDate >= startDate && currentDate <= expirationDate;
-});
-// console.log("filteredPromotions",filteredPromotions);
+  // console.log("statuses",statuses);
+  // console.log("promotions consumidas",promotionsConsumed);
+  const filteredPromotions = promotions.filter(promotion => {
+    const startDate = new Date(promotion.start_date);
+    const expirationDate = new Date(promotion.expiration_date);
+    return promotion.status?.name === 'active' && currentDate >= startDate && currentDate <= expirationDate;
+  });
+  // console.log("filteredPromotions",filteredPromotions);
 
   useEffect(() => {
     dispatch(loadData());
+    fetchCurrentTerms();
     if (user) {
       dispatch(fetchPartnerById(user.user_id));
       dispatch(fetchPromotions(user.user_id));
       dispatch(fetchBranches(user.user_id));
       dispatch(fetchConsumedPromotions(user.user_id));
-      
+
     }
 
     // Solicitar permiso de la cámara si no está concedido
@@ -100,6 +117,45 @@ const filteredPromotions = promotions.filter(promotion => {
   useEffect(() => {
     startLineAnimation();
   }, [cameraVisible]);
+
+  const fetchCurrentTerms = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/terms`);
+      // console.log("respuesta del back", response);
+
+      setCurrentTerms(response.data);
+    } catch (error) {
+      console.error('Error al obtener los términos:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.terms && currentTerms !== undefined && user.terms?.version !== currentTerms?.version) {
+      setModalTermsVisible(true);
+    }
+    if (user?.terms === null) {
+      setModalTermsVisible(true);
+    }
+  }, [user, currentTerms]);
+
+  const handleAcceptTerms = async () => {
+    try {
+      setIsLoading(true)
+      await axios.put(`${API_URL}/users/${user.user_id}/accept-terms`);
+      await dispatch(getUserInfo(accessToken))
+      setModalTermsVisible(false);
+      setIsLoading(false)
+      Alert.alert('Términos aceptados', 'Has aceptado los términos y condiciones.');
+    } catch (error) {
+      console.error('Error al aceptar los términos:', error);
+    }
+  };
+  const handleCancelTerms = async () => {
+    await dispatch(logOutUser());
+    setModalTermsVisible(false);
+    Alert.alert('Términos no aceptados', 'Has rechazado los términos y condiciones.');
+    navigation.navigate('Login');
+  };
 
   const startLineAnimation = () => {
     Animated.sequence([
@@ -143,11 +199,11 @@ const filteredPromotions = promotions.filter(promotion => {
   };
 
   const handleBarCodeScanned = ({ type, data }: ScanData) => {
-    console.log('Scanned QR Code:', data);
+    // console.log('Scanned QR Code:', data);
     setCameraVisible(false);
-    const [userId, email] = data.split('-'); // Divide el string en `id` y `email`
-      setScannedUser(userId);
-      setScannedEmail(email)
+    const [userId, email] = data.split('-');
+    setScannedUser(userId);
+    setScannedEmail(email)
     setModalVisible(true);
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -164,23 +220,21 @@ const filteredPromotions = promotions.filter(promotion => {
       Alert.alert("Error", "Debes completar todos los campos.");
       return;
     }
-  
+
     const data = {
-      user_id: scannedUser && parseInt(scannedUser, 10), 
+      user_id: scannedUser && parseInt(scannedUser, 10),
       promotion_id: selectedPromotion?.promotion_id,
-      status_id: status?.id, 
+      status_id: status?.id,
       quantity_consumed: parseInt(quantityConsumed, 10),
       consumption_date: new Date().toISOString(),
       description,
       amount_consumed: parseFloat(amountSpent),
     };
-  
-    console.log("datos de la consumition",data);
-    
+
+    // console.log("datos de la consumition",data);
+
     try {
-      // Enviar los datos al backend usando dispatch
       const result = await dispatch(submitConsumption(data));
-  
       if (result?.status == 200) {
         dispatch(fetchPromotions(user.user_id));
         setSelectedPromotion(null);
@@ -203,11 +257,11 @@ const filteredPromotions = promotions.filter(promotion => {
   const handleCancel = () => {
     setModalVisible(false);
     setSelectedPromotion(null);
-      setQuantityConsumed('');
-      setAmountSpent('');
-      setDescription('');
-      setScannedUser(null);
-      setScannedEmail(null);
+    setQuantityConsumed('');
+    setAmountSpent('');
+    setDescription('');
+    setScannedUser(null);
+    setScannedEmail(null);
   };
   const handleCloseCamera = () => {
     setCameraVisible(false);
@@ -262,8 +316,9 @@ const filteredPromotions = promotions.filter(promotion => {
 
   return (
     <View style={styles.container}>
+      {isloading && <Loader />}
       <View style={styles.containercircle}>
-        <SemicirclesOverlay/>
+        <SemicirclesOverlay />
       </View>
       <View style={styles.iconContainer}>
         <Image source={require('../../assets/images/QR-Scan.png')} style={styles.icon} />
@@ -280,8 +335,8 @@ const filteredPromotions = promotions.filter(promotion => {
       <TouchableOpacity style={styles.button} onPress={handleQRScan}>
         <Text style={styles.buttonText}>Escanear QR</Text>
       </TouchableOpacity>
-      <TouchableOpacity 
-        style={styles.buttonconsumidas} 
+      <TouchableOpacity
+        style={styles.buttonconsumidas}
         onPress={() => setModalConsumedVisible(true)}
       >
         <Text style={styles.buttonTextconsum}>Consumos</Text>
@@ -289,86 +344,98 @@ const filteredPromotions = promotions.filter(promotion => {
       <Modal visible={modalVisible} animationType="slide" transparent={true}>
         <View style={styles.modalContainer}>
           <View style={styles.formContainer}>
-          <View style={styles.userName}>
-  <Text style={styles.userText}>
-    Cliente:
-  </Text>
-  {scannedEmail ? (
-    <Text style={styles.userText2}>
-      {scannedEmail}
-    </Text>
-  ) : (
-    <Text style={styles.quantityTextError}>
-      Usuario no detectado
-    </Text>
-  )}
-</View>
+            <View style={styles.userName}>
+              <Text style={styles.userText}>
+                Cliente:
+              </Text>
+              {scannedEmail ? (
+                <Text style={styles.userText2}>
+                  {scannedEmail}
+                </Text>
+              ) : (
+                <Text style={styles.quantityTextError}>
+                  Usuario no detectado
+                </Text>
+              )}
+            </View>
 
-{/* Línea horizontal */}
-<View style={styles.line} />
-        <Text style={styles.modalTitle}>Selecciona la promoción a consumir</Text>
-<View style={styles.pickerContainer}>
-  <Picker
-    selectedValue={selectedPromotion}
-    onValueChange={(itemValue) => handlePromotionSelect(itemValue)}
-    style={styles.picker}
-  ><Picker.Item label="* Selecciona una promoción" value={null} />
-    {filteredPromotions.map((promotion) => (
-      <Picker.Item
-        key={promotion.promotion_id}
-        label={promotion.title}
-        value={promotion}
-        style={styles.pickerItem}
-      />
-    ))}
-  </Picker>
-</View>
-  {
-    selectedPromotion &&
-    <View style={styles.quantity}>
-    <Text style={styles.quantityText}>
-  Disponibles:
-  </Text>
-  <Text style={styles.quantityText2}>
-  {selectedPromotion.available_quantity?  selectedPromotion.available_quantity:'Sin límite' }
-  </Text>
-    </View>
-  }
-          <TextInput
-            style={styles.input}
-            placeholder="Cantidad de promociones consumidas"
-            keyboardType="numeric"
-            value={quantityConsumed}
-            onChangeText={handleQuantityChange}
-            editable={!!selectedPromotion}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Monto consumido"
-            keyboardType="numeric"
-            value={amountSpent}
-            onChangeText={setAmountSpent}
-            editable={!!selectedPromotion}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Descripción"
-            value={description}
-            onChangeText={setDescription}
-            editable={!!selectedPromotion}
-          />
-          <TouchableOpacity onPress={handleConfirm} style={[
-    styles.confirmButton,
-    !selectedPromotion && styles.disabledButton
-  ]} disabled={!selectedPromotion}>
-            <Text style={styles.confirmButtonText}>Confirmar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleCancel} style={styles.cancelButton}>
+            {/* Línea horizontal */}
+            <View style={styles.line} />
+            <Text style={styles.modalTitle}>Selecciona la promoción a consumir</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={selectedPromotion}
+                onValueChange={(itemValue) => handlePromotionSelect(itemValue)}
+                style={styles.picker}
+              ><Picker.Item label="* Selecciona una promoción" value={null} />
+                {filteredPromotions.map((promotion) => (
+                  <Picker.Item
+                    key={promotion.promotion_id}
+                    label={promotion.title}
+                    value={promotion}
+                    style={styles.pickerItem}
+                  />
+                ))}
+              </Picker>
+            </View>
+            {
+              selectedPromotion &&
+              <View style={styles.quantity}>
+                <Text style={styles.quantityText}>
+                  Disponibles:
+                </Text>
+                <Text style={styles.quantityText2}>
+                  {selectedPromotion.available_quantity ? selectedPromotion.available_quantity : 'Sin límite'}
+                </Text>
+              </View>
+            }
+            <TextInput
+              style={styles.input}
+              placeholder="Cantidad de promociones consumidas"
+              keyboardType="numeric"
+              value={quantityConsumed}
+              onChangeText={handleQuantityChange}
+              editable={!!selectedPromotion}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Monto consumido"
+              keyboardType="numeric"
+              value={amountSpent}
+              onChangeText={setAmountSpent}
+              editable={!!selectedPromotion}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Descripción"
+              value={description}
+              onChangeText={setDescription}
+              editable={!!selectedPromotion}
+            />
+            <TouchableOpacity onPress={handleConfirm} style={[
+              styles.confirmButton,
+              !selectedPromotion && styles.disabledButton
+            ]} disabled={!selectedPromotion}>
+              <Text style={styles.confirmButtonText}>Confirmar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleCancel} style={styles.cancelButton}>
               <Text style={styles.cancelButtonText}>Cancelar</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
+      {/* Modal para aceptar los términos y condiciones */}
+      {currentTerms &&
+        <View style={styles.Terms}>
+          <TermsModal
+            isVisible={isModalTermsVisible}
+            toggleModal={() => setModalTermsVisible(false)}
+            acceptTerms={handleAcceptTerms}
+            termsText={currentTerms?.content}
+            onCancel={handleCancelTerms}
+            newTerms={true}
+          />
+        </View>}
       <ConsumedPromotionsModal
         visible={modalConsumedVisible}
         onClose={closeConsumedPromotionsModal}
@@ -508,10 +575,10 @@ const styles = StyleSheet.create({
   closeButton: {
     position: 'absolute',
     bottom: 50,
-    right: screenWidth*0.5,
-    padding: 0,
-    // backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    borderRadius: 0,
+    left: screenWidth*0.45,
+    padding: 10,
+    backgroundColor: 'rgb(246, 246, 246)',
+    borderRadius: 25,
   },
   closeButtonText: {
     color: '#fff',
@@ -519,7 +586,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)', // Fondo semitransparente
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -666,6 +733,9 @@ const styles = StyleSheet.create({
     marginVertical: 10, 
     width:screenWidth * 0.78,
   },
+  Terms:{
+    borderRadius:10
+  }
 });
 
 export default QRScanButton;

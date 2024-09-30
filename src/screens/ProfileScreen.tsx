@@ -30,7 +30,7 @@ const ProfileScreen: React.FC = () => {
   const partner = useSelector(getMemoizedPartner);
   const dispatch: AppDispatch = useDispatch();
   // console.log("categorias de usuario",categories);
-  console.log("partner en el profile", partner);
+  // console.log("partner en el profile", partner);
   const [selectedCategories, setSelectedCategories] = useState<any>(categories.map(cat => cat.id)
   );
   // console.log("categorias seleccionadas",selectedCategories);
@@ -187,19 +187,19 @@ const ProfileScreen: React.FC = () => {
     >
       <SemicirclesOverlay />
       <ScrollView contentContainerStyle={styles.container}>
-        <ImageCompressor onImageCompressed={handleImageCompressed} initialImageUri={formData.image_data || undefined} />
+        <ImageCompressor onImageCompressed={handleImageCompressed} initialImageUri={formData.image_data || undefined} isButtonDisabled={isEditing}/>
         <View style={styles.iconContainer}>
             <TouchableOpacity
               style={styles.editButton}
               onPress={() => setIsEditing(!isEditing)}
             >
-              <AntDesign name="edit" size={24} color="#fff" />
+              <AntDesign name="edit" size={24} color="#007a8b" />
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.exitButton}
               onPress={handleLogout} 
             >
-              <MaterialIcons name="logout" size={24} color="#fff" />
+              <MaterialIcons name="logout" size={24} color="#007a8b" />
             </TouchableOpacity>
           </View>
           {isEditing ? (
@@ -443,12 +443,27 @@ const styles = StyleSheet.create({
   },
   editButton:{
     position:'absolute',
-    top:70,
-    right:100
+    alignContent:'center',
+    alignItems:'center',
+    justifyContent:'center',
+    borderRadius:25,
+    backgroundColor:'rgb(232, 232, 232)',
+    top:45,
+    right:90,
+    height:40,
+    width:40
   },
   exitButton:{
-    top:70,
-    left:100
+    position:'absolute',
+    alignContent:'center',
+    alignItems:'center',
+    justifyContent:'center',
+    borderRadius:25,
+    backgroundColor:'rgb(232, 232, 232)',
+    height:40,
+    width:40,
+    top:45,
+    left:90
   },
   inputSelect: {
     height: 35,
@@ -481,7 +496,7 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     marginBottom: 5,
     alignSelf: 'center',
-    borderColor: 'rgb(0, 122, 140)',
+    borderColor: 'rgba(0, 122, 140)',
     borderWidth: 1,
 
   },

@@ -39,6 +39,23 @@ export const userLogIn = (email: string, password: string) => {
   };
 };
 
+export const getUserInfo = (token:string) => {
+  return async (dispatch: Dispatch) => {
+    try {
+      const response = await axios.get(`${API_URL}/user`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log(response.data);
+      
+      dispatch(setUser(response.data));
+    } catch (error:any) {
+      console.error("Error en get User Info:", error.message);
+      throw error;
+    }
+  };
+};
 export const logOutUser = () => {
   return (dispatch: Dispatch) => {
     dispatch(logOut());

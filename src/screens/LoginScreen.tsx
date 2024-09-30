@@ -119,7 +119,7 @@ const LoginScreen: React.FC = () => {
         {/* <Text style={styles.forgotPasswordText}>No tienes cuenta? Contáctanos</Text> */}
         {loading && <Loader />}
       </View>
-        <Text  style={styles.versionText} >Version Beta 0.1.1</Text>
+        <Text  style={styles.versionText} >Version Beta 0.1.3</Text>
       <Modal isVisible={isModalVisible}>
         <View style={styles.modalContent}>
           <Text style={styles.modalMessage}>{modalMessage}</Text>
@@ -275,7 +275,9 @@ const styles = StyleSheet.create({
     justifyContent:'space-evenly'
   },
   modalMessage: {
-    fontSize: 18,
+    width:'100%',
+    textAlign:'center',
+    fontSize: 16,
     marginBottom: 20,
     fontWeight:'600',
     color: '#007a8c',

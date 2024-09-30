@@ -78,7 +78,7 @@ console.log("seleccionada para borrar",selectedPromotion);
                 promotion.status?.name === 'active'
               )}
             renderItem={renderItem}
-            keyExtractor={(item) => item.promotion_consumed_id}
+            keyExtractor={(item, index) => item.promotion_consumed_id ? item.promotion_consumed_id.toString() : index.toString()} 
           />: <Text> No tienes transacciones realizadas aún</Text> }
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <Text style={styles.closeButtonText}>Cerrar</Text>

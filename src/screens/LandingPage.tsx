@@ -16,10 +16,7 @@ const LandingPage: React.FC = () => {
       style={styles.background}
     >
       <View style={styles.logoContainer}>
-        {/* <Text style={styles.logo}>Tu Logo Aquí</Text> */}
-        {/* Puedes reemplazar el Text con una imagen si tienes un logo en imagen */}
         <Image source={require('../../assets/logo.png')} style={styles.logoImage} />
-        {/* <Image source={require('./path-to-your-logo.png')} style={styles.logoImage} /> */}
       </View>
 
       <View style={styles.card}>

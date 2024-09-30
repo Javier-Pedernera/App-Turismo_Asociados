@@ -5,9 +5,7 @@ import MapViewDirections from 'react-native-maps-directions';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import CustomCallout from '../components/CustomCallout';
 import { Ionicons } from '@expo/vector-icons';
-import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
-const GOOGLE_MAPS_APIKEY = process.env.EXPO_PUBLIC_API_KEYGOOGLE;
 const { width: screenWidth } = Dimensions.get('window');
 const screenHeight = Dimensions.get('window').height;
 
@@ -24,6 +22,7 @@ interface MapComponentProps {
   isEditing?: boolean;
   setRouteLoading: (loading: boolean) => void;
   ratings: any;
+  justSee:boolean;
   initialRegion?: {
     latitude: number;
     longitude: number;
@@ -45,7 +44,8 @@ const MapSingle: React.FC<MapComponentProps> = ({
   routeLoading,
   isEditing,
   setRouteLoading,
-  initialRegion
+  initialRegion,
+  justSee
 }) => {
   const [searchLocation, setSearchLocation] = useState({
     latitude: branch?.latitude || initialRegion?.latitude,
@@ -53,14 +53,6 @@ const MapSingle: React.FC<MapComponentProps> = ({
     address: branch?.address || '',
   });
 
-  const handlePlaceSelected = (data: any, details: any = null) => {
-    if (details && details.geometry && details.geometry.location) {
-      const { lat, lng } = details.geometry.location;
-      console.log('Selected location:', lat, lng);
-    } else {
-      console.log('Details are not available');
-    }
-  };
 
   const handleMapPress = (e: any) => {
     console.log("funcion pressmap", e.nativeEvent);
@@ -87,20 +79,6 @@ const MapSingle: React.FC<MapComponentProps> = ({
 
   return (
     <View style={styles.mapContainer}>
-      {/* <GooglePlacesAutocomplete
-        placeholder="Buscar"
-        fetchDetails
-        onPress={handlePlaceSelected}
-        query={{
-          key: GOOGLE_MAPS_APIKEY,
-          language: 'es',
-        }}
-        styles={{
-          container: { flex: 0, zIndex: 1 },
-          textInput: { height: 40, borderRadius: 5, paddingHorizontal: 10 },
-        }}
-      /> */}
-
       <MapView
         style={styles.map}
         region={{
@@ -149,9 +127,9 @@ const MapSingle: React.FC<MapComponentProps> = ({
         </View>
       )}
       {selectedBranch && !routeSelected && Platform.OS === 'android' && (
-        <View style={styles.calloutContainer}>
+        <View style={isEditing?  styles.calloutContainer:styles.calloutContainerPrev}>
          {isEditing? <Text style={styles.labelMap}>Ejemplo de marcador</Text>:<></>} 
-          <CustomCallout branch={selectedBranch} handleRoutePress={handleGetDirections} />
+          <CustomCallout branch={selectedBranch} handleRoutePress={handleGetDirections} prevSee={justSee}/>
         </View>
       )}
     </View>
@@ -237,6 +215,10 @@ const styles = StyleSheet.create({
   calloutContainer: {
     width: 200,
     alignItems: 'center',
+  },
+  calloutContainerPrev:{
+    width: screenWidth*0.5,
+    // alignItems: 'center',
   },
   loader: {
     position: 'absolute',

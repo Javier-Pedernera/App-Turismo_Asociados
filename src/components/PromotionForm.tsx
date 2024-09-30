@@ -12,6 +12,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { formatDateToDDMMYYYY, formatDateToYYYYMMDD } from '../utils/formatDate';
 import { AppDispatch } from '../redux/store/store';
 import { createPromotion } from '../redux/actions/promotionsActions';
+import Loader from './Loader';
 
 interface PromotionFormProps {
   onClose: () => void;
@@ -22,7 +23,7 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
   const user = useSelector(getMemoizedUserData);
   const allCategories = useSelector(getMemoizedAllCategories);
   const partner = useSelector(getMemoizedPartner);
-  console.log("partner actual", partner?.branches);
+  // console.log("partner actual", partner?.branches);
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -35,7 +36,7 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [isCategoriesModalVisible, setCategoriesModalVisible] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
-
+  const [loading, setLoading] = useState(false);
   const handleImagesCompressed = useCallback((images: { filename: string; data: string }[]) => {
     setImagePaths(images);
   }, []);
@@ -45,9 +46,9 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
     setSelectedCategories(newSelectedCategories);
   };
 
-  const handleSubmit = () => {
-    console.log(title, description, startDate?.toISOString().split('T')[0], endDate?.toISOString().split('T')[0], discountPercentage, availableQuantity, selectedCategories, imagePaths.length);
-
+  const handleSubmit = async () => {
+    // console.log(title, description, startDate?.toISOString().split('T')[0], endDate?.toISOString().split('T')[0], discountPercentage, availableQuantity, selectedCategories, imagePaths.length);
+setLoading(true)
     if (!user?.user_id || !partner?.branches[0].branch_id) {
       Alert.alert('Error', 'No se pudo obtener el ID del socio o la sucursal. Intente de nuevo.');
       return;
@@ -70,8 +71,9 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
     };
     console.log(promotionData);
 
-    dispatch(createPromotion(promotionData))
+    await dispatch(createPromotion(promotionData))
       .then(() => {
+        setLoading(false)
         Alert.alert('Éxito', 'La promoción ha sido creada correctamente.');
         onClose(); // Puedes cerrar el modal o hacer alguna otra acción
       })
@@ -120,6 +122,7 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
   return (
     
     <ScrollView contentContainerStyle={styles.formContainer}>
+      {loading&& <Loader/>}
       <TextInput
         style={styles.input}
         placeholder="Título"

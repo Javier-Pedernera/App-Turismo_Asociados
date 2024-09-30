@@ -293,83 +293,12 @@ const PromotionDetailScreen: React.FC = () => {
               setSelectedBranch={setSelectedBranch}
               routeLoading={routeLoading}
               setRouteLoading={setRouteLoading}
+              justSee={true}
             />
           </View>
         )}
       </View>
-      {/* {branch && branch.latitude !== null && branch.longitude !== null && (
-      <View style={styles.descriptiontitleMap}>
-        <Text style={styles.descriptiontitleMap}>Ubicación:</Text>
-        <Text style={styles.descriptiontitleMap}>{branch.address}</Text>
-
-        <View style={styles.mapContainer}>
-
-        <MapView
-          style={styles.map}
-          initialRegion={{
-            latitude: branch.latitude,
-            longitude: branch.longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          }}
-          onPress={handleMapPress}
-        >
-          <Marker
-            coordinate={{ latitude: branch.latitude, longitude: branch.longitude }}
-            onPress={() => Touchmarker(branch)}
-          >
-            <MaterialCommunityIcons name="map-marker" size={40} color="#F1AD3E" />
-            {Platform.OS === 'ios' && (
-              <Callout style={routeSelected ? styles.calloutContainerHide : styles.calloutContainerIos} tooltip>
-                <View style={styles.callout}>
-                  <View style={styles.calloutImageContainer}>
-                    <Image source={{ uri: branch.image_url }} style={styles.calloutImage} />
-                  </View>
-                  <Text style={styles.calloutTitle}>{branch.name}</Text>
-                  <View style={styles.divider}></View>
-                  <View style={styles.ratingContainer}>
-                    {renderStars(ratings.average_rating)}
-                  </View>
-                  <Text style={styles.calloutDescription}>{branch.description}</Text>
-                  <Text style={styles.calloutDescription}>{branch.address}</Text>
-                  <TouchableOpacity style={styles.calloutButton} onPress={handleGetDirections}>
-                    <Text style={styles.calloutButtonText}>Cómo llegar?</Text>
-                  </TouchableOpacity>
-                </View>
-              </Callout>
-            )}
-          </Marker>
-          {currentPosition && (
-            <Marker coordinate={currentPosition} title="Mi ubicación" pinColor="blue">
-              <MaterialCommunityIcons name="map-marker-radius" size={40} color="rgb(0, 122, 140)" />
-            </Marker>
-          )}
-          {destination && currentPosition && (
-            <MapViewDirections
-              origin={{
-                latitude: currentPosition.latitude,
-                longitude: currentPosition.longitude,
-              }}
-              destination={destination}
-              apikey={GOOGLE_MAPS_APIKEY!}
-              strokeWidth={3}
-              strokeColor="rgb(0, 122, 140)"
-              timePrecision="none"
-              precision="high"
-              onReady={() => {
-                setRouteLoading(false);
-              }}
-            />
-          )}
-        </MapView>
-        {selectedBranch && !routeSelected && Platform.OS === 'android' && (
-      <View style={styles.calloutContainer}>
-        <CustomCallout branch={selectedBranch} handleRoutePress={handleGetDirections} />
-      </View>
-    )}
-        </View>
-      </View>
-    )} */}
+   
       {/* Sección de valoraciones */}
       <View style={styles.ratingsContainer}>
         <Text style={styles.sectionTitle}>Valoraciones:</Text>
@@ -391,7 +320,7 @@ const PromotionDetailScreen: React.FC = () => {
         <Text style={styles.sectionTitle}>Escribe tu comentario:</Text>
         <View style={styles.starsContainer}>
           {[1, 2, 3, 4, 5].map((star) => (
-            <TouchableOpacity key={star} onPress={() => setNewRating(star)}>
+            <TouchableOpacity key={star}>
               <Ionicons name={star <= newRating ? 'star' : 'star-outline'} size={24} color="#FFD700" />
             </TouchableOpacity>
           ))}
@@ -402,7 +331,7 @@ const PromotionDetailScreen: React.FC = () => {
           value={newComment}
           onChangeText={setNewComment}
         />
-        <TouchableOpacity onPress={handleAddRating} style={styles.button}>
+        <TouchableOpacity style={styles.button}>
           <Text style={styles.buttonText}>Enviar valoración</Text>
         </TouchableOpacity>
       </View>

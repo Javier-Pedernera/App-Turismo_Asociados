@@ -7,10 +7,11 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 interface CustomCalloutProps {
   branch: any;
   handleRoutePress: () => void;
+  prevSee: boolean;
 }
 
-const CustomCallout: React.FC<CustomCalloutProps> = ({ branch, handleRoutePress }) => {
-  console.log("punto turistico", branch);
+const CustomCallout: React.FC<CustomCalloutProps> = ({ branch, handleRoutePress, prevSee }) => {
+  // console.log("punto turistico", branch);
   const imageUrl = branch.branch_id
     ? branch.image_url
     : branch.images && branch.images.length > 0
@@ -87,11 +88,11 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 10,
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    elevation: 15, // Aumenta la elevación para que la sombra sea más evidente
+    elevation: 15, 
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 0 }, // Aumenta el desplazamiento de la sombra
-    shadowOpacity: 1, // Aumenta la opacidad de la sombra
-    shadowRadius: 1, // Aumenta el radio de la sombra para una dispersión más amplia
+    shadowOffset: { width: 0, height: 0 }, 
+    shadowOpacity: 1,
+    shadowRadius: 1,
   },
   callout: {
     width: '90%',

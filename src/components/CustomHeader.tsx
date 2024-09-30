@@ -1,12 +1,12 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet, Platform, StatusBar, TouchableOpacity, Dimensions } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Image, StyleSheet, Platform, StatusBar, TouchableOpacity, Dimensions, Modal } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { UserData } from '../redux/types/types';
 import { logoutUser } from '../services/authService';
-import { SimpleLineIcons } from '@expo/vector-icons';
 import { getMemoizedUserData } from '../redux/selectors/userSelectors';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/AppNavigator';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -14,16 +14,21 @@ const CustomHeader: React.FC = () => {
   const dispatch = useDispatch();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const user = useSelector(getMemoizedUserData);
+  const [modalVisible, setModalVisible] = useState(false); 
   if (!user) return null;
 
   const handleLogout = () => {
+    setModalVisible(false);
     dispatch(logoutUser() as any);
   };
- 
+  const goToProfile = () => {
+    setModalVisible(false);
+    navigation.navigate('MainTabs', { screen: 'Perfil' });
+  };
   return (
     <View style={styles.headerContainer}>
         <Text style={styles.userName}>Hola, {user.first_name}</Text>
-        <TouchableOpacity style={styles.imageCont}>
+        <TouchableOpacity style={styles.imageCont} onPress={() => setModalVisible(true)}>
       <View style={styles.avatarContainer}>
         {user?.image_url ? (
           <Image source={{ uri: user.image_url }} style={styles.avatar} />
@@ -35,12 +40,26 @@ const CustomHeader: React.FC = () => {
         )}
       </View>
       </TouchableOpacity>
-      {/* <View style={styles.nameContainer}> */}
-        {/* <Text style={styles.appName}>TuApp</Text> */}
-      {/* </View> */}
-      {/* <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-        <SimpleLineIcons name="logout" size={20} color="#fff" />
-      </TouchableOpacity> */}
+      {/* Modal para el popup */}
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <TouchableOpacity style={styles.modalOverlay} onPress={() => setModalVisible(false)}>
+          <View style={styles.popupContainer}>
+            <TouchableOpacity  onPress={goToProfile} style={styles.popupOption}>
+            <FontAwesome name="user-circle" size={20} color="#007a8b" />
+              <Text style={styles.popupText}>Perfil</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleLogout} style={styles.popupOption}>
+            <MaterialCommunityIcons name="logout" size={20} color="#007a8b" />
+              <Text style={styles.popupText}>Salir</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 };
@@ -56,11 +75,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#007a8c',
     paddingHorizontal: 20,
     height:85,
-    // elevation: 5,
-    // shadowColor: '#000',
-    // shadowOffset: { width: 0, height: 2 },
-    // shadowOpacity: 0.2,
-    // shadowRadius: 0.5,
   },
   imageCont:{
     width:screenWidth * 0.3,
@@ -72,9 +86,7 @@ const styles = StyleSheet.create({
     width:45,
     height:45,
     marginLeft:'60%',
-    // alignItems: 'center',
-    // marginLeft: 10,
-    borderColor: '#fff', // Usar color naranja de la paleta
+    borderColor: '#fff',
     borderWidth: 1,
     borderRadius: 25,
   },
@@ -99,12 +111,37 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
   },
-  logoutButton: {
-    paddingVertical: 5,
-    paddingHorizontal: 5,
-    borderRadius: 25,
+  modalOverlay: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    // backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  popupContainer: {
+    position: 'absolute',
+    width:screenWidth*0.35,
+    top: 60, 
+    right: 20,
+    backgroundColor: '#fff',
+    padding: 5,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 5,
+  },
+  popupOption: {
+    width:'100%',
+    display:'flex',
+    flexDirection:'row',
+    justifyContent:'space-evenly',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+  },
+  popupText: {
+    fontSize: screenWidth*0.045,
+    color: 'rgb(0, 122, 140)',
   },
 });
 

@@ -28,6 +28,7 @@ export type RootStackParamList = {
   ResetPassword: undefined;
   PromotionDetail: { promotion: Promotion };
   TouristDetailScreen: { touristPoint: TouristPoint };
+  MainTabs: { screen: string };
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -35,7 +36,6 @@ const Stack = createStackNavigator<RootStackParamList>();
 const AppNavigator = () => {
   const accessToken = useSelector(getMemoizedAccessToken);
   const isAuthenticated = !!accessToken;
-  // console.log("isAuthenticated en appnavigator",isAuthenticated);
 
   return (
     <NavigationContainer>
