@@ -119,7 +119,7 @@ const LoginScreen: React.FC = () => {
         {/* <Text style={styles.forgotPasswordText}>No tienes cuenta? Contáctanos</Text> */}
         {loading && <Loader />}
       </View>
-        <Text  style={styles.versionText} >Version Beta 0.1.3</Text>
+        <Text  style={styles.versionText} >Version Beta {process.env.EXPO_PUBLIC_API_VERSION}</Text>
       <Modal isVisible={isModalVisible}>
         <View style={styles.modalContent}>
           <Text style={styles.modalMessage}>{modalMessage}</Text>

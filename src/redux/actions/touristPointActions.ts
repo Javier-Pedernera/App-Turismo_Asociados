@@ -30,7 +30,7 @@ export const fetchRatings = (touristPointId: number) => {
   return async (dispatch: AppDispatch) => {
     try {
       const response = await axios.get<Rating[]>(`${API_URL}/tourist_points/${touristPointId}/ratings`);
-      console.log("respuesta de ratings",response.data);
+      // console.log("respuesta de ratings",response.data);
       
       dispatch(setRatings(response.data));
     } catch (error) {
@@ -43,7 +43,7 @@ export const addNewRating = (rating: NewRating, tourist_point_id:any) => {
   return async (dispatch: AppDispatch) => {
     try {
       const response = await axios.post(`${API_URL}/tourist_points/${tourist_point_id}/ratings`, rating);
-      console.log(response);
+      // console.log(response);
       
       dispatch(addRating(response.data));
     } catch (error) {

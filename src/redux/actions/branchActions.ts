@@ -46,7 +46,7 @@ export const addBranch = (branchData: any) => {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log("respuesta en la action",response);
+      // console.log("respuesta en la action",response);
       
       dispatch(addBranchSuccess(response.data));
     } catch (error: any) {
@@ -70,7 +70,7 @@ export const updateBranch = (branchId: number, branchData: BranchCreate) => {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log('Respuesta de actualización de sucursal:', response);
+      // console.log('Respuesta de actualización de sucursal:', response);
       dispatch(updateBranchSuccess(response.data));
     } catch (error: any) {
       console.error('Error al actualizar la sucursal:', error);

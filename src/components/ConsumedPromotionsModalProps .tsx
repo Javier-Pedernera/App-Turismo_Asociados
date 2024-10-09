@@ -22,7 +22,7 @@ const ConsumedPromotionsModal: React.FC<ConsumedPromotionsModalProps> = ({ visib
     setSelectedPromotion(promotionId);
     setIsConfirmModalVisible(true);
   };
-console.log("seleccionada para borrar",selectedPromotion);
+// console.log("seleccionada para borrar",selectedPromotion);
 
   const confirmDelete = () => {
     const statusDeleted = statuses.find(status => status.name === 'deleted');

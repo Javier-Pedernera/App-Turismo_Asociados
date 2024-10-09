@@ -13,6 +13,7 @@ import { AppDispatch } from '../redux/store/store';
 import { modifyPromotion } from '../redux/actions/promotionsActions';
 import { Image } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import Loader from './Loader';
 
 interface EditPromotionFormProps {
   promotion: Promotion;
@@ -33,6 +34,7 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
   const [newImages, setNewImages] = useState<{ filename: string; data: string }[]>([]);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [isCategoriesModalVisible, setCategoriesModalVisible] = useState(false);
@@ -54,10 +56,13 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
       Alert.alert('Error', 'No se pudo obtener el ID del socio o la sucursal. Intente de nuevo.');
       return;
     }
-    if (!title || !description || discountPercentage === null || availableQuantity === null || selectedCategories.length === 0) {
+    console.log("campos vacios?",title,description,discountPercentage);
+    
+    if (!title || !description || discountPercentage === null || selectedCategories.length === 0) {
       Alert.alert('Error', 'Por favor complete todos los campos');
       return;
     }
+    setIsLoading(true)
     const promotionData = {
       branch_id: partner?.branches[0].branch_id,
       title,
@@ -73,18 +78,21 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
       ]
     };
     const deletedImageIds = imagesToDelete
-    // console.log("datos a enviar",promotionData, deletedImageIds);
+    console.log("datos a enviar",promotionData, deletedImageIds);
     if (promotion.promotion_id) {
       dispatch(modifyPromotion(promotion.promotion_id, promotionData, deletedImageIds))
         .then(() => {
+          setIsLoading(false)
           Alert.alert('Éxito', 'La promoción ha sido actualizada correctamente.');
           onClose();
         })
         .catch((error: any) => {
+          setIsLoading(false)
           Alert.alert('Error', 'Hubo un problema al actualizar la promoción. Intente de nuevo.');
           console.error("Error al actualizar la promoción: ", error);
         });
     } else {
+      setIsLoading(false)
       Alert.alert('Error', 'No hay ID de promoción');
     }
   };
@@ -132,6 +140,7 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
 
   return (
     <ScrollView contentContainerStyle={styles.formContainer}>
+      {isLoading&& <Loader/>}
       <Text style={styles.texttitle}>Título</Text>
       <TextInput
         style={styles.input}

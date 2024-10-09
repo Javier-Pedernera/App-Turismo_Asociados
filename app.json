@@ -2,7 +2,7 @@
   "expo": {
     "name": "CCTD Cobquecura Asociados",
     "slug": "App-Turismo-Asociados",
-    "version": "0.1.3",
+    "version": "0.1.4",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "light",
@@ -31,7 +31,7 @@
         "android.permission.ACCESS_FINE_LOCATION"
       ],
       "package": "com.camaradeturismocobquecura.Appasociados",
-      "versionCode": 3,
+      "versionCode": 4,
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyCT_n-0KfURHxeSE04sZlmAdWeUwaGQ1Ek"

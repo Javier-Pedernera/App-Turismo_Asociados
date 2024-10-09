@@ -43,7 +43,7 @@ export const sendPasswordResetEmail = async (email: string) => {
     // console.log("envio email para recuperar contraseña");
     
     const response = await axios.post(`${API_URL}/reset_password`, { email });
-    console.log(response.data);
+    // console.log(response.data);
     return response.data;
   } catch (error) {
     throw new Error('Error al enviar el correo de recuperación.');
