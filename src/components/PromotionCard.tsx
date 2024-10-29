@@ -14,6 +14,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Modal } from 'react-native';
 
 const { width: screenWidth } = Dimensions.get('window');
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 interface PromotionCardProps {
   promotion: Promotion;
@@ -61,7 +62,7 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ promotion, index, handleP
         <Image
           source={
             promotion.images.length > 0
-              ? { uri: promotion.images[0].image_path }
+              ? { uri: `${API_URL}${promotion.images[0].image_path}` }
               : require('../../assets/images/images.png')
           }
           style={styles.carouselImage}

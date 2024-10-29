@@ -9,6 +9,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 const { width: screenWidth } = Dimensions.get('window');
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const CustomHeader: React.FC = () => {
   const dispatch = useDispatch();
@@ -31,7 +32,7 @@ const CustomHeader: React.FC = () => {
         <TouchableOpacity style={styles.imageCont} onPress={() => setModalVisible(true)}>
       <View style={styles.avatarContainer}>
         {user?.image_url ? (
-          <Image source={{ uri: user.image_url }} style={styles.avatar} />
+          <Image source={{ uri: `${API_URL}${user?.image_url}`}} style={styles.avatar} />
         ) : (
           <Image
             source={{ uri: "https://res.cloudinary.com/dbwmesg3e/image/upload/v1721231402/TurismoApp/perfil_tfymsu.png" }}

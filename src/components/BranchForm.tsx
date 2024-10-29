@@ -13,6 +13,7 @@ import Loader from './Loader';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 interface BranchFormProps {
   branch: any;
@@ -47,8 +48,9 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
   const [branchSelect, setBranchSelect] = useState<any>(null);
   const [description, setDescription] = useState(branch?.description || '');
   const [isLoading, setIsLoading] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-
+  const [isEditing, setIsEditing] = useState(branch? false: true );
+  console.log("sucursal elegida", branch);
+  
   const handleSubmit = async () => {
 
     setIsLoading(true);
@@ -68,7 +70,7 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
     // console.log('Tiene branch id:', branch.branch_id);
     // console.log('imagen nueva?:', image_data.length);
     let resp;
-    if (branch.branch_id) {
+    if (branch && branch.branch_id) {
       resp = await dispatch(updateBranch(branch.branch_id, branchData));
       console.log("respuesta del dispatch (update)", resp);
     } else {
@@ -136,7 +138,7 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
             {images.length > 0 ? (
               <Image source={{ uri: `data:image/jpeg;base64,${images[0].data}` }} style={styles.image} resizeMode="cover" />
             ) : (
-              branch.image_url.length? <Image source={{ uri: branch.image_url }} style={styles.image} resizeMode='contain' /> :
+              branch?.image_url.length? <Image source={{ uri: `${API_URL}${branch.image_url}`  }} style={styles.image} resizeMode='contain' /> :
               <View style={styles.placeholderImage}>
                 <Text>No tienes ninguna imagen aún</Text>
               </View>

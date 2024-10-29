@@ -17,6 +17,7 @@ import Loader from './Loader';
 interface PromotionFormProps {
   onClose: () => void;
 }
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
   const dispatch: AppDispatch = useDispatch();
@@ -55,6 +56,7 @@ setLoading(true)
     }
     if (!title || !description || !startDate || !endDate || discountPercentage === null || selectedCategories.length === 0 || imagePaths.length === 0) {
       Alert.alert('Error', 'Por favor complete todos los campos');
+      setLoading(false)
       return;
     }
     const promotionData = {
@@ -79,6 +81,7 @@ setLoading(true)
       })
       .catch((error: any) => {
         Alert.alert('Error', 'Hubo un problema al crear la promoción. Intente de nuevo.');
+        setLoading(false)
         console.error("Error al crear la promoción: ", error);
       });
 

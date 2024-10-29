@@ -67,7 +67,7 @@ export const updateUserAction = (updatedUserData: UserData) => {
     try {
       const state = getState();
       const token = state.user.accessToken;
-      console.log("token",token);
+      // console.log("token",token);
       if (!token) {
         throw new Error('User not authenticated');
       }
@@ -80,6 +80,30 @@ export const updateUserAction = (updatedUserData: UserData) => {
       });
       // console.log("respuesta del backend",response.status);
       dispatch(setUser(response.data));
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  };
+};
+export const changePasswordAction = (userId: number, newPassword: string, currentPassword: string) => {
+  return async (dispatch: Dispatch, getState: () => RootState) => {
+    try {
+      const state = getState();
+      const token = state.user.accessToken;
+      const data = {password: newPassword, current_password: currentPassword}
+      //  console.log("token", token);
+      if (!token) {
+        throw new Error('User not authenticated');
+      }
+      const response = await axios.put(`${API_URL}/user/${userId}`, 
+        data, 
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       return response;
     } catch (error) {
       throw error;

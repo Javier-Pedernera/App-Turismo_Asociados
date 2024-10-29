@@ -19,6 +19,7 @@ interface EditPromotionFormProps {
   promotion: Promotion;
   onClose: () => void;
 }
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClose }) => {
   const dispatch: AppDispatch = useDispatch();
@@ -194,7 +195,7 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
           existingImages.map((image: any, index: any) => (
             <View key={index} style={styles.imageWrapper}>
               <Image
-                source={{ uri: image.image_path }}
+                source={{ uri: `${API_URL}${image.image_path}` }}
                 style={styles.image}
               />
               <TouchableOpacity

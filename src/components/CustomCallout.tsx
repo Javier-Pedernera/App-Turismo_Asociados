@@ -9,11 +9,12 @@ interface CustomCalloutProps {
   handleRoutePress: () => void;
   prevSee: boolean;
 }
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const CustomCallout: React.FC<CustomCalloutProps> = ({ branch, handleRoutePress, prevSee }) => {
   // console.log("punto turistico", branch);
   const imageUrl = branch.branch_id
-    ? branch.image_url
+    ? `${API_URL}${branch.image_url}`
     : branch.images && branch.images.length > 0
       ? branch.images[0].image_path
       : null;

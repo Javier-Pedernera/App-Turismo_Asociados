@@ -6,7 +6,7 @@ import { BranchForm } from '../components/BranchForm';
 import SemicirclesOverlay from '../components/SemicirclesOverlay';
 import { Dimensions } from 'react-native';
 
-
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 const Branches: React.FC = () => {
@@ -28,17 +28,22 @@ const Branches: React.FC = () => {
     setIsModalVisible(false);
     setSelectedBranch(null);
   };
+console.log("sucursales",branches.length);
 
   return (
     <View style={styles.container}>
       <SemicirclesOverlay/>
       <Text style={styles.nameTitle}>Tus sucursales activas</Text>
-      <FlatList
+      {!branches.length?
+        <TouchableOpacity style={styles.createButton} onPress={handleCreate}>
+          <Text style={styles.createButtonText}>Crear Sucursal</Text>
+        </TouchableOpacity>:
+         <FlatList
         data={branches}
         keyExtractor={(item) => item.branch_id.toString()}
         renderItem={({ item }) => (
           <View style={styles.branchContainer}>
-            <Image source={{ uri: item.image_url }} style={styles.image} />
+            <Image source={{ uri: `${API_URL}${item.image_url}` }} style={styles.image} />
             <Text style={styles.name}>{item.name}</Text>
             <View style={styles.buttonContainer}>
               <TouchableOpacity
@@ -51,12 +56,7 @@ const Branches: React.FC = () => {
           </View>
         )}
       />
-      {!branches.length && (
-        <TouchableOpacity style={styles.createButton} onPress={handleCreate}>
-          <Text style={styles.createButtonText}>Crear Sucursal</Text>
-        </TouchableOpacity>
-      )}
-
+      }
       <Modal visible={isModalVisible} animationType="slide">
         <BranchForm branch={selectedBranch} onClose={closeModal} />
       </Modal>
@@ -114,10 +114,11 @@ const styles = StyleSheet.create({
   },
   createButton: {
     backgroundColor: '#007a8c',
-    padding: 16,
-    
+    padding: 10,
+    width:'80%',
     borderRadius: 8,
     alignItems: 'center',
+    alignSelf:'center',
     marginTop: 16,
   },
   createButtonText: {

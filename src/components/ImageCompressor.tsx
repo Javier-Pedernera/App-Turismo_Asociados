@@ -9,6 +9,7 @@ interface ImageCompressorProps {
   initialImageUri?: string;
   isButtonDisabled?:boolean;
 }
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const ImageCompressor: React.FC<ImageCompressorProps> = ({ onImageCompressed, initialImageUri, isButtonDisabled }) => {
   const [imageUri, setImageUri] = useState<string | null>(`${initialImageUri}?timestamp=${new Date().getTime()}` || null);

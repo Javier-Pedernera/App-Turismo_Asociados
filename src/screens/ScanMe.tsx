@@ -82,7 +82,6 @@ const QRScanButton = () => {
       dispatch(fetchConsumedPromotions(user.user_id));
 
     }
-
     // Solicitar permiso de la cámara si no está concedido
     if (!permission) {
       requestPermission();

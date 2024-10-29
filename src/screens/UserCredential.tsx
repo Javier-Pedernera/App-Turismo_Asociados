@@ -6,7 +6,7 @@ import * as Animatable from 'react-native-animatable';
 import { getMemoizedUserData } from '../redux/selectors/userSelectors';
 
 const { width } = Dimensions.get('window');
-
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 const UserCredential: React.FC = () => {
   const user = useSelector(getMemoizedUserData) as UserData;
 
@@ -25,7 +25,7 @@ const UserCredential: React.FC = () => {
       <View style={styles.credentialContainer}>
         <View style={styles.imageContainer}>
           <Image
-            source={{ uri: user.image_url || 'https://via.placeholder.com/150' }}
+            source={{ uri: `${API_URL}${user?.image_url}` || 'https://via.placeholder.com/150' }}
             style={styles.image}
           />
         </View>

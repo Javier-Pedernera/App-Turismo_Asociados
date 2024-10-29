@@ -23,6 +23,7 @@ type PromotionDetailScreenRouteProp = RouteProp<RootStackParamList, 'PromotionDe
 
 const { width: screenWidth } = Dimensions.get('window');
 const screenHeight = Dimensions.get('window').height;
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const PromotionDetailScreen: React.FC = () => {
   const route = useRoute<PromotionDetailScreenRouteProp>();
@@ -46,7 +47,7 @@ const PromotionDetailScreen: React.FC = () => {
   const user = useSelector(getMemoizedUserData);
   // console.log("newRating",newRating);
   // console.log("newComment",newComment);
-  const promoImage = promotion.images.length > 0 ? promotion.images[0].image_path : 'https://res.cloudinary.com/dbwmesg3e/image/upload/v1721157537/TurismoApp/no-product-image-400x400_1_ypw1vg_sw8ltj.png';
+  const promoImage = promotion.images.length > 0 ? `${API_URL}${promotion.images[0].image_path}` : 'https://res.cloudinary.com/dbwmesg3e/image/upload/v1721157537/TurismoApp/no-product-image-400x400_1_ypw1vg_sw8ltj.png';
 
   // console.log("ratings en descripcion ",ratings);
   // console.log("branch en descripcion ",branch);
@@ -222,7 +223,7 @@ const PromotionDetailScreen: React.FC = () => {
                   <ActivityIndicator size="large" color="#F1AD3E" />
                 </View>
               )}
-              <Image source={{ uri: item.image_path }} style={styles.thumbnail} onLoadStart={handleImageLoadStart} onLoadEnd={handleImageLoadEnd} />
+              <Image source={{ uri: `${API_URL}${item.image_path}` }} style={styles.thumbnail} onLoadStart={handleImageLoadStart} onLoadEnd={handleImageLoadEnd} />
             </TouchableOpacity>
           ))
         }

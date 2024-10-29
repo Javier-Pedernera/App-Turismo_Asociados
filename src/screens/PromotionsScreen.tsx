@@ -22,6 +22,7 @@ import EditPromotionForm from '../components/EditPromotionForm';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 const { width: screenWidth } = Dimensions.get('window');
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const PromotionsScreen: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();

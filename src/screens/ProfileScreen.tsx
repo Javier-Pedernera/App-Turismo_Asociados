@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch } from '../redux/store/store';
 import RNPickerSelect from 'react-native-picker-select';
 import { UserData } from '../redux/types/types';
-import { updatePartner, updateUserAction } from '../redux/actions/userActions';
+import { changePasswordAction, updatePartner, updateUserAction } from '../redux/actions/userActions';
 import Icon from 'react-native-vector-icons/Ionicons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { fetchUserCategories, fetchAllCategories } from '../redux/actions/categoryActions';
@@ -19,10 +19,12 @@ import ImageCompressor from '../components/ImageCompressor';
 import SemicirclesOverlay from '../components/SemicirclesOverlay';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { logoutUser } from '../services/authService';
+import Loader from '../components/Loader';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 const { width: screenWidth } = Dimensions.get('window');
 // const screenHeight = Dimensions.get('window').height;
-
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 const ProfileScreen: React.FC = () => {
   const user = useSelector(getMemoizedUserData) as UserData;
   const categories = useSelector(getMemoizedUserCategories);
@@ -57,7 +59,7 @@ const ProfileScreen: React.FC = () => {
     phone_number: user?.phone_number || '',
     gender: user?.gender || '',
     birth_date: user?.birth_date || '',
-    image_data: user?.image_url || null,
+    image_data:  `${API_URL}${user?.image_url}` || null,
     subscribed_to_newsletter: user?.subscribed_to_newsletter || false,
     //partner
     address: partner?.address || '',
@@ -65,6 +67,10 @@ const ProfileScreen: React.FC = () => {
     business_type: partner?.business_type || '',
   });
   // console.log("datos a cambiar en el perfil y la imagen",formData, formData.image_data);
+  const [newPassword, setNewPassword] = useState<string>('');
+  const [currentPassword, setCurrentPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
+  const [isChangingPassword, setIsChangingPassword] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
@@ -72,9 +78,49 @@ const ProfileScreen: React.FC = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [isCategoriesModalVisible, setCategoriesModalVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
+  console.log("usuario",user);
+  
+  console.log(loading);
+// console.log(formData);
+const handleChangePassword = async () => {
+  if (newPassword !== confirmPassword) {
+    setModalMessage('Las contraseñas no coinciden');
+    setModalError(true);
+    setModalVisible(true);
+    return;
+  }
 
-  // console.log(formData);
+  try {
+    setLoading(true);
+    const response = await dispatch(changePasswordAction(user.user_id, newPassword, currentPassword));
+    
+    if (response.status === 200) {
+      setModalMessage('Contraseña cambiada con éxito');
+      setModalError(false);
+    } else {
+      setModalMessage('Error al cambiar la contraseña');
+      setModalError(true);
+    }
+  } catch (error) {
+    setModalMessage('Error al cambiar la contraseña');
+    setModalError(true);
+  } finally {
+    setLoading(false);
+    setModalVisible(true);
+    setNewPassword('');
+    setCurrentPassword('');
+    setConfirmPassword('');
+    setIsChangingPassword(false);
+  }}
 
+  const handleCancelChangePassword = () => {
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+    setIsChangingPassword(false);
+  }
+  
 
   const handleInputChange = (field: string, value: string) => {
     setFormData({
@@ -123,6 +169,7 @@ const ProfileScreen: React.FC = () => {
 
   const handleUpdate = async () => {
     try {
+      setLoading(true)
       const { user_id, address, contact_info, business_type, image_data, ...dataToSend } = formData;
       const updatedDataToSend = {
         ...dataToSend,
@@ -144,20 +191,25 @@ const ProfileScreen: React.FC = () => {
         // console.log("categoriesResponse ver status",categoriesResponse.status);
         if (categoriesResponse.status == 200) {
           // dispatch(fetchUserCategories())
+          setLoading(false)
           setModalMessage('Datos actualizados con éxito');
           setModalError(false);
         } else {
-          setModalMessage('Error al actualizar las categorías');
+          setModalMessage('Error al actualizar usuario');
           setModalError(true);
+          setLoading(false)
         }
       } else {
         setModalMessage('Error al actualizar los datos');
         setModalError(true);
+        setLoading(false)
       }
     } catch (error) {
+      setLoading(false)
       setModalMessage('Error al actualizar los datos');
       setModalError(true);
     } finally {
+      setLoading(false)
       setIsEditing(false)
       setModalVisible(true);
     }
@@ -185,6 +237,7 @@ const ProfileScreen: React.FC = () => {
   return (
     <View
     >
+      {loading && <Loader />}
       <SemicirclesOverlay />
       <ScrollView contentContainerStyle={styles.container}>
         <ImageCompressor onImageCompressed={handleImageCompressed} initialImageUri={formData.image_data || undefined} isButtonDisabled={isEditing}/>
@@ -202,6 +255,44 @@ const ProfileScreen: React.FC = () => {
               <MaterialIcons name="logout" size={24} color="#007a8b" />
             </TouchableOpacity>
           </View>
+          <TouchableOpacity style={styles.passButton} onPress={() => setIsChangingPassword(!isChangingPassword)}>
+          <Ionicons name="key-outline" size={26} color="#fff" />
+          </TouchableOpacity>
+
+          {isChangingPassword && (
+            <View style={styles.passFormCont}>
+              <View style={styles.passForm}>
+              <Text style={styles.buttonTextpass}>Actualiza tu contraseña</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Contraseña actual"
+                value={currentPassword}
+                onChangeText={setCurrentPassword}
+                secureTextEntry
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Nueva Contraseña"
+                value={newPassword}
+                onChangeText={setNewPassword}
+                secureTextEntry
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Confirmar Contraseña"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry
+              />
+              <TouchableOpacity style={styles.buttonPass} onPress={handleChangePassword}>
+                <Text style={styles.buttonText}>Actualizar Contraseña</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.buttonPass} onPress={handleCancelChangePassword}>
+                <Text style={styles.buttonText}>Cancelar</Text>
+              </TouchableOpacity>
+            </View>
+            </View>
+          )}
           {isEditing ? (
         <>
           <TextInput
@@ -448,10 +539,39 @@ const styles = StyleSheet.create({
     justifyContent:'center',
     borderRadius:25,
     backgroundColor:'rgb(232, 232, 232)',
-    top:45,
+    top:50,
     right:90,
-    height:40,
-    width:40
+    height:37,
+    width:37
+  },
+  passFormCont:{
+    position:'absolute',
+    zIndex:1,
+    alignItems:'center',
+    justifyContent:'center',
+    // backgroundColor:'rgba(232, 232, 232,0.9)',
+    borderRadius:20,
+    height:'100%',
+    display:'flex',
+  },
+  passForm:{
+    display:'flex',
+    flexDirection:'column',
+    width:screenWidth*0.9,
+    justifyContent:'center',
+    alignContent:'center',
+    alignItems:'center',
+    padding:20,
+    backgroundColor:'rgba(232, 232, 232,0.9)',
+    borderRadius:40
+  },
+  buttonPass:{
+    backgroundColor: 'rgb(0, 122, 140)',
+    borderRadius: 5,
+    padding: 7,
+    alignItems: 'center',
+    marginVertical: 5,
+    width:'80%'
   },
   exitButton:{
     position:'absolute',
@@ -460,10 +580,23 @@ const styles = StyleSheet.create({
     justifyContent:'center',
     borderRadius:25,
     backgroundColor:'rgb(232, 232, 232)',
-    height:40,
-    width:40,
-    top:45,
-    left:90
+    height:37,
+    width:37,
+    top:50,
+    left:80
+  },
+  passButton:{
+    position:'absolute',
+    alignContent:'center',
+    alignItems:'center',
+    justifyContent:'center',
+    borderRadius:25,
+    backgroundColor:'#007a8b',
+    height:45,
+    width:45,
+    bottom:0,
+    right:40,
+    marginTop:20
   },
   inputSelect: {
     height: 35,
@@ -521,6 +654,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  buttonTextpass:{
+    color: '#007a8b',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom:20
   },
   selectView: {
     width: screenWidth,
