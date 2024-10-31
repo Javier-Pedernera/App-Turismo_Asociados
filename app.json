@@ -2,7 +2,7 @@
   "expo": {
     "name": "CCTD Cobquecura Asociados",
     "slug": "App-Turismo-Asociados",
-    "version": "0.1.5",
+    "version": "0.1.6",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "light",
@@ -13,11 +13,15 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.Appturismo.asociados",
+      "bundleIdentifier": "com.appturismo.asociados",
+      "buildNumber": "1.0.0",
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
-        }
+        },
+        "NSCameraUsageDescription": "Esta aplicación necesita acceso a la cámara para escanear códigos QR.",
+        "NSLocationWhenInUseUsageDescription": "Esta aplicación necesita acceso a su ubicación para mostrar información basada en su posición.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Esta aplicación necesita acceso a su ubicación para brindar una experiencia completa."
       }
     },
     "android": {
@@ -31,10 +35,10 @@
         "android.permission.ACCESS_FINE_LOCATION"
       ],
       "package": "com.camaradeturismocobquecura.Appasociados",
-      "versionCode": 5,
+      "versionCode": 6,
       "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyCT_n-0KfURHxeSE04sZlmAdWeUwaGQ1Ek"
+          "apiKey": "AIzaSyAyn6WPUaMwF-7bqGw3-swrSUp4t9lC0wo"
         }
       }
     },
