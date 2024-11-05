@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, FlatList, Dimensions, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, FlatList, Dimensions, Alert, ActivityIndicator, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import MapSingle from './MapSingle';
 import { Branch, UserData } from '../redux/types/types';
@@ -282,7 +282,9 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
   ];
 
   return (
-    <View>
+    <View
+    style={styles.contBranch}
+    >
       {isLoading? <Loader />:<></>}
       <TouchableOpacity onPress={onClose} style={styles.backbutton}>
           <MaterialIcons name="arrow-back-ios-new" size={22} color="#fff" />
@@ -298,6 +300,9 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
 };
 
 const styles = StyleSheet.create({
+  contBranch:{
+    paddingTop:Platform.OS === 'ios' ? screenHeight*0.02 : 0
+  },
   container: {
     flexGrow: 1,
     padding: 16,
@@ -309,7 +314,7 @@ const styles = StyleSheet.create({
     justifyContent:'center',
     textAlign:'center',
     alignItems:'center',
-    top: 20,
+    top: Platform.OS === 'ios' ? screenHeight*0.08 : 20,
     left:25,
     width:35,
     height:30,

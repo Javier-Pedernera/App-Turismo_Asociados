@@ -8,7 +8,7 @@ import { RootStackParamList } from '../navigation/AppNavigator';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-const { width: screenWidth } = Dimensions.get('window');
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const CustomHeader: React.FC = () => {
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     padding: 5,
     backgroundColor: '#007a8c',
     paddingHorizontal: 20,
-    height:85,
+    height:screenHeight * 0.12,
   },
   imageCont:{
     width:screenWidth * 0.3,

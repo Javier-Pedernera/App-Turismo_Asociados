@@ -21,7 +21,7 @@ import { deletePromotion } from '../redux/actions/promotionsActions';
 import EditPromotionForm from '../components/EditPromotionForm';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
-const { width: screenWidth } = Dimensions.get('window');
+const { width: screenWidth, height:screenHeigth } = Dimensions.get('window');
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const PromotionsScreen: React.FC = () => {
@@ -194,7 +194,7 @@ const PromotionsScreen: React.FC = () => {
   return (
     <View style={styles.gradient}
     >
-      <View style={styles.btns}>
+     <View style={styles.btns}>
         <TouchableOpacity style={styles.createButton} onPress={handleCreatePress}>
           {/* <MaterialIcons name="assignment-add" size={24} color="#fff" /> */}
           <View style={styles.createButtonmas}>
@@ -206,7 +206,6 @@ const PromotionsScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
       <ScrollView contentContainerStyle={styles.container}>
-      
         <Modal isVisible={isCreateModalVisible} style={styles.modal}>
           <View style={styles.modalContent}>
             <PromotionForm onClose={() => setIsCreateModalVisible(false)} />
@@ -250,6 +249,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
+    // height:  scre
     flexGrow: 1,
     padding: 20,
   },
@@ -437,6 +437,7 @@ const styles = StyleSheet.create({
   modalContent: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     padding: 20,
+    height:  screenHeigth*0.9,
     // borderTopLeftRadius: 20,
     // borderTopRightRadius: 20,
   },

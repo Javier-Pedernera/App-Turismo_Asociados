@@ -12,6 +12,7 @@ import { formatDateToDDMMYYYY } from '../utils/formatDate';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Modal } from 'react-native';
+import { Platform } from 'react-native';
 
 const { width: screenWidth } = Dimensions.get('window');
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -174,7 +175,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'space-evenly',
     alignItems: 'center',
-    width: '20%',
+    width:  Platform.OS === 'ios' ? screenWidth*0.18 : '20%',
     height: 'auto'
   },
   discountContText: {
