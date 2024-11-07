@@ -11,6 +11,7 @@ import * as Location from 'expo-location';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Loader from './Loader';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { fetchPartnerById } from '../redux/actions/userActions';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -72,9 +73,11 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
     let resp;
     if (branch && branch.branch_id) {
       resp = await dispatch(updateBranch(branch.branch_id, branchData));
+      dispatch(fetchPartnerById(user.user_id));
       console.log("respuesta del dispatch (update)", resp);
     } else {
       resp = await dispatch(addBranch(branchData));
+      dispatch(fetchPartnerById(user.user_id));
       console.log("respuesta del dispatch (add)", resp);
     }
       Alert.alert('Éxito', 'La sucursal se ha creado/actualizado correctamente.');
