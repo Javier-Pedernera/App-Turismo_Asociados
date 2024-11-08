@@ -12,7 +12,7 @@ export const userLogIn = (email: string, password: string) => {
   return async (dispatch: Dispatch) => {
     try {
       const data = await loginUserAuth(email, password);
-      console.log("data en la action de login", data);
+      // console.log("data en la action de login", data);
       
       // Verificar si data.user y data.user.status existen
       if (!data.user || !data.user.status) {
@@ -47,7 +47,7 @@ export const getUserInfo = (token:string) => {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log(response.data);
+      // console.log(response.data);
       
       dispatch(setUser(response.data));
     } catch (error:any) {

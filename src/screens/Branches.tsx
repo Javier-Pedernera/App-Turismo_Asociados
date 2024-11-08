@@ -28,7 +28,7 @@ const Branches: React.FC = () => {
     setIsModalVisible(false);
     setSelectedBranch(null);
   };
-console.log("sucursales",branches.length);
+// console.log("sucursales",branches.length);
 
   return (
     <View style={styles.container}>

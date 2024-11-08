@@ -42,7 +42,7 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
     setImagePaths(images);
   }, []);
   const handleSelectCategories = (newSelectedCategories: number[]) => {
-    console.log("categorias seleccionadas", newSelectedCategories);
+    // console.log("categorias seleccionadas", newSelectedCategories);
 
     setSelectedCategories(newSelectedCategories);
   };
@@ -71,7 +71,7 @@ setLoading(true)
       category_ids: selectedCategories,
       images: imagePaths
     };
-    console.log(promotionData);
+    // console.log(promotionData);
 
     await dispatch(createPromotion(promotionData))
       .then(() => {

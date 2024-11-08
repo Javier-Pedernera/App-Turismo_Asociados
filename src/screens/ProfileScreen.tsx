@@ -47,7 +47,7 @@ const ProfileScreen: React.FC = () => {
   useEffect(() => { 
     setSelectedCategories(categories.map(cat => cat.id));
   }, [categories]);
-  console.log(user);
+  // console.log(user);
 
   const [formData, setFormData] = useState({
     user_id: user?.user_id || 0,
@@ -79,9 +79,9 @@ const ProfileScreen: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [isCategoriesModalVisible, setCategoriesModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  console.log("usuario",user);
+  // console.log("usuario",user);
   
-  console.log(loading);
+  // console.log(loading);
 // console.log(formData);
 const handleChangePassword = async () => {
   if (newPassword !== confirmPassword) {
@@ -162,7 +162,7 @@ const handleChangePassword = async () => {
   };
 
   const handleImageCompressed = (uri: string) => {
-    console.log("imagencomprimida");
+    // console.log("imagencomprimida");
 
     handleInputChange('image_data', uri);
   };
@@ -175,7 +175,7 @@ const handleChangePassword = async () => {
         ...dataToSend,
         image_data: image_data && image_data.startsWith('http') ? null : image_data,
       };
-      console.log("formulario de actualizacion de usuario, ver imagen", updatedDataToSend);
+      // console.log("formulario de actualizacion de usuario, ver imagen", updatedDataToSend);
 
       const response = await dispatch<any>(updateUserAction({ ...updatedDataToSend, user_id }));
       // console.log("resouesta de la actualizacion del usuario", response);
