@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, FlatList, Dimensions, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, FlatList, Dimensions, Alert, ActivityIndicator, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import MapSingle from './MapSingle';
 import { Branch, UserData } from '../redux/types/types';
@@ -11,6 +11,7 @@ import * as Location from 'expo-location';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Loader from './Loader';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { fetchPartnerById } from '../redux/actions/userActions';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -72,9 +73,11 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
     let resp;
     if (branch && branch.branch_id) {
       resp = await dispatch(updateBranch(branch.branch_id, branchData));
+      dispatch(fetchPartnerById(user.user_id));
       console.log("respuesta del dispatch (update)", resp);
     } else {
       resp = await dispatch(addBranch(branchData));
+      dispatch(fetchPartnerById(user.user_id));
       console.log("respuesta del dispatch (add)", resp);
     }
       Alert.alert('Éxito', 'La sucursal se ha creado/actualizado correctamente.');
@@ -282,7 +285,9 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
   ];
 
   return (
-    <View>
+    <View
+    style={styles.contBranch}
+    >
       {isLoading? <Loader />:<></>}
       <TouchableOpacity onPress={onClose} style={styles.backbutton}>
           <MaterialIcons name="arrow-back-ios-new" size={22} color="#fff" />
@@ -298,6 +303,9 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
 };
 
 const styles = StyleSheet.create({
+  contBranch:{
+    paddingTop:Platform.OS === 'ios' ? screenHeight*0.02 : 0
+  },
   container: {
     flexGrow: 1,
     padding: 16,
@@ -309,7 +317,7 @@ const styles = StyleSheet.create({
     justifyContent:'center',
     textAlign:'center',
     alignItems:'center',
-    top: 20,
+    top: Platform.OS === 'ios' ? screenHeight*0.08 : 20,
     left:25,
     width:35,
     height:30,

@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 const { width: screenWidth } = Dimensions.get('window');
 const screenHeight = Dimensions.get('window').height;
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 interface MapComponentProps {
   branch: any | null;
@@ -100,7 +101,7 @@ const MapSingle: React.FC<MapComponentProps> = ({
               <Callout style={routeSelected ? styles.calloutContainerHide : styles.calloutContainerIos} tooltip>
                 <View style={styles.callout}>
                   <View style={styles.calloutImageContainer}>
-                    <Image source={{ uri: branch.image_url }} style={styles.calloutImage} />
+                    <Image source={{ uri: `${API_URL}${branch.image_url}`}} style={styles.calloutImage} />
                   </View>
                   <Text style={styles.calloutTitle}>{branch.name}</Text>
                   <View style={styles.divider}></View>
@@ -161,7 +162,7 @@ const styles = StyleSheet.create({
     display: 'none',
   },
   calloutContainerIos: {
-    width: 200,
+    width: 150,
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     padding: 10,
     borderRadius: 10,

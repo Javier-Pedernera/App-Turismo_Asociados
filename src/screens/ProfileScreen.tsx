@@ -22,7 +22,7 @@ import { logoutUser } from '../services/authService';
 import Loader from '../components/Loader';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
-const { width: screenWidth } = Dimensions.get('window');
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 // const screenHeight = Dimensions.get('window').height;
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 const ProfileScreen: React.FC = () => {
@@ -255,44 +255,13 @@ const handleChangePassword = async () => {
               <MaterialIcons name="logout" size={24} color="#007a8b" />
             </TouchableOpacity>
           </View>
+          {!isEditing && !isChangingPassword &&
           <TouchableOpacity style={styles.passButton} onPress={() => setIsChangingPassword(!isChangingPassword)}>
           <Ionicons name="key-outline" size={26} color="#fff" />
           </TouchableOpacity>
+          }
 
-          {isChangingPassword && (
-            <View style={styles.passFormCont}>
-              <View style={styles.passForm}>
-              <Text style={styles.buttonTextpass}>Actualiza tu contraseña</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Contraseña actual"
-                value={currentPassword}
-                onChangeText={setCurrentPassword}
-                secureTextEntry
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Nueva Contraseña"
-                value={newPassword}
-                onChangeText={setNewPassword}
-                secureTextEntry
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Confirmar Contraseña"
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry
-              />
-              <TouchableOpacity style={styles.buttonPass} onPress={handleChangePassword}>
-                <Text style={styles.buttonText}>Actualizar Contraseña</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.buttonPass} onPress={handleCancelChangePassword}>
-                <Text style={styles.buttonText}>Cancelar</Text>
-              </TouchableOpacity>
-            </View>
-            </View>
-          )}
+          
           {isEditing ? (
         <>
           <TextInput
@@ -476,6 +445,40 @@ const handleChangePassword = async () => {
           </View>
         </Modal>
       </ScrollView>
+      {isChangingPassword && (
+            <View style={styles.passFormCont}>
+              <View style={styles.passForm}>
+              <Text style={styles.buttonTextpass}>Actualiza tu contraseña</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Contraseña actual"
+                value={currentPassword}
+                onChangeText={setCurrentPassword}
+                secureTextEntry
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Nueva Contraseña"
+                value={newPassword}
+                onChangeText={setNewPassword}
+                secureTextEntry
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Confirmar Contraseña"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry
+              />
+              <TouchableOpacity style={styles.buttonPass} onPress={handleChangePassword}>
+                <Text style={styles.buttonText}>Actualizar Contraseña</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.buttonPass} onPress={handleCancelChangePassword}>
+                <Text style={styles.buttonText}>Cancelar</Text>
+              </TouchableOpacity>
+            </View>
+            </View>
+          )}
     </View>
   );
 };
@@ -493,6 +496,7 @@ const pickerSelectStyles = StyleSheet.create({
     backgroundColor: '#fff',
     fontSize: 16,
     alignSelf: 'center',
+    
   },
   inputAndroid: {
     height: 35,
@@ -548,10 +552,13 @@ const styles = StyleSheet.create({
     position:'absolute',
     zIndex:1,
     alignItems:'center',
-    justifyContent:'center',
-    // backgroundColor:'rgba(232, 232, 232,0.9)',
-    borderRadius:20,
-    height:'100%',
+    // justifyContent:'center',
+    paddingTop:screenHeight
+    *0.2,
+    backgroundColor:'rgba(232, 232, 232,0.9)',
+    // borderRadius:20,
+    width:screenWidth,
+    height:screenHeight,
     display:'flex',
   },
   passForm:{
@@ -562,7 +569,7 @@ const styles = StyleSheet.create({
     alignContent:'center',
     alignItems:'center',
     padding:20,
-    backgroundColor:'rgba(232, 232, 232,0.9)',
+    backgroundColor:'#fff',
     borderRadius:40
   },
   buttonPass:{

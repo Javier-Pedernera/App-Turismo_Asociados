@@ -115,13 +115,13 @@ const PromotionDetailScreen: React.FC = () => {
   };
 
   const handleFavoritePress = (promotion: Promotion) => {
-    if (isFavorite(promotion.promotion_id)) {
-      dispatch(removeFavoriteAction(promotion.promotion_id));
-    } else {
-      dispatch(addFavoriteAction(promotion));
-    }
+    // if (isFavorite(promotion.promotion_id)) {
+    //   dispatch(removeFavoriteAction(promotion.promotion_id));
+    // } else {
+    //   dispatch(addFavoriteAction(promotion));
+    // }
   };
-  console.log(user);
+  // console.log(user);
   const openModal = (imagePath: string) => {
     setSelectedImage(imagePath);
     setModalVisible(true);
@@ -145,6 +145,11 @@ const PromotionDetailScreen: React.FC = () => {
     dispatch(clearBranchRatingsAction());
     navigation.goBack();
   };
+  const handleAddRating = () => {
+    Alert.alert("Solo es una vista previa", "La funcionalidad de enviar valoración no está disponible desde aquí.");
+    setNewRating(0);
+    setNewComment('');
+  };
 
   const renderStars = (rating: number) => {
     const stars = [];
@@ -166,30 +171,7 @@ const PromotionDetailScreen: React.FC = () => {
       <Image source={{ uri: item.image_path }} style={styles.carouselImage} onLoadStart={handleImageLoadStart} onLoadEnd={handleImageLoadEnd} />
     </View>
   );
-  const handleAddRating = () => {
-    // Lógica para agregar la nueva valoración
-    console.log('Nuevo comentario:', newComment, 'Puntuación:', newRating);
-    // Aquí puedes agregar la lógica para enviar la valoración a la API
-    if (user?.user_id === undefined) {
-      throw new Error("User ID is required");
-    }
-    const rating = {
-      user_id: user.user_id,
-      rating: newRating,
-      comment: newComment,
-      // branch_id: branch?.branch_id,
-      // Agrega cualquier otro campo necesario
-    };
-    // console.log("agregar rating", rating);
-
-    // Ejemplo de despachar una acción de Redux:
-    if (branch && rating.user_id) {
-      dispatch(addRating(branch.branch_id, rating))
-    }
-    // Limpiar los campos después de enviar
-    setNewRating(0);
-    setNewComment('');
-  };
+  
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
@@ -331,8 +313,9 @@ const PromotionDetailScreen: React.FC = () => {
           placeholder="Comparte tu experiencia"
           value={newComment}
           onChangeText={setNewComment}
+          
         />
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity style={styles.button} onPress={handleAddRating}>
           <Text style={styles.buttonText}>Enviar valoración</Text>
         </TouchableOpacity>
       </View>

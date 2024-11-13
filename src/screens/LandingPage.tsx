@@ -2,6 +2,7 @@ import { View, Text, ImageBackground, StyleSheet, TouchableOpacity, Image, Dimen
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { Platform } from 'react-native';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -44,7 +45,7 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     position: 'absolute',
-    top: 100,
+    top: Platform.OS === 'ios' ? 200:100,
     alignItems: 'center',
     width: 100,
     height: 100,
@@ -65,7 +66,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: screenWidth,
     position: 'absolute',
-    height:'35%',
+    height:Platform.OS === 'ios' ? '30%':'35%',
     bottom: 0,
 
     shadowColor: '#000',
@@ -85,40 +86,40 @@ const styles = StyleSheet.create({
     alignSelf:'center'
   },
   cardText: {
-    fontFamily: 'Inter-Regular-400', 
-    fontSize: 16,
+    fontFamily: 'Inter-Regular-400',
+    fontSize: Platform.OS === 'ios' ? 18 : 16,
     fontWeight: '800',
     lineHeight: 30,
     textAlign: 'center',
     color: 'rgb(51, 103, 73)',
-    width:screenWidth,
+    width: screenWidth,
   },
-  cardTextGreen:{
-    fontFamily: 'Inter-Regular-400', 
-    fontSize: 23,
+  cardTextGreen: {
+    fontFamily: 'Inter-Regular-400',
+    fontSize: Platform.OS === 'ios' ? 25 : 23,
     fontWeight: '800',
     lineHeight: 30,
     textAlign: 'center',
     color: '#007A8C',
-    width:screenWidth,
+    width: screenWidth,
   },
-  cardText3:{
-    fontFamily: 'Inter-Regular-400', 
-    fontSize: 18,
+  cardText3: {
+    fontFamily: 'Inter-Regular-400',
+    fontSize: Platform.OS === 'ios' ? 20 : 18,
     fontWeight: '800',
     lineHeight: 30,
     textAlign: 'center',
     color: 'rgb(51, 103, 73)',
-    width:screenWidth*0.38,
+    width: screenWidth * 0.38,
   },
-  cardTextGreen4:{
-    fontFamily: 'Inter-Regular-400', 
-    fontSize: 20,
-    fontWeight: '800',
+  cardTextGreen4: {
+    fontFamily: 'Inter-Regular-400',
+    fontSize: Platform.OS === 'ios' ? 21 : 20,
+    fontWeight: Platform.OS === 'ios' ? '600':'800',
     lineHeight: 30,
     textAlign: 'center',
     color: '#007A8C',
-    width:screenWidth*0.38,
+    width: screenWidth * 0.38,
   },
   button: {
     marginTop:20,
