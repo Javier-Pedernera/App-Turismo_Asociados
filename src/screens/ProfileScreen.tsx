@@ -485,7 +485,7 @@ const handleChangePassword = async () => {
 
 const pickerSelectStyles = StyleSheet.create({
   inputIOS: {
-    height: 35,
+    height: 48,
     width: Platform.OS === 'web' ? '50%' : screenWidth,
     maxWidth: Platform.OS === 'web' ? 400 : screenWidth * 0.8,
     borderColor: 'rgb(172, 208, 213)',
@@ -499,7 +499,7 @@ const pickerSelectStyles = StyleSheet.create({
     
   },
   inputAndroid: {
-    height: 35,
+    height: 48,
     width: Platform.OS === 'web' ? '50%' : screenWidth,
     maxWidth: Platform.OS === 'web' ? '30%' : screenWidth * 0.8,
     borderColor: 'rgb(172, 208, 213)',
@@ -529,7 +529,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingLeft: 20,
-    paddingRight:20
+    paddingRight:20,
+    paddingBottom:30
     // backgroundColor: '#f7f7f7',
   },
   iconContainer:{
@@ -606,21 +607,21 @@ const styles = StyleSheet.create({
     marginTop:20
   },
   inputSelect: {
-    height: 35,
+    height: 48,
     width: '90%',
-    borderColor: 'rgb(172, 208, 213)',
-    borderWidth: 1,
-    borderRadius: 8,
-    marginBottom: 10,
+    // borderColor: 'rgb(172, 208, 213)',
+    // borderWidth: 1,
+    // borderRadius: 8,
+    marginBottom: 5,
     display: 'flex',
     justifyContent: 'center',
 
     // paddingHorizontal: 10,
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
     fontSize: 16,
   },
   input: {
-    height: 35,
+    height: 48,
     width: '90%',
     borderColor: 'rgb(172, 208, 213)',
     borderWidth: 1,
@@ -656,6 +657,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.8,
     shadowRadius: 2,
     elevation: 5,
+    height:48
   },
   buttonText: {
     color: '#fff',
@@ -675,7 +677,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   select: {
-    height: 50,
+    height: 48,
     width: screenWidth,
     borderWidth: 1,
     borderRadius: 8,
@@ -761,7 +763,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     justifyContent: 'center',
     alignContent: 'center',
-    height: 40,
+    height: 48,
     width: '90%',
     borderColor: 'rgb(172, 208, 213)',
     borderWidth: 1,

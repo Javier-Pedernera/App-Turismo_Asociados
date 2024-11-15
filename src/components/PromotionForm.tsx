@@ -266,6 +266,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   input: {
+    minHeight: 48,
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
     marginBottom: 10,
@@ -285,6 +286,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ddd',
     marginBottom: 10,
     padding: 10,
+    minHeight: 48,
   },
   textDate: {
     color: '#888',
@@ -294,6 +296,8 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
     marginTop: 10,
+    minHeight: 48,
+    
   },
   submitButtonText: {
     color: '#fff',
@@ -304,6 +308,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
     marginTop: 10,
+    minHeight: 48,
   },
   closeButtonText: {
     color: '#fff',
@@ -321,6 +326,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
     marginTop: 10,
+    minHeight: 48,
   },
   datePickerContainer: {
     display: 'flex',

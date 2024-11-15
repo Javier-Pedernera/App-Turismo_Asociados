@@ -53,23 +53,30 @@ const styles = StyleSheet.create({
 const pickerSelectStyles = StyleSheet.create({
   inputIOS: {
     fontSize: 16,
-    paddingVertical: 1,
+    paddingVertical: 8,
     paddingHorizontal: 10,
-    borderRadius: 8,
     color: '#333',
-    paddingRight: 30, // for dropdown arrow spacing
-    backgroundColor: '#fff',
+    paddingRight: 30,
+    borderWidth: 1,
+    borderColor: 'rgb(172, 208, 213)',
+    borderRadius: 8,
+    height:48,
+    alignItems:'center',
+    justifyContent:'center'
   },
   inputAndroid: {
     fontSize: 16,
     paddingHorizontal: 10,
     paddingVertical: 8,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: 'rgb(172, 208, 213)',
     borderRadius: 8,
     color: '#333',
     paddingRight: 30,
     backgroundColor: '#fff',
+    height:48,
+    alignItems:'center',
+    justifyContent:'center'
   },
 });
 

@@ -319,8 +319,8 @@ const styles = StyleSheet.create({
     alignItems:'center',
     top: Platform.OS === 'ios' ? screenHeight*0.08 : 20,
     left:25,
-    width:35,
-    height:30,
+    width:40,
+    height:35,
     borderRadius:5,
     zIndex:1
   },

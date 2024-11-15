@@ -1,13 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity } from 'react-native';
 import { Promotion, ImagePromotion as PromotionImage } from '../redux/types/types';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../redux/store/store';
-import { getMemoizedFavorites } from '../redux/selectors/userSelectors';
-import * as Animatable from 'react-native-animatable';
-import type { View as AnimatableView } from 'react-native-animatable';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { getMemoizedStates } from '../redux/selectors/globalSelectors';
 import { formatDateToDDMMYYYY } from '../utils/formatDate';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';

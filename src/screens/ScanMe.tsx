@@ -476,6 +476,7 @@ const styles = StyleSheet.create({
     top: 0,
   },
   button: {
+    minHeight: 48,
     marginTop: 20,
     paddingVertical: 12,
     paddingHorizontal: 25,
@@ -486,15 +487,17 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   buttonconsumidas:{
-    marginTop: 20,
+    marginTop: 15,
     paddingVertical: 5,
-    paddingHorizontal: 25,
+    paddingHorizontal: 35,
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth:1,
+    borderWidth:0.7,
     borderColor: 'rgb(0, 122, 140)',
     color: 'rgb(0, 122, 140)',
+    minHeight: 48,
+    
   },
   buttonTextconsum: {
     color: 'rgb(0, 122, 140)',
@@ -572,6 +575,8 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 10,
   },
   closeButton: {
+    minHeight: 48,
+    minWidth:48,
     position: 'absolute',
     bottom: 50,
     left: screenWidth*0.45,
@@ -622,6 +627,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   input: {
+    minHeight: 48,
     width:screenWidth *0.8,
     backgroundColor: '#fff',
     borderRadius: 5,
@@ -637,6 +643,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
     width:screenWidth *0.5,
     marginTop:screenWidth *0.04,
+    minHeight: 48,
   },
   disabledButton: {
     opacity: 0.5, 
@@ -654,6 +661,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
     width:screenWidth *0.5,
     marginTop:screenWidth *0.04,
+    minHeight: 48,
   },
   cancelButtonText: {
     
