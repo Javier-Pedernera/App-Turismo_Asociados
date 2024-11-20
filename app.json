@@ -36,7 +36,7 @@
         "android.permission.ACCESS_FINE_LOCATION"
       ],
       "package": "com.camaradeturismocobquecura.Appasociados",
-      "versionCode": 6,
+      "versionCode": 10,
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyAyn6WPUaMwF-7bqGw3-swrSUp4t9lC0wo"

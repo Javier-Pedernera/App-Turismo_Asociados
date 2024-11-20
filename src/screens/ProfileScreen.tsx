@@ -47,7 +47,7 @@ const ProfileScreen: React.FC = () => {
   useEffect(() => { 
     setSelectedCategories(categories.map(cat => cat.id));
   }, [categories]);
-  console.log(user);
+  // console.log(user);
 
   const [formData, setFormData] = useState({
     user_id: user?.user_id || 0,
@@ -79,9 +79,9 @@ const ProfileScreen: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [isCategoriesModalVisible, setCategoriesModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  console.log("usuario",user);
+  // console.log("usuario",user);
   
-  console.log(loading);
+  // console.log(loading);
 // console.log(formData);
 const handleChangePassword = async () => {
   if (newPassword !== confirmPassword) {
@@ -162,7 +162,7 @@ const handleChangePassword = async () => {
   };
 
   const handleImageCompressed = (uri: string) => {
-    console.log("imagencomprimida");
+    // console.log("imagencomprimida");
 
     handleInputChange('image_data', uri);
   };
@@ -175,7 +175,7 @@ const handleChangePassword = async () => {
         ...dataToSend,
         image_data: image_data && image_data.startsWith('http') ? null : image_data,
       };
-      console.log("formulario de actualizacion de usuario, ver imagen", updatedDataToSend);
+      // console.log("formulario de actualizacion de usuario, ver imagen", updatedDataToSend);
 
       const response = await dispatch<any>(updateUserAction({ ...updatedDataToSend, user_id }));
       // console.log("resouesta de la actualizacion del usuario", response);
@@ -485,7 +485,7 @@ const handleChangePassword = async () => {
 
 const pickerSelectStyles = StyleSheet.create({
   inputIOS: {
-    height: 35,
+    height: 48,
     width: Platform.OS === 'web' ? '50%' : screenWidth,
     maxWidth: Platform.OS === 'web' ? 400 : screenWidth * 0.8,
     borderColor: 'rgb(172, 208, 213)',
@@ -499,7 +499,7 @@ const pickerSelectStyles = StyleSheet.create({
     
   },
   inputAndroid: {
-    height: 35,
+    height: 48,
     width: Platform.OS === 'web' ? '50%' : screenWidth,
     maxWidth: Platform.OS === 'web' ? '30%' : screenWidth * 0.8,
     borderColor: 'rgb(172, 208, 213)',
@@ -529,7 +529,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingLeft: 20,
-    paddingRight:20
+    paddingRight:20,
+    paddingBottom:30
     // backgroundColor: '#f7f7f7',
   },
   iconContainer:{
@@ -606,21 +607,21 @@ const styles = StyleSheet.create({
     marginTop:20
   },
   inputSelect: {
-    height: 35,
+    height: 48,
     width: '90%',
-    borderColor: 'rgb(172, 208, 213)',
-    borderWidth: 1,
-    borderRadius: 8,
-    marginBottom: 10,
+    // borderColor: 'rgb(172, 208, 213)',
+    // borderWidth: 1,
+    // borderRadius: 8,
+    marginBottom: 5,
     display: 'flex',
     justifyContent: 'center',
 
     // paddingHorizontal: 10,
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
     fontSize: 16,
   },
   input: {
-    height: 35,
+    height: 48,
     width: '90%',
     borderColor: 'rgb(172, 208, 213)',
     borderWidth: 1,
@@ -656,6 +657,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.8,
     shadowRadius: 2,
     elevation: 5,
+    height:48
   },
   buttonText: {
     color: '#fff',
@@ -675,7 +677,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   select: {
-    height: 50,
+    height: 48,
     width: screenWidth,
     borderWidth: 1,
     borderRadius: 8,
@@ -761,7 +763,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     justifyContent: 'center',
     alignContent: 'center',
-    height: 40,
+    height: 48,
     width: '90%',
     borderColor: 'rgb(172, 208, 213)',
     borderWidth: 1,

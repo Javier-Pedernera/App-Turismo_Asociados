@@ -57,7 +57,7 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
       Alert.alert('Error', 'No se pudo obtener el ID del socio o la sucursal. Intente de nuevo.');
       return;
     }
-    console.log("campos vacios?",title,description,discountPercentage);
+    // console.log("campos vacios?",title,description,discountPercentage);
     
     if (!title || !description || discountPercentage === null || selectedCategories.length === 0) {
       Alert.alert('Error', 'Por favor complete todos los campos');
@@ -79,7 +79,7 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
       ]
     };
     const deletedImageIds = imagesToDelete
-    console.log("datos a enviar",promotionData, deletedImageIds);
+    // console.log("datos a enviar",promotionData, deletedImageIds);
     if (promotion.promotion_id) {
       dispatch(modifyPromotion(promotion.promotion_id, promotionData, deletedImageIds))
         .then(() => {

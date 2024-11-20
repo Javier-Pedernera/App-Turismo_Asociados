@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     marginTop: 20
   },
   input: {
-    height: 50,
+    height: 48,
     width: '80%',
     borderColor: '#ddd',
     borderWidth: 1,
@@ -112,6 +112,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 1,
     elevation: 1,
+    minHeight: 48,
   },
   buttonText: {
     color: '#fff',
@@ -137,6 +138,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
+    minHeight: 48,
   },
   modalButtonText: {
     color: '#fff',
@@ -155,6 +157,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 1,
     elevation: 1,
+    minHeight: 48,
   },
   backButtonText: {
     color: '#007A8C',

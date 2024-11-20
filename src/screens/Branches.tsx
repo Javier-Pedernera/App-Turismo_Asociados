@@ -28,7 +28,7 @@ const Branches: React.FC = () => {
     setIsModalVisible(false);
     setSelectedBranch(null);
   };
-console.log("sucursales",branches.length);
+// console.log("sucursales",branches.length);
 
   return (
     <View style={styles.container}>
@@ -105,7 +105,11 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 8,
     width:80,
-    textAlign:'center'
+    textAlign:'center',
+    height:48,
+    alignItems:'center',
+    justifyContent:'center'
+
   },
   buttonText: {
 
@@ -117,9 +121,11 @@ const styles = StyleSheet.create({
     padding: 10,
     width:'80%',
     borderRadius: 8,
-    alignItems: 'center',
     alignSelf:'center',
     marginTop: 16,
+    height:48,
+    alignItems:'center',
+    justifyContent:'center'
   },
   createButtonText: {
     color: '#fff',

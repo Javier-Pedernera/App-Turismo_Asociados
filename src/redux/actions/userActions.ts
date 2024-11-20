@@ -47,7 +47,7 @@ export const getUserInfo = (token:string) => {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log(response.data);
+      // console.log(response.data);
       
       dispatch(setUser(response.data));
     } catch (error:any) {

@@ -50,7 +50,7 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
   const [description, setDescription] = useState(branch?.description || '');
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(branch? false: true );
-  console.log("sucursal elegida", branch);
+  // console.log("sucursal elegida", branch);
   
   const handleSubmit = async () => {
 
@@ -74,11 +74,11 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
     if (branch && branch.branch_id) {
       resp = await dispatch(updateBranch(branch.branch_id, branchData));
       dispatch(fetchPartnerById(user.user_id));
-      console.log("respuesta del dispatch (update)", resp);
+      // console.log("respuesta del dispatch (update)", resp);
     } else {
       resp = await dispatch(addBranch(branchData));
       dispatch(fetchPartnerById(user.user_id));
-      console.log("respuesta del dispatch (add)", resp);
+      // console.log("respuesta del dispatch (add)", resp);
     }
       Alert.alert('Éxito', 'La sucursal se ha creado/actualizado correctamente.');
       onClose();
@@ -319,8 +319,8 @@ const styles = StyleSheet.create({
     alignItems:'center',
     top: Platform.OS === 'ios' ? screenHeight*0.08 : 20,
     left:25,
-    width:35,
-    height:30,
+    width:40,
+    height:35,
     borderRadius:5,
     zIndex:1
   },

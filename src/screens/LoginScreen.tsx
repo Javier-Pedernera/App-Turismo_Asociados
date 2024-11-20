@@ -9,9 +9,10 @@ import Modal from 'react-native-modal';
 import { userLogIn } from '../redux/actions/userActions';
 import Loader from '../components/Loader';
 import { LinearGradient } from 'expo-linear-gradient';
+import Constants from 'expo-constants'; 
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
-
+const appVersion = Constants.expoConfig?.version;
 type LoginScreenProp = StackNavigationProp<RootStackParamList, 'Login'>;
 
 const LoginScreen: React.FC = () => {
@@ -101,12 +102,16 @@ const LoginScreen: React.FC = () => {
             onChangeText={setPassword}
             secureTextEntry={!showPassword}
           />
-          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+          <TouchableOpacity 
+          onPress={() => setShowPassword(!showPassword)}
+           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
             <Icon name={showPassword ? 'eye-off' : 'eye'} size={20} color="#acd0d5" />
           </TouchableOpacity>
         </View>
         {error && <Text style={styles.error}>{error}</Text>}
-        <TouchableOpacity style={styles.forgotPasswordButton} onPress={() => navigation.navigate('ForgotPassword')}>
+        <TouchableOpacity style={styles.forgotPasswordButton} 
+          onPress={() => navigation.navigate('ForgotPassword')}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
           <Text style={styles.forgotPasswordText}>Olvidaste tu contraseña?</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
@@ -116,10 +121,9 @@ const LoginScreen: React.FC = () => {
         <Image source={require('../../assets/images/LOGOASOCIADOS.png')} style={styles.logoAsociados} />
         <Text  style={styles.asociadostext} >ASOCIADOS</Text>
         </View>
-        {/* <Text style={styles.forgotPasswordText}>No tienes cuenta? Contáctanos</Text> */}
         {loading && <Loader />}
       </View>
-        <Text  style={styles.versionText} >Version Beta {process.env.EXPO_PUBLIC_API_VERSION}</Text>
+        <Text  style={styles.versionText} >Version {appVersion}</Text>
       <Modal isVisible={isModalVisible}>
         <View style={styles.modalContent}>
           <Text style={styles.modalMessage}>{modalMessage}</Text>
@@ -180,7 +184,7 @@ const styles = StyleSheet.create({
       fontWeight:'700'
   },
   input: {
-    height: 40,
+    minHeight: 48,
     width: '100%',
     borderColor: 'rgb(172, 208, 213)',
     borderWidth: 1,
@@ -193,7 +197,7 @@ const styles = StyleSheet.create({
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 40,
+    height: 48,
     width: '100%',
     borderColor: 'rgb(172, 208, 213)',
     borderWidth: 1,
@@ -203,6 +207,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   inputPassword: {
+    minHeight:48,
     flex: 1,
     fontSize: 14,
   },
@@ -220,7 +225,7 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     fontFamily: 'Inter-Regular-400',
-    // Sombra en el botón
+    minHeight: 48,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.8,
@@ -283,6 +288,7 @@ const styles = StyleSheet.create({
     color: '#007a8c',
   },
   modalButton: {
+    minHeight: 48,
     backgroundColor: '#007a8c',
     paddingVertical: 10,
     paddingHorizontal: 20,

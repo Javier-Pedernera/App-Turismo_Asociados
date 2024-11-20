@@ -122,6 +122,7 @@ const styles = StyleSheet.create({
     width: screenWidth * 0.38,
   },
   button: {
+    minHeight: 48,
     marginTop:20,
     backgroundColor: '#007a8c',
     paddingVertical: 10,

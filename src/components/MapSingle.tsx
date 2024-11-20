@@ -56,12 +56,12 @@ const MapSingle: React.FC<MapComponentProps> = ({
 
 
   const handleMapPress = (e: any) => {
-    console.log("funcion pressmap", e.nativeEvent);
+    // console.log("funcion pressmap", e.nativeEvent);
     const { latitude, longitude } = e.nativeEvent.coordinate;
     setSearchLocation({ ...searchLocation, latitude, longitude });
     setSelectedBranch({ ...branch, latitude, longitude });
   };
-  console.log("selected branch", selectedBranch);
+  // console.log("selected branch", selectedBranch);
 
   const renderStars = (rating: number) => {
     const stars = [];

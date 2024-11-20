@@ -55,7 +55,7 @@ export const modifyPromotion = (promotionId: number, data: any, deletedImageIds:
     try {
       if (deletedImageIds.length) {
         const imgDelete = { 'image_ids': deletedImageIds };
-        console.log(imgDelete);
+        // console.log(imgDelete);
         const responseDeleted = await axios.post(`${API_URL}/promotion_images/delete`, imgDelete);
         console.log(responseDeleted);
       }
