@@ -47,7 +47,7 @@ const ProfileScreen: React.FC = () => {
   useEffect(() => { 
     setSelectedCategories(categories.map(cat => cat.id));
   }, [categories]);
-  // console.log(user);
+  // console.log(user.image_url);
 
   const [formData, setFormData] = useState({
     user_id: user?.user_id || 0,
