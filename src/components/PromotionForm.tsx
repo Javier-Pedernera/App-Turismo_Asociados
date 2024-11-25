@@ -359,7 +359,8 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginTop: 10,
     minHeight: 48,
-    
+    alignItems:'center',
+    justifyContent:'center'
   },
   submitButtonText: {
     color: '#fff',
@@ -371,6 +372,8 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginTop: 10,
     minHeight: 48,
+    alignItems:'center',
+    justifyContent:'center'
   },
   closeButtonText: {
     color: '#fff',

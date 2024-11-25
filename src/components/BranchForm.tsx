@@ -73,10 +73,13 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
     let resp;
     if (branch && branch.branch_id) {
       resp = await dispatch(updateBranch(branch.branch_id, branchData));
+      console.log("respuesta del dispatch (update)", resp);
+      
       dispatch(fetchPartnerById(user.user_id));
-      // console.log("respuesta del dispatch (update)", resp);
     } else {
       resp = await dispatch(addBranch(branchData));
+      console.log(resp);
+      
       dispatch(fetchPartnerById(user.user_id));
       // console.log("respuesta del dispatch (add)", resp);
     }

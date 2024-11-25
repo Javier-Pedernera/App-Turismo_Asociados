@@ -28,7 +28,8 @@ const Branches: React.FC = () => {
     setIsModalVisible(false);
     setSelectedBranch(null);
   };
-// console.log("sucursales",branches.length);
+// console.log("sucursales",branches);
+// console.log("imprimo imagende la sucursal miniatura",`${API_URL}${branches[0].image_url}`);
 
   return (
     <View style={styles.container}>
