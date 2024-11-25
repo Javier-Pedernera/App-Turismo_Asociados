@@ -13,7 +13,7 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const ImageCompressor: React.FC<ImageCompressorProps> = ({ onImageCompressed, initialImageUri, isButtonDisabled }) => {
   const [imageUri, setImageUri] = useState<string | null>(`${initialImageUri}?timestamp=${new Date().getTime()}` || null);
-  // console.log("imagen inicial",imageUri);
+  // console.log("imagen inicial",initialImageUri);
   const pickAndCompressImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -47,12 +47,15 @@ const ImageCompressor: React.FC<ImageCompressorProps> = ({ onImageCompressed, in
       }
     }
   };
+// console.log("imagen de usuario", imageUri);
 
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={pickAndCompressImage} style={styles.imagePickerButton} disabled={!isButtonDisabled}>
         {/* <Text style={styles.imagePickerButtonText}>Seleccionar Imagen</Text> */}
-        {imageUri && <Image source={{ uri: imageUri }} style={styles.imagePreview} />}
+        { imageUri && initialImageUri !=="https://cobquecurapp-backend.duckdns.orgnull"? 
+        <Image source={{ uri: imageUri }} style={styles.imagePreview} />:
+        <Image source={require('../../assets/noImageAvailable.png')} style={styles.imagePreview} />}
       </TouchableOpacity>
 
 

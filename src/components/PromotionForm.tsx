@@ -11,8 +11,10 @@ import { getMemoizedAllCategories } from '../redux/selectors/categorySelectors';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { formatDateToDDMMYYYY, formatDateToYYYYMMDD } from '../utils/formatDate';
 import { AppDispatch } from '../redux/store/store';
-import { createPromotion } from '../redux/actions/promotionsActions';
+import { createPromotion, fetchPromotions } from '../redux/actions/promotionsActions';
 import Loader from './Loader';
+import ErrorModal from './ErrorModal';
+import ExitoModal from './ExitoModal';
 
 interface PromotionFormProps {
   onClose: () => void;
@@ -38,6 +40,10 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
   const [isCategoriesModalVisible, setCategoriesModalVisible] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+  const [modalSuccessVisible, setModalSuccessVisible] = useState(false);
+  const [modalSuccessMessage, setModalSuccessMessage] = useState('');
   const handleImagesCompressed = useCallback((images: { filename: string; data: string }[]) => {
     setImagePaths(images);
   }, []);
@@ -54,10 +60,19 @@ setLoading(true)
       Alert.alert('Error', 'No se pudo obtener el ID del socio o la sucursal. Intente de nuevo.');
       return;
     }
-    if (!title || !description || !startDate || !endDate || discountPercentage === null || selectedCategories.length === 0 || imagePaths.length === 0) {
-      Alert.alert('Error', 'Por favor complete todos los campos');
-      setLoading(false)
-      return;
+    if (!title || !startDate || !endDate || discountPercentage === null ) {
+      // Validar campos y construir mensaje de error específico
+            const missingFields = [];
+            if (!title) missingFields.push('título');
+            if (!startDate) missingFields.push('fecha de inicio');
+            if (!endDate) missingFields.push('fecha de fin');
+            if (discountPercentage === null) missingFields.push('porcentaje de descuento');
+
+              const errorMessage = `Los siguientes campos son obligatorios: ${missingFields.join(', ')}.`;
+              showErrorModal(errorMessage);
+              setLoading(false);
+              return;
+            
     }
     const promotionData = {
       branch_id: partner?.branches[0].branch_id,
@@ -76,8 +91,11 @@ setLoading(true)
     await dispatch(createPromotion(promotionData))
       .then(() => {
         setLoading(false)
-        Alert.alert('Éxito', 'La promoción ha sido creada correctamente.');
-        onClose(); // Puedes cerrar el modal o hacer alguna otra acción
+        dispatch(fetchPromotions(user?.user_id))
+        setModalSuccessMessage('La promoción ha sido creada correctamente.');
+        setModalSuccessVisible(true);
+        // Alert.alert('Éxito', 'La promoción ha sido creada correctamente.');
+        // onClose();
       })
       .catch((error: any) => {
         Alert.alert('Error', 'Hubo un problema al crear la promoción. Intente de nuevo.');
@@ -103,7 +121,7 @@ setLoading(true)
   const handleEndDateChange = (event: any, date?: Date) => {
     if (date) {
       if (startDate && date <= startDate) {
-        Alert.alert('Error', 'La fecha de fin debe ser posterior a la fecha de inicio.');
+        showErrorModal('La fecha de fin debe ser posterior a la fecha de inicio.');
         setShowEndDatePicker(false)
         return;
       }
@@ -137,13 +155,18 @@ setLoading(true)
     }
   }
 
+  const showErrorModal = (message: string) => {
+    setModalMessage(message);
+    setModalVisible(true);
+  };
+
   return (
     
     <ScrollView contentContainerStyle={styles.formContainer}>
       {loading&& <Loader/>}
       <TextInput
         style={styles.input}
-        placeholder="Título"
+        placeholder="* Título"
         value={title}
         onChangeText={setTitle}
       />
@@ -154,19 +177,37 @@ setLoading(true)
         onChangeText={setDescription}
         multiline
       />
-      <TextInput
+         <TextInput
         style={styles.input}
-        placeholder="Porcentaje de Descuento"
+        placeholder="* Porcentaje de descuento (0-99)"
         keyboardType="numeric"
-        value={typeof discountPercentage === 'number' ? discountPercentage.toString() : ''}
-        onChangeText={(text) => setDiscountPercentage(Number(text))}
+        value={discountPercentage !== undefined ? discountPercentage?.toString() : ''}
+        onChangeText={(text) => {
+          const value = Number(text);
+          if (value >= 0 && value <= 99) {
+            setDiscountPercentage(value);
+          } else {
+            showErrorModal('El porcentaje debe estar entre 0 y 99.');
+          }
+        }}
       />
+
       <TextInput
         style={styles.input}
-        placeholder="Cantidad Disponible"
+        placeholder="Cantidad disponible"
         keyboardType="numeric"
-        value={typeof availableQuantity === 'number' ? availableQuantity.toString() : ''}
-        onChangeText={(text) => setAvailableQuantity(Number(text))}
+        value={availableQuantity !== undefined ? availableQuantity?.toString() : ''}
+        onChangeText={(text) => {
+          if (text === '') {
+            setAvailableQuantity(null);
+          } else {
+            const value = Number(text);
+            if (value > 0) {
+              setAvailableQuantity(value);
+            } else {
+              showErrorModal('La cantidad debe ser mayor a 0.');
+            }
+        }}}
       />
       {/* Agregar lógica para seleccionar categorías */}
       <TouchableOpacity
@@ -189,9 +230,9 @@ setLoading(true)
       <View style={styles.datePickerContainer}>
         {!showStartDatePicker && (
           <TouchableOpacity onPress={() => ShowDatePicker("init")} style={styles.inputdate}>
-            {startDate ? <Text style={styles.textDate}>Inicia</Text> : <Text></Text>}
+            {startDate ? <Text style={styles.textDate}>* Inicia</Text> : <Text></Text>}
             <Text style={styles.textDate}>
-              {startDate ? formatDateToDDMMYYYY(startDate.toISOString().split('T')[0]) : 'Fecha de Inicio (DD-MM-YYYY)'}
+              {startDate ? formatDateToDDMMYYYY(startDate.toISOString().split('T')[0]) : '* Fecha de Inicio (DD-MM-YYYY)'}
             </Text>
           </TouchableOpacity>
         )}
@@ -215,9 +256,9 @@ setLoading(true)
       <View style={styles.datePickerContainer}>
         {!showEndDatePicker && (
           <TouchableOpacity onPress={() => ShowDatePicker("end")} style={[styles.inputdate, !startDate && { opacity: 0.5 }]} disabled={!startDate}>
-            {endDate ? <Text style={styles.textDate}>Finaliza</Text> : <Text></Text>}
+            {endDate ? <Text style={styles.textDate}>* Finaliza</Text> : <Text></Text>}
             <Text style={styles.textDate}>
-              {endDate ? formatDateToDDMMYYYY(endDate.toISOString().split('T')[0]) : 'Fecha de Fin (DD-MM-YYYY)'}
+              {endDate ? formatDateToDDMMYYYY(endDate.toISOString().split('T')[0]) : '* Fecha de Fin (DD-MM-YYYY)'}
             </Text>
           </TouchableOpacity>
         )}
@@ -244,6 +285,19 @@ setLoading(true)
       <TouchableOpacity style={styles.closeButton} onPress={onClose}>
         <Text style={styles.closeButtonText}>Cancelar</Text>
       </TouchableOpacity>
+      <ErrorModal
+        visible={modalVisible}
+        message={modalMessage}
+        onClose={() => setModalVisible(false)}
+      />
+      <ExitoModal
+        visible={modalSuccessVisible}
+        message={modalSuccessMessage}
+        onClose={() => {
+          setModalSuccessVisible(false);
+          onClose();
+        }}
+        />
     </ScrollView>
   );
 };

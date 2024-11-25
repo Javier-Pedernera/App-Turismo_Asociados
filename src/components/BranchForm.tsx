@@ -55,7 +55,7 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
   const handleSubmit = async () => {
 
     setIsLoading(true);
-    const image_data = images.length > 0 ? images[0].data : '';
+    const image_data = images?.length > 0 ? images[0].data : '';
     const branchData: BranchCreate = {
       partner_id: user.user_id,
       name,
@@ -74,7 +74,7 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
     if (branch && branch.branch_id) {
       resp = await dispatch(updateBranch(branch.branch_id, branchData));
       console.log("respuesta del dispatch (update)", resp);
-      
+
       dispatch(fetchPartnerById(user.user_id));
     } else {
       resp = await dispatch(addBranch(branchData));
@@ -141,12 +141,12 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
               <MaterialCommunityIcons name="file-edit-outline" size={23} color="#fff" />
             </TouchableOpacity> : <View></View> }
           <TouchableOpacity onPress={handleImagePick} disabled={!isEditing}>
-            {images.length > 0 ? (
+            {images && images.length > 0 ? (
               <Image source={{ uri: `data:image/jpeg;base64,${images[0].data}` }} style={styles.image} resizeMode="cover" />
             ) : (
-              branch?.image_url.length? <Image source={{ uri: `${API_URL}${branch.image_url}`  }} style={styles.image} resizeMode='contain' /> :
+              branch?.image_url?.length? <Image source={{ uri: `${API_URL}${branch.image_url}`  }} style={styles.image} resizeMode='contain' /> :
               <View style={styles.placeholderImage}>
-                <Text>No tienes ninguna imagen aún</Text>
+                <Image source={require('../../assets/noimage.png')} style={styles.image} alt={branch.name}/>
               </View>
             )}
           </TouchableOpacity>

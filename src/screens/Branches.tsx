@@ -34,8 +34,8 @@ const Branches: React.FC = () => {
   return (
     <View style={styles.container}>
       <SemicirclesOverlay/>
-      <Text style={styles.nameTitle}>Tus sucursales activas</Text>
-      {!branches.length?
+      <Text style={styles.nameTitle}>Sucursal activa</Text>
+      {!branches?.length?
         <TouchableOpacity style={styles.createButton} onPress={handleCreate}>
           <Text style={styles.createButtonText}>Crear Sucursal</Text>
         </TouchableOpacity>:
@@ -44,7 +44,12 @@ const Branches: React.FC = () => {
         keyExtractor={(item) => item.branch_id.toString()}
         renderItem={({ item }) => (
           <View style={styles.branchContainer}>
-            <Image source={{ uri: `${API_URL}${item.image_url}` }} style={styles.image} />
+            {item.image_url ? <Image source={{ uri: `${API_URL}${item.image_url}` }} style={styles.image} /> :
+              <Image
+                source={require('../../assets/noimage.png')}
+                style={styles.image}
+                alt={item.name}
+              />}
             <Text style={styles.name}>{item.name}</Text>
             <View style={styles.buttonContainer}>
               <TouchableOpacity
@@ -69,7 +74,7 @@ const styles = StyleSheet.create({
   container: {
     display:'flex',
     height: screenHeight ,
-    padding: 16,
+    padding: 15,
     backgroundColor: '#fff',
   },
   nameTitle:{
@@ -85,12 +90,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
+    paddingTop: 10,
     paddingBottom: 8,
-    paddingLeft:10,
-    paddingRight:10
+    paddingLeft:5,
+    paddingRight:5
   },
   image: {
-    width: 100,
+    width: 90,
     height: 50,
     marginRight: 16,
   },

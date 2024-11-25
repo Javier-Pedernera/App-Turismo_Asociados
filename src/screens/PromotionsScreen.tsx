@@ -17,7 +17,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import PromotionForm from '../components/PromotionForm';
 import { getMemoizedCountries, getMemoizedRoles, getMemoizedStates } from '../redux/selectors/globalSelectors';
 import { updatePromotion } from '../redux/reducers/promotionReducer';
-import { deletePromotion } from '../redux/actions/promotionsActions';
+import { deletePromotion, fetchPromotions } from '../redux/actions/promotionsActions';
 import EditPromotionForm from '../components/EditPromotionForm';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
@@ -28,18 +28,14 @@ const PromotionsScreen: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const promotions = useSelector(getMemoizedPromotions);
   // const categories = useSelector(getMemoizedAllCategories);
-  const user_categories = useSelector(getMemoizedUserCategories);
+  // const user_categories = useSelector(getMemoizedUserCategories);
   const user = useSelector(getMemoizedUserData);
   const [filteredPromotions, setFilteredPromotions] = useState<Promotion[]>(promotions);
-  const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
-  const [keyword, setKeyword] = useState('');
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
-  const [filterByPreferences, setFilterByPreferences] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
-  const [isModalVisible, setIsModalVisible] = useState(false);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const statuses = useSelector(getMemoizedStates);
@@ -101,68 +97,6 @@ const PromotionsScreen: React.FC = () => {
     }
   }, []);
 
-  const confirmStartDate = useCallback(() => {
-    setShowStartDatePicker(false);
-  }, []);
-
-  const confirmEndDate = useCallback(() => {
-    setShowEndDatePicker(false);
-  }, []);
-
-  const toggleCategory = useCallback((categoryId: number) => {
-    setSelectedCategories((prevSelectedCategories) => {
-      if (prevSelectedCategories.includes(categoryId)) {
-        return prevSelectedCategories.filter(id => id !== categoryId);
-      } else {
-        return [...prevSelectedCategories, categoryId];
-      }
-    });
-  }, []);
-
-  const applyFilters = useCallback(() => {
-    setLoading(true);
-    let filtered = promotions;
-    if (filterByPreferences && user && user.categories) {
-      filtered = filtered.filter(promotion =>
-        promotion.categories.some(c => user_categories.map(uc => uc.id).includes(c.category_id))
-      );
-    }
-    if (selectedCategories.length > 0) {
-      filtered = filtered.filter(promotion => {
-        const categoryIds = promotion.categories.map(c => c.category_id);
-        return selectedCategories.some(id => categoryIds.includes(id));
-      });
-    }
-
-    if (keyword) {
-      filtered = filtered.filter(promotion => promotion.title.toLowerCase().includes(keyword.toLowerCase()));
-    }
-
-    if (startDate) {
-      filtered = filtered.filter(promotion =>
-        new Date(promotion.start_date) >= startDate
-      );
-    }
-
-    if (endDate) {
-      filtered = filtered.filter(promotion =>
-        new Date(promotion.expiration_date) <= endDate
-      );
-    }
-
-    setFilteredPromotions(filtered);
-    setLoading(false);
-    setIsModalVisible(false);
-  }, [filterByPreferences, user, user_categories, selectedCategories, keyword, startDate, endDate, promotions]);
-
-  const clearFilters = useCallback(() => {
-    setSelectedCategories([]);
-    setKeyword('');
-    setStartDate(null);
-    setEndDate(null);
-    setFilterByPreferences(false);
-    setFilteredPromotions(promotions);
-  }, [promotions]);
 
   const handleEditPromotion = (promotion: Promotion) => {
     setSelectedPromotion(promotion);
@@ -170,7 +104,6 @@ const PromotionsScreen: React.FC = () => {
   };
 
   const handleDeletePromotion = async (promotionId: number) => {
-    // Busca el estado "deleted"
     const deletedState = statuses.find(status => status.name === 'deleted');
     if (deletedState) {
       const status_id = deletedState.id;
@@ -437,7 +370,7 @@ const styles = StyleSheet.create({
   modalContent: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     padding: 20,
-    height:  screenHeigth*0.9,
+    // height:  screenHeigth*0.9,
     // borderTopLeftRadius: 20,
     // borderTopRightRadius: 20,
   },

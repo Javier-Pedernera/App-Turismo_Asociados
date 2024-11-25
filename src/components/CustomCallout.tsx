@@ -36,17 +36,21 @@ const CustomCallout: React.FC<CustomCalloutProps> = ({ branch, handleRoutePress,
     }
     return stars;
   };
-
+  console.log("url de la imagen", imageUrl);
   return (
     <View style={styles.calloutContainer}>
       <View style={styles.calloutBack}>
         {Platform.OS === 'android' ? (
           <View style={styles.calloutImageAndroidCont}>
-            <Image style={styles.calloutImageAndroid} source={{ uri: imageUrl }} />
+            {imageUrl == "https://cobquecurapp-backend.duckdns.orgnull"? 
+            <Image style={styles.calloutImageAndroid} source={require('../../assets/noimage.png')} />:<Image style={styles.calloutImageAndroid} source={{ uri: imageUrl }} />
+          }
+            
           </View>
         ) : (
           <View style={styles.calloutImageContainer}>
-            <Image source={{ uri: branch.image_url }} style={styles.calloutImage} />
+            {imageUrl == "https://cobquecurapp-backend.duckdns.orgnull"? 
+            <Image style={styles.calloutImageAndroid} source={require('../../assets/noimage.png')} />:<Image source={{ uri: branch.image_url }} style={styles.calloutImage} />}
           </View>
         )}
         <View style={styles.callout}>

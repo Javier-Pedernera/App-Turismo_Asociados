@@ -35,7 +35,7 @@ const CustomHeader: React.FC = () => {
           <Image source={{ uri: `${API_URL}${user?.image_url}`}} style={styles.avatar} />
         ) : (
           <Image
-            source={{ uri: "https://res.cloudinary.com/dbwmesg3e/image/upload/v1721231402/TurismoApp/perfil_tfymsu.png" }}
+          source={require('../../assets/noImageAvailable.png')}
             style={styles.avatar}
           />
         )}
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
   },
   avatar: {
     width: '100%',
-    // height: 40,
+    height: 'auto',
     borderRadius: 25,
 
   },

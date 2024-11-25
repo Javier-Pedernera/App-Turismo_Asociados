@@ -32,7 +32,9 @@ const LoginScreen: React.FC = () => {
   const handleLogin = async () => {
     const lowerCaseEmail = email.trim().toLowerCase();
     if (lowerCaseEmail === '' || password === '') {
-      Alert.alert('Error', 'Por favor ingresa tu correo electrónico y contraseña.');
+      setModalMessage('Por favor ingresa tu correo electrónico y contraseña.');
+      setError(null)
+      setModalVisible(true)
       return;
     }
 
@@ -69,8 +71,8 @@ const LoginScreen: React.FC = () => {
     } catch (err: any) {
       setEmail('');
       setPassword('');
-      setError(err.message);
-      setModalMessage(err.message);
+      setError(err.message == 'Password inválido'? 'Contraseña inválida': err.message);
+      setModalMessage(err.message == 'Password inválido'? 'Contraseña inválida': err.message);
       toggleModal();
     } finally {
 
@@ -212,8 +214,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   error: {
-    color: '#007a8c',
-    marginBottom: 15,
+    alignSelf:'flex-end',
+    marginRight:10,
+    color: '#e00d0d',
+    marginTop: 5,
+    fontSize: 12,
   },
   button: {
     backgroundColor: '#007a8c',
@@ -223,7 +228,8 @@ const styles = StyleSheet.create({
     marginTop: 30,
     marginBottom: 30,
     width: '100%',
-    alignItems: 'center',
+    alignItems:'center',
+    justifyContent:'center',
     fontFamily: 'Inter-Regular-400',
     minHeight: 48,
     shadowColor: '#000',

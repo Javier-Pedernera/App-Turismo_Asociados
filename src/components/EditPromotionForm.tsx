@@ -14,6 +14,8 @@ import { modifyPromotion } from '../redux/actions/promotionsActions';
 import { Image } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Loader from './Loader';
+import ErrorModal from './ErrorModal';
+import ExitoModal from './ExitoModal';
 
 interface EditPromotionFormProps {
   promotion: Promotion;
@@ -41,6 +43,10 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
   const [isCategoriesModalVisible, setCategoriesModalVisible] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<number[]>(promotion.categories.map(category => category.category_id));
   const [imagesToDelete, setImagesToDelete] = useState<number[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+  const [modalSuccessVisible, setModalSuccessVisible] = useState(false);
+  const [modalSuccessMessage, setModalSuccessMessage] = useState('');
   const handleImagesCompressed = useCallback((images: { filename: string; data: string }[]) => {
     setNewImages(images);
   }, []);
@@ -59,7 +65,7 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
     }
     // console.log("campos vacios?",title,description,discountPercentage);
     
-    if (!title || !description || discountPercentage === null || selectedCategories.length === 0) {
+    if (!title || discountPercentage === null || selectedCategories.length === 0) {
       Alert.alert('Error', 'Por favor complete todos los campos');
       return;
     }
@@ -84,8 +90,10 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
       dispatch(modifyPromotion(promotion.promotion_id, promotionData, deletedImageIds))
         .then(() => {
           setIsLoading(false)
-          Alert.alert('Éxito', 'La promoción ha sido actualizada correctamente.');
-          onClose();
+          setModalSuccessMessage('La promoción ha sido actualizada correctamente.');
+          setModalSuccessVisible(true);
+          // // Alert.alert('Éxito', 'La promoción ha sido actualizada correctamente.');
+          // onClose();
         })
         .catch((error: any) => {
           setIsLoading(false)
@@ -138,6 +146,10 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
     const utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
     return utcDate;
   };
+  const showErrorModal = (message: string) => {
+    setModalMessage(message);
+    setModalVisible(true);
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.formContainer}>
@@ -160,18 +172,35 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
       <Text style={styles.texttitle}>% de descuento</Text>
       <TextInput
         style={styles.input}
-        placeholder="Porcentaje de Descuento"
+        placeholder="* Porcentaje de descuento (0-99)"
         keyboardType="numeric"
-        value={typeof discountPercentage === 'number' ? discountPercentage.toString() : ''}
-        onChangeText={(text) => setDiscountPercentage(Number(text))}
+        value={discountPercentage !== undefined ? discountPercentage?.toString() : ''}
+        onChangeText={(text) => {
+          const value = Number(text);
+          if (value >= 0 && value <= 99) {
+            setDiscountPercentage(value);
+          } else {
+            showErrorModal('El porcentaje debe estar entre 0 y 99.');
+          }
+        }}
       />
-      <Text style={styles.texttitle}>Cantidad</Text>
+
       <TextInput
         style={styles.input}
-        placeholder="Cantidad Disponible"
+        placeholder="Cantidad disponible"
         keyboardType="numeric"
-        value={typeof availableQuantity === 'number' ? availableQuantity.toString() : ''}
-        onChangeText={(text) => setAvailableQuantity(Number(text))}
+        value={availableQuantity !== undefined ? availableQuantity?.toString() : ''}
+        onChangeText={(text) => {
+          if (text === '') {
+            setAvailableQuantity(null);
+          } else {
+            const value = Number(text);
+            if (value > 0) {
+              setAvailableQuantity(value);
+            } else {
+              showErrorModal('La cantidad debe ser mayor a 0.');
+            }
+        }}}
       />
       <TouchableOpacity
         style={styles.categoryButton}
@@ -272,6 +301,19 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
       <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
         <Text style={styles.submitButtonText}>Cancelar</Text>
       </TouchableOpacity>
+      <ErrorModal
+        visible={modalVisible}
+        message={modalMessage}
+        onClose={() => setModalVisible(false)}
+      />
+      <ExitoModal
+        visible={modalSuccessVisible}
+        message={modalSuccessMessage}
+        onClose={() => {
+          setModalSuccessVisible(false);
+          onClose();
+        }}
+        />
     </ScrollView>
   );
 };
