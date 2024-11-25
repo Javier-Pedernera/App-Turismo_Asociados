@@ -32,27 +32,28 @@ const MultiImageCompressor: React.FC<MultiImageCompressorProps> = ({ onImagesCom
 
     const compressImages = async (uris: string[]) => {
         try {
-            const compressedImages = await Promise.all(
-                uris.map(async (uri) => {
-                    const { base64 } = await ImageManipulator.manipulateAsync(
-                        uri,
-                        [{ resize: { width: 800 } }],
-                        { base64: true }
-                    );
-                    const filename = `image_${new Date().getTime()}.jpg`;
-
-                    if (base64 === undefined) {
-                        throw new Error(`No se pudo obtener base64 para la imagen: ${uri}`);
-                    }
-
-                    return { filename, data: base64 };
-                })
-            );
-            onImagesCompressed(compressedImages);
+          const compressedImages = await Promise.all(
+            uris.map(async (uri) => {
+              const { base64 } = await ImageManipulator.manipulateAsync(
+                uri,
+                [{ resize: { width: 800 } }], // Reducir tamaño a 800px de ancho
+                { base64: true, compress: 0.7 } // Comprimir al 70% de calidad
+              );
+      
+              const filename = `image_${new Date().getTime()}.jpg`;
+      
+              if (!base64) {
+                throw new Error(`No se pudo obtener base64 para la imagen: ${uri}`);
+              }
+      
+              return { filename, data: base64 };
+            })
+          );
+          onImagesCompressed(compressedImages);
         } catch (error) {
-            Alert.alert('Error', 'No se pudo comprimir las imágenes.');
+          Alert.alert('Error', 'No se pudo comprimir las imágenes.');
         }
-    };
+      };
 
     const removeImage = (uri: string) => {
         setImageUris(prevUris => prevUris.filter(imageUri => imageUri !== uri));

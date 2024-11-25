@@ -14,7 +14,8 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.appturismo.asociados",
-      "buildNumber": "1.0.0",
+      "buildNumber": "2",
+      "version": "1.0.0",
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
