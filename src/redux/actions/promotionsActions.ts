@@ -43,15 +43,16 @@ export const createPromotion = (promotion: PromotionCreate) => {
   return async (dispatch: Dispatch) => {
     try {
       // Validar que las imágenes estén en el formato correcto
-      if (!promotion.images || promotion.images.length === 0) {
-        throw new Error('No se han proporcionado imágenes para la promoción.');
-      }
+      // if (!promotion.images || promotion.images.length === 0) {
+      //   throw new Error('No se han proporcionado imágenes para la promoción.');
+      // }
 
       // Enviar datos al backend
       const response = await axios.post(`${API_URL}/promotions`, promotion);
 
       // Despachar la acción si la solicitud es exitosa
       dispatch(addPromotion(response.data));
+      return response
     } catch (error: any) {
       console.error('Error creando la promoción:', error.message);
       if (axios.isAxiosError(error)) {

@@ -57,7 +57,6 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
     const jsonString = JSON.stringify(promotionData);
     return new Blob([jsonString]).size; // Devuelve el tamaño en bytes
   };
-  /*
   const handleSubmit = async () => {
     // console.log(title, description, startDate?.toISOString().split('T')[0], endDate?.toISOString().split('T')[0], discountPercentage, availableQuantity, selectedCategories, imagePaths.length);
 setLoading(true)
@@ -92,6 +91,16 @@ setLoading(true)
       images: imagePaths
     };
     // console.log(promotionData);
+        // Validar el tamaño del payload
+        const MAX_PAYLOAD_SIZE = 500000;
+        const payloadSize = calculatePayloadSize(promotionData);
+        if (payloadSize > MAX_PAYLOAD_SIZE) {
+          showErrorModal(
+            'El tamaño de los datos excede el límite permitido. Reduzca el número o tamaño de las imágenes.'
+          );
+          setLoading(false);
+          return;
+        }
 
     await dispatch(createPromotion(promotionData))
       .then(() => {
@@ -109,64 +118,64 @@ setLoading(true)
       });
 
   };
-*/
 
-const handleSubmit = async () => {
-  setLoading(true);
-  if (
-    !user?.user_id ||
-    !partner?.branches[0].branch_id ||
-    !title ||
-    !description ||
-    !startDate ||
-    !endDate ||
-    discountPercentage === null ||
-    selectedCategories.length === 0 ||
-    imagePaths.length === 0
-  ) {
-    Alert.alert('Error', 'Por favor complete todos los campos.');
-    setLoading(false);
-    return;
-  }
 
-  const promotionData = {
-    branch_id: partner?.branches[0].branch_id,
-    title,
-    description,
-    start_date: startDate.toISOString().split('T')[0],
-    expiration_date: endDate.toISOString().split('T')[0],
-    discount_percentage: discountPercentage,
-    available_quantity: availableQuantity,
-    partner_id: user?.user_id || 0,
-    category_ids: selectedCategories,
-    images: imagePaths,
-  };
+// const handleSubmit = async () => {
+//   setLoading(true);
+//   if (
+//     !user?.user_id ||
+//     !partner?.branches[0].branch_id ||
+//     !title ||
+//     !description ||
+//     !startDate ||
+//     !endDate ||
+//     discountPercentage === null ||
+//     selectedCategories.length === 0 ||
+//     imagePaths.length === 0
+//   ) {
+//     Alert.alert('Error', 'Por favor complete todos los campos.');
+//     setLoading(false);
+//     return;
+//   }
 
-  // Validar el tamaño del payload
-  const MAX_PAYLOAD_SIZE = 500000; // 500 KB
-  const payloadSize = calculatePayloadSize(promotionData);
-  if (payloadSize > MAX_PAYLOAD_SIZE) {
-    Alert.alert(
-      'Error',
-      'El tamaño de los datos excede el límite permitido. Reduzca el número o tamaño de las imágenes.'
-    );
-    setLoading(false);
-    return;
-  }
+//   const promotionData = {
+//     branch_id: partner?.branches[0].branch_id,
+//     title,
+//     description,
+//     start_date: startDate.toISOString().split('T')[0],
+//     expiration_date: endDate.toISOString().split('T')[0],
+//     discount_percentage: discountPercentage,
+//     available_quantity: availableQuantity,
+//     partner_id: user?.user_id || 0,
+//     category_ids: selectedCategories,
+//     images: imagePaths,
+//   };
 
-  // Enviar datos al backend
-  await dispatch(createPromotion(promotionData))
-    .then(() => {
-      setLoading(false);
-      Alert.alert('Éxito', 'La promoción ha sido creada correctamente.');
-      onClose();
-    })
-    .catch((error: any) => {
-      Alert.alert('Error', 'Hubo un problema al crear la promoción. Intente de nuevo.');
-      console.error('Error al crear la promoción: ', error);
-      setLoading(false);
-    });
-};
+//   // Validar el tamaño del payload
+//   const MAX_PAYLOAD_SIZE = 500000; // 500 KB
+//   const payloadSize = calculatePayloadSize(promotionData);
+//   if (payloadSize > MAX_PAYLOAD_SIZE) {
+//     Alert.alert(
+//       'Error',
+//       'El tamaño de los datos excede el límite permitido. Reduzca el número o tamaño de las imágenes.'
+//     );
+//     setLoading(false);
+//     return;
+//   }
+
+//   // Enviar datos al backend
+//   await dispatch(createPromotion(promotionData))
+//     .then(() => {
+//       setLoading(false);
+//       Alert.alert('Éxito', 'La promoción ha sido creada correctamente.');
+//       onClose();
+//     })
+//     .catch((error: any) => {
+//       Alert.alert('Error', 'Hubo un problema al crear la promoción. Intente de nuevo.');
+//       console.error('Error al crear la promoción: ', error);
+//       setLoading(false);
+//     });
+// };
   const handleStartDateChange = (event: any, date?: Date) => {
     if (Platform.OS === 'ios') {
       setStartDate(date || startDate);

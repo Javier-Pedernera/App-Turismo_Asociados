@@ -59,17 +59,24 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
     setExistingImages(existingImages.filter((img: any) => img.image_id !== imageId));
   };
   const handleSubmit = () => {
+    
     if (!user?.user_id || !partner?.branches[0].branch_id) {
       Alert.alert('Error', 'No se pudo obtener el ID del socio o la sucursal. Intente de nuevo.');
       return;
     }
     // console.log("campos vacios?",title,description,discountPercentage);
     
-    if (!title || discountPercentage === null || selectedCategories.length === 0) {
-      Alert.alert('Error', 'Por favor complete todos los campos');
-      return;
-    }
     setIsLoading(true)
+    if (!title || discountPercentage === null ) {
+      const missingFields = [];
+      if (!title) missingFields.push('título');
+      if (discountPercentage === null) missingFields.push('porcentaje de descuento');
+
+        const errorMessage = `Los siguientes campos son obligatorios: ${missingFields.join(', ')}.`;
+        showErrorModal(errorMessage);
+        setIsLoading(false);
+        return;
+    }
     const promotionData = {
       branch_id: partner?.branches[0].branch_id,
       title,
