@@ -21,6 +21,9 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import { logoutUser } from '../services/authService';
 import Loader from '../components/Loader';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { KeyboardAvoidingView } from 'react-native';
+import { TouchableWithoutFeedback } from 'react-native';
+import { Keyboard } from 'react-native';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 // const screenHeight = Dimensions.get('window').height;
@@ -44,10 +47,10 @@ const ProfileScreen: React.FC = () => {
     dispatch(fetchAllCategories());
   }, [dispatch, user?.user_id]);
 
-  useEffect(() => { 
+  useEffect(() => {
     setSelectedCategories(categories.map(cat => cat.id));
   }, [categories]);
-  // console.log(user.image_url);
+  // console.log(user);
 
   const [formData, setFormData] = useState({
     user_id: user?.user_id || 0,
@@ -59,7 +62,7 @@ const ProfileScreen: React.FC = () => {
     phone_number: user?.phone_number || '',
     gender: user?.gender || '',
     birth_date: user?.birth_date || '',
-    image_data:  `${API_URL}${user?.image_url}` || null,
+    image_data: `${API_URL}${user?.image_url}` || null,
     subscribed_to_newsletter: user?.subscribed_to_newsletter || false,
     //partner
     address: partner?.address || '',
@@ -80,39 +83,40 @@ const ProfileScreen: React.FC = () => {
   const [isCategoriesModalVisible, setCategoriesModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   // console.log("usuario",user);
-  
-  // console.log(loading);
-// console.log(formData);
-const handleChangePassword = async () => {
-  if (newPassword !== confirmPassword) {
-    setModalMessage('Las contraseñas no coinciden');
-    setModalError(true);
-    setModalVisible(true);
-    return;
-  }
 
-  try {
-    setLoading(true);
-    const response = await dispatch(changePasswordAction(user.user_id, newPassword, currentPassword));
-    
-    if (response.status === 200) {
-      setModalMessage('Contraseña cambiada con éxito');
-      setModalError(false);
-    } else {
+  // console.log(loading);
+  // console.log(formData);
+  const handleChangePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      setModalMessage('Las contraseñas no coinciden');
+      setModalError(true);
+      setModalVisible(true);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await dispatch(changePasswordAction(user.user_id, newPassword, currentPassword));
+
+      if (response.status === 200) {
+        setModalMessage('Contraseña cambiada con éxito');
+        setModalError(false);
+      } else {
+        setModalMessage('Error al cambiar la contraseña');
+        setModalError(true);
+      }
+    } catch (error) {
       setModalMessage('Error al cambiar la contraseña');
       setModalError(true);
+    } finally {
+      setLoading(false);
+      setModalVisible(true);
+      setNewPassword('');
+      setCurrentPassword('');
+      setConfirmPassword('');
+      setIsChangingPassword(false);
     }
-  } catch (error) {
-    setModalMessage('Error al cambiar la contraseña');
-    setModalError(true);
-  } finally {
-    setLoading(false);
-    setModalVisible(true);
-    setNewPassword('');
-    setCurrentPassword('');
-    setConfirmPassword('');
-    setIsChangingPassword(false);
-  }}
+  }
 
   const handleCancelChangePassword = () => {
     setCurrentPassword('');
@@ -120,7 +124,7 @@ const handleChangePassword = async () => {
     setConfirmPassword('');
     setIsChangingPassword(false);
   }
-  
+
 
   const handleInputChange = (field: string, value: string) => {
     setFormData({
@@ -230,18 +234,71 @@ const handleChangePassword = async () => {
   const handleSaveCategories = () => {
     setCategoriesModalVisible(false);
   };
-    const handleLogout = () => {
+  const handleLogout = () => {
     dispatch(logoutUser() as any);
     setIsEditing(false)
   };
   return (
-    <View
-    >
-      {loading && <Loader />}
-      <SemicirclesOverlay />
-      <ScrollView contentContainerStyle={styles.container}>
-        <ImageCompressor onImageCompressed={handleImageCompressed} initialImageUri={formData.image_data || undefined} isButtonDisabled={isEditing}/>
-        <View style={styles.iconContainer}>
+    isChangingPassword ?
+      (
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={{ flex: 1 }}
+        >
+          <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+            <ScrollView
+              contentContainerStyle={{ flexGrow: 1 }}
+              keyboardShouldPersistTaps="handled"
+            >
+              <View style={styles.passFormCont2}>
+                <View style={styles.passForm}>
+                  <Text style={styles.buttonTextpass}>Actualiza tu contraseña</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Contraseña actual"
+                    value={currentPassword}
+                    onChangeText={setCurrentPassword}
+                    secureTextEntry
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Nueva Contraseña"
+                    value={newPassword}
+                    onChangeText={setNewPassword}
+                    secureTextEntry
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Confirmar Contraseña"
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    secureTextEntry
+                  />
+                  <TouchableOpacity
+                    style={styles.buttonPass}
+                    onPress={handleChangePassword}
+                    disabled={
+                      !currentPassword || !newPassword || !confirmPassword || newPassword !== confirmPassword
+                    }
+                  >
+                    <Text style={styles.buttonText}>Actualizar Contraseña</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.buttonPass} onPress={handleCancelChangePassword}>
+                    <Text style={styles.buttonText}>Cancelar</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </ScrollView>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
+      ) :
+      (<View >
+        {loading && <Loader />}
+        <SemicirclesOverlay />
+        <ScrollView contentContainerStyle={styles.container}>
+          <ImageCompressor onImageCompressed={handleImageCompressed} initialImageUri={formData.image_data || undefined} isButtonDisabled={isEditing} />
+          <View style={styles.iconContainer}>
             <TouchableOpacity
               style={styles.editButton}
               onPress={() => setIsEditing(!isEditing)}
@@ -250,242 +307,206 @@ const handleChangePassword = async () => {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.exitButton}
-              onPress={handleLogout} 
+              onPress={handleLogout}
             >
               <MaterialIcons name="logout" size={24} color="#007a8b" />
             </TouchableOpacity>
           </View>
           {!isEditing && !isChangingPassword &&
-          <TouchableOpacity style={styles.passButton} onPress={() => setIsChangingPassword(!isChangingPassword)}>
-          <Ionicons name="key-outline" size={26} color="#fff" />
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.passButton} onPress={() => setIsChangingPassword(!isChangingPassword)}>
+              <Ionicons name="key-outline" size={26} color="#fff" />
+            </TouchableOpacity>
           }
-
-          
           {isEditing ? (
-        <>
-          <TextInput
-            style={styles.input}
-            placeholder="Nombre"
-            value={formData.first_name}
-            onChangeText={(value) => handleInputChange('first_name', value)}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Apellido"
-            value={formData.last_name}
-            onChangeText={(value) => handleInputChange('last_name', value)}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Correo Electrónico"
-            value={formData.email}
-            onChangeText={(value) => handleInputChange('email', value)}
-            keyboardType="email-address"
-            editable={false}
-          />
-          <View style={styles.inputSelect}>
-            <CountryPicker
-              selectedCountry={formData.country}
-              onCountryChange={handleCountryChange}
-              estilo={false}
-            />
-          </View>
-          <TextInput
-            style={styles.input}
-            placeholder="Ciudad"
-            value={formData.city}
-            onChangeText={(value) => handleInputChange('city', value)}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Número de Teléfono"
-            value={formData.phone_number}
-            onChangeText={(value) => handleInputChange('phone_number', value)}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Dirección"
-            value={formData.address}
-            onChangeText={(value) => handleInputChange('address', value)}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Información de Contacto"
-            value={formData.contact_info}
-            onChangeText={(value) => handleInputChange('contact_info', value)}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Tipo de Negocio"
-            value={formData.business_type}
-            onChangeText={(value) => handleInputChange('business_type', value)}
-          />
-          <View style={styles.datePickerContainer}>
-            {!showDatePicker && (
-              <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.inputdate}>
-                <Text style={styles.textDate}>
-                  {formData.birth_date ? formatDateToDDMMYYYY(formData.birth_date) : 'Fecha de Nacimiento (DD-MM-YYYY)'}
-                </Text>
-              </TouchableOpacity>
-            )}
-            {showDatePicker && (
-              <View>
-                <DateTimePicker
-                  value={selectedDate || new Date()}
-                  mode="date"
-                  display="spinner"
-                  onChange={handleDateChange}
+            <>
+              <TextInput
+                style={styles.input}
+                placeholder="Nombre"
+                value={formData.first_name}
+                onChangeText={(value) => handleInputChange('first_name', value)}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Apellido"
+                value={formData.last_name}
+                onChangeText={(value) => handleInputChange('last_name', value)}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Correo Electrónico"
+                value={formData.email}
+                onChangeText={(value) => handleInputChange('email', value)}
+                keyboardType="email-address"
+                editable={false}
+              />
+              <View style={styles.inputSelect}>
+                <CountryPicker
+                  selectedCountry={formData.country}
+                  onCountryChange={handleCountryChange}
+                  estilo={false}
                 />
-                {Platform.OS === 'ios' && (
-                  <TouchableOpacity onPress={confirmDate} style={styles.confirmButton}>
-                    <Text style={styles.confirmButtonText}>Confirmar fecha</Text>
+              </View>
+              <TextInput
+                style={styles.input}
+                placeholder="Ciudad"
+                value={formData.city}
+                onChangeText={(value) => handleInputChange('city', value)}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Número de Teléfono"
+                value={formData.phone_number}
+                onChangeText={(value) => handleInputChange('phone_number', value)}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Dirección"
+                value={formData.address}
+                onChangeText={(value) => handleInputChange('address', value)}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Información de Contacto"
+                value={formData.contact_info}
+                onChangeText={(value) => handleInputChange('contact_info', value)}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Tipo de Negocio"
+                value={formData.business_type}
+                onChangeText={(value) => handleInputChange('business_type', value)}
+              />
+              <View style={styles.datePickerContainer}>
+                {!showDatePicker && (
+                  <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.inputdate}>
+                    <Text style={styles.textDate}>
+                      {formData.birth_date ? formatDateToDDMMYYYY(formData.birth_date) : 'Fecha de Nacimiento (DD-MM-YYYY)'}
+                    </Text>
                   </TouchableOpacity>
                 )}
-              </View>
-            )}
-          </View>
-          {Platform.OS === 'web' ? (
-            <View style={styles.selectView}>
-              <select
-                style={styles.select}
-                value={formData.gender}
-                onChange={(e) => handleInputChange('gender', e.target.value)}
-              >
-                <option value="" disabled>Seleccione Género</option>
-                <option value="Masculino">Masculino</option>
-                <option value="Femenino">Femenino</option>
-                <option value="Otro">Otro</option>
-              </select>
-            </View>
-          ) : (
-            <View>
-              <RNPickerSelect
-                onValueChange={(value) => handleInputChange('gender', value)}
-                value={formData.gender}
-                items={[
-                  { label: 'Masculino', value: 'Masculino' },
-                  { label: 'Femenino', value: 'Femenino' },
-                  { label: 'Otro', value: 'Otro' },
-                ]}
-                placeholder={{ label: 'Seleccione Género', value: '' }}
-                style={pickerSelectStyles}
-                useNativeAndroidPickerStyle={false}
-              />
-            </View>
-          )}
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => setCategoriesModalVisible(true)}
-          >
-            <MaterialIcons name="category" size={22} color="white" />
-            <Text style={styles.buttonText}>Mis categorías</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={handleUpdate}>
-            <MaterialIcons name="send" size={22} color="white" />
-            <Text style={styles.buttonText}>Actualizar datos</Text>
-          </TouchableOpacity>
-        </>
-      ) : (
-        <View style={styles.Containertext}>
-          <Text style={styles.text}>{formData.first_name} {formData.last_name}</Text>
-          <Text style={styles.text}>{formData.email}</Text>
-          <Text style={styles.text}>{formData.country}, {formData.city}</Text>
-          <Text style={styles.text}>{formData.phone_number}</Text>
-          <Text style={styles.text}>{formData.address}</Text>
-          <Text style={styles.text}>{formData.contact_info}</Text>
-          <Text style={styles.text}>{formData.business_type}</Text>
-          <Text style={styles.text}>{formData.birth_date ? formatDateToDDMMYYYY(formData.birth_date) : 'Fecha de Nacimiento'}</Text>
-          <Text style={styles.text}>{formData.gender}</Text>
-        </View>
-      )}
-        <Modal
-          visible={modalVisible}
-          animationType="slide"
-          transparent={true}
-          onRequestClose={() => setModalVisible(false)}
-        >
-          <View style={styles.modalContainer}>
-            <View style={[styles.modalContent, modalError ? styles.modalError : styles.modalSuccess]}>
-              {modalError ? (
-                <Icon name="close-circle" size={50} color="red" />
-              ) : (
-                <Icon name="checkmark-circle" size={50} color="green" />
-              )}
-              <Text style={styles.modalText}>{modalMessage}</Text>
-              <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisible(false)}>
-                <Text style={styles.modalButtonText}>Cerrar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-        </Modal>
-        <Modal visible={isCategoriesModalVisible} animationType="slide" transparent>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Editar Categorías</Text>
-              <ScrollView>
-                {allCategories.map((category) => (
-                  <View key={category.category_id} style={styles.checkboxContainer}>
-                    <Checkbox
-                      value={selectedCategories.includes(category.category_id)}
-                      onValueChange={() => handleCategoryChange(category.category_id)}
+                {showDatePicker && (
+                  <View>
+                    <DateTimePicker
+                      value={selectedDate || new Date()}
+                      mode="date"
+                      display="spinner"
+                      onChange={handleDateChange}
                     />
-                    <Text style={styles.label}>{category.name}</Text>
+                    {Platform.OS === 'ios' && (
+                      <TouchableOpacity onPress={confirmDate} style={styles.confirmButton}>
+                        <Text style={styles.confirmButtonText}>Confirmar fecha</Text>
+                      </TouchableOpacity>
+                    )}
                   </View>
-                ))}
-              </ScrollView>
-              <TouchableOpacity onPress={handleSaveCategories} style={styles.modalButton}>
-                <Text style={styles.modalButtonText}>Guardar Categorías</Text>
+                )}
+              </View>
+              {Platform.OS === 'web' ?
+                (<View style={styles.selectView}>
+                  <select
+                    style={styles.select}
+                    value={formData.gender}
+                    onChange={(e) => handleInputChange('gender', e.target.value)}
+                  >
+                    <option value="" disabled>Seleccione Género</option>
+                    <option value="Masculino">Masculino</option>
+                    <option value="Femenino">Femenino</option>
+                    <option value="Otro">Otro</option>
+                  </select>
+                </View>) :
+                (
+                  <View>
+                    <RNPickerSelect
+                      onValueChange={(value) => handleInputChange('gender', value)}
+                      value={formData.gender}
+                      items={[
+                        { label: 'Masculino', value: 'Masculino' },
+                        { label: 'Femenino', value: 'Femenino' },
+                        { label: 'Otro', value: 'Otro' },
+                      ]}
+                      placeholder={{ label: 'Seleccione Género', value: '' }}
+                      style={pickerSelectStyles}
+                      useNativeAndroidPickerStyle={false}
+                    />
+                  </View>
+                )}
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => setCategoriesModalVisible(true)}
+              >
+                <MaterialIcons name="category" size={22} color="white" />
+                <Text style={styles.buttonText}>Mis categorías</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => setCategoriesModalVisible(false)} style={styles.modalButtonCancel}>
-                <Text style={styles.modalButtonText}>Cancelar</Text>
+              <TouchableOpacity style={styles.button} onPress={handleUpdate}>
+                <MaterialIcons name="send" size={22} color="white" />
+                <Text style={styles.buttonText}>Actualizar datos</Text>
               </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
-      </ScrollView>
-      {isChangingPassword && (
-            <View style={styles.passFormCont}>
-              <View style={styles.passForm}>
-              <Text style={styles.buttonTextpass}>Actualiza tu contraseña</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Contraseña actual"
-                value={currentPassword}
-                onChangeText={setCurrentPassword}
-                secureTextEntry
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Nueva Contraseña"
-                value={newPassword}
-                onChangeText={setNewPassword}
-                secureTextEntry
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Confirmar Contraseña"
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry
-              />
-              <TouchableOpacity style={styles.buttonPass} onPress={handleChangePassword}>
-                <Text style={styles.buttonText}>Actualizar Contraseña</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.buttonPass} onPress={handleCancelChangePassword}>
-                <Text style={styles.buttonText}>Cancelar</Text>
-              </TouchableOpacity>
-            </View>
+            </>
+          ) : (
+            <View style={styles.Containertext}>
+              <Text style={styles.text}>{formData.first_name} {formData.last_name}</Text>
+              <Text style={styles.text}>{formData.email}</Text>
+              <Text style={styles.text}>{formData.country}, {formData.city}</Text>
+              <Text style={styles.text}>{formData.phone_number}</Text>
+              <Text style={styles.text}>{formData.address}</Text>
+              <Text style={styles.text}>{formData.contact_info}</Text>
+              <Text style={styles.text}>{formData.business_type}</Text>
+              <Text style={styles.text}>{formData.birth_date ? formatDateToDDMMYYYY(formData.birth_date) : 'Fecha de Nacimiento'}</Text>
+              <Text style={styles.text}>{formData.gender}</Text>
             </View>
           )}
-    </View>
-  );
+          <Modal
+            visible={modalVisible}
+            animationType="slide"
+            transparent={true}
+            onRequestClose={() => setModalVisible(false)}
+          >
+            <View style={styles.modalContainer}>
+              <View style={[styles.modalContent, modalError ? styles.modalError : styles.modalSuccess]}>
+                {modalError ? (
+                  <Icon name="close-circle" size={50} color="red" />
+                ) : (
+                  <Icon name="checkmark-circle" size={50} color="green" />
+                )}
+                <Text style={styles.modalText}>{modalMessage}</Text>
+                <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisible(false)}>
+                  <Text style={styles.modalButtonText}>Cerrar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+          </Modal>
+          <Modal visible={isCategoriesModalVisible} animationType="slide" transparent>
+            <View style={styles.modalContainer}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Editar Categorías</Text>
+                <ScrollView>
+                  {allCategories.map((category) => (
+                    <View key={category.category_id} style={styles.checkboxContainer}>
+                      <Checkbox
+                        value={selectedCategories.includes(category.category_id)}
+                        onValueChange={() => handleCategoryChange(category.category_id)}
+                      />
+                      <Text style={styles.label}>{category.name}</Text>
+                    </View>
+                  ))}
+                </ScrollView>
+                <TouchableOpacity onPress={handleSaveCategories} style={styles.modalButton}>
+                  <Text style={styles.modalButtonText}>Guardar Categorías</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setCategoriesModalVisible(false)} style={styles.modalButtonCancel}>
+                  <Text style={styles.modalButtonText}>Cancelar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+        </ScrollView>
+      </View>)
+  )
 };
 
 const pickerSelectStyles = StyleSheet.create({
   inputIOS: {
-    height: 48,
+    height: 35,
     width: Platform.OS === 'web' ? '50%' : screenWidth,
     maxWidth: Platform.OS === 'web' ? 400 : screenWidth * 0.8,
     borderColor: 'rgb(172, 208, 213)',
@@ -499,7 +520,7 @@ const pickerSelectStyles = StyleSheet.create({
     
   },
   inputAndroid: {
-    height: 48,
+    height: 35,
     width: Platform.OS === 'web' ? '50%' : screenWidth,
     maxWidth: Platform.OS === 'web' ? '30%' : screenWidth * 0.8,
     borderColor: 'rgb(172, 208, 213)',
@@ -529,8 +550,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingLeft: 20,
-    paddingRight:20,
-    paddingBottom:30
+    paddingRight:20
     // backgroundColor: '#f7f7f7',
   },
   iconContainer:{
@@ -562,6 +582,19 @@ const styles = StyleSheet.create({
     height:screenHeight,
     display:'flex',
   },
+  passFormCont2:{
+    position:'absolute',
+    zIndex:1,
+    alignItems:'center',
+    // justifyContent:'center',
+    paddingTop:screenHeight
+    *0.02,
+    backgroundColor:'rgba(232, 232, 232,0.9)',
+    // borderRadius:20,
+    width:screenWidth,
+    height:screenHeight,
+    display:'flex',
+  },
   passForm:{
     display:'flex',
     flexDirection:'column',
@@ -575,7 +608,7 @@ const styles = StyleSheet.create({
   },
   buttonPass:{
     backgroundColor: 'rgb(0, 122, 140)',
-    borderRadius: 5,
+    borderRadius: 25,
     padding: 7,
     alignItems: 'center',
     marginVertical: 5,
@@ -607,21 +640,21 @@ const styles = StyleSheet.create({
     marginTop:20
   },
   inputSelect: {
-    height: 48,
+    height: 35,
     width: '90%',
-    // borderColor: 'rgb(172, 208, 213)',
-    // borderWidth: 1,
-    // borderRadius: 8,
-    marginBottom: 5,
+    borderColor: 'rgb(172, 208, 213)',
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 10,
     display: 'flex',
     justifyContent: 'center',
 
     // paddingHorizontal: 10,
-    backgroundColor: 'transparent',
+    backgroundColor: '#fff',
     fontSize: 16,
   },
   input: {
-    height: 48,
+    height: 35,
     width: '90%',
     borderColor: 'rgb(172, 208, 213)',
     borderWidth: 1,
@@ -657,7 +690,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.8,
     shadowRadius: 2,
     elevation: 5,
-    height:48
   },
   buttonText: {
     color: '#fff',
@@ -677,7 +709,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   select: {
-    height: 48,
+    height: 50,
     width: screenWidth,
     borderWidth: 1,
     borderRadius: 8,
@@ -763,7 +795,7 @@ const styles = StyleSheet.create({
     display: 'flex',
     justifyContent: 'center',
     alignContent: 'center',
-    height: 48,
+    height: 40,
     width: '90%',
     borderColor: 'rgb(172, 208, 213)',
     borderWidth: 1,
