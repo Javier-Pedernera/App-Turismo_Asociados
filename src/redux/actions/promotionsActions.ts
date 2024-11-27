@@ -10,29 +10,15 @@ export const fetchPromotions = (partnerId: number) => {
   return async (dispatch: Dispatch) => {
     try {
       const response = await axios.get(`${API_URL}/partners/${partnerId}/promotions`);
+      const activePromotions = response.data.filter((promotion:any) => promotion.status?.name !== 'deleted');
+      console.log("promociones activaaaaaaaaaas",activePromotions);
       
-      dispatch(setPromotions(response.data));
+      dispatch(setPromotions(activePromotions));
     } catch (firstError: any) {
       console.error('First attempt to fetch promotions failed:', firstError.message);
       if (axios.isAxiosError(firstError)) {
         console.error('Axios error details:', firstError.toJSON());
       }
-
-      // Pequeño retraso antes del segundo intento
-      await new Promise(resolve => setTimeout(resolve, 3000));
-
-      // try {
-      //   const retryResponse = await axios.get(`${API_URL}/promotions`);
-      //   dispatch(setPromotions(retryResponse.data));
-      // } catch (secondError: any) {
-      //   console.error('Second attempt to fetch promotions failed:', secondError.message);
-      //   if (axios.isAxiosError(secondError)) {
-      //     console.error('Axios error details:', secondError.toJSON());
-      //   }
-
-      //   // Dispatch an error action or handle the error as needed
-      //   dispatch(setPromotionsError('Failed to fetch promotions after retry.'));
-      // }
     }
   };
 };

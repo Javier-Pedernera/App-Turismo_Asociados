@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, Platform, Alert } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { Ionicons } from '@expo/vector-icons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -36,9 +36,11 @@ const CustomCallout: React.FC<CustomCalloutProps> = ({ branch, handleRoutePress,
     }
     return stars;
   };
-  console.log("url de la imagen", imageUrl);
+  const handleDirectionsPress = () => {
+    Alert.alert('Vista previa', 'Esto es solo una vista previa de la promoción');
+  };
   return (
-    <View style={styles.calloutContainer}>
+    <View style={prevSee? styles.calloutContainerSee: styles.calloutContainer}>
       <View style={styles.calloutBack}>
         {Platform.OS === 'android' ? (
           <View style={styles.calloutImageAndroidCont}>
@@ -64,7 +66,7 @@ const CustomCallout: React.FC<CustomCalloutProps> = ({ branch, handleRoutePress,
           </View>
           <View style={styles.addressBttn}>
             <Text style={styles.calloutadress}>{branch.address}</Text>
-            <TouchableOpacity style={styles.calloutButton}>
+            <TouchableOpacity style={styles.calloutButton} onPress={handleDirectionsPress}>
               <MaterialCommunityIcons name="directions" size={24} color="rgb(49, 121, 187)" />
               <Text style={styles.calloutButtonText}>Cómo llegar?</Text>
             </TouchableOpacity>
@@ -80,6 +82,13 @@ const styles = StyleSheet.create({
   calloutContainer: {
     marginBottom: 50,
     marginTop: 50,
+    left: '30%',
+    zIndex: 999,
+    width: 250,
+  },
+  calloutContainerSee:{
+    marginBottom: 50,
+    marginTop: -450,
     left: '30%',
     zIndex: 999,
     width: 250,

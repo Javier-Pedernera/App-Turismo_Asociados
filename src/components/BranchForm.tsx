@@ -5,13 +5,20 @@ import MapSingle from './MapSingle';
 import { Branch, UserData } from '../redux/types/types';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch } from '../redux/store/store';
-import { addBranch, updateBranch } from '../redux/actions/branchActions';
+import { addBranch, deleteBranch, fetchBranches, updateBranch } from '../redux/actions/branchActions';
 import { getMemoizedUserData } from '../redux/selectors/userSelectors';
 import * as Location from 'expo-location';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Loader from './Loader';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { fetchPartnerById } from '../redux/actions/userActions';
+import { getMemoizedStates } from '../redux/selectors/globalSelectors';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import DeleteModal from './DeleteModal';
+import CustomAlert from './CustomAlert';
+import { getMemoizedPromotions } from '../redux/selectors/promotionSelectors';
+import ExitoModal from './ExitoModal';
+import { fetchPromotions } from '../redux/actions/promotionsActions';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -41,6 +48,8 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
 
   const dispatch: AppDispatch = useDispatch();
   const user = useSelector(getMemoizedUserData) as UserData;
+  const promotions = useSelector(getMemoizedPromotions);
+  const statuses = useSelector(getMemoizedStates);
   const [name, setName] = useState(branch?.name || '');
   const [address, setAddress] = useState(branch?.address || '');
   const [latitude, setLatitude] = useState(branch?.latitude?.toString() || '');
@@ -50,8 +59,15 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
   const [description, setDescription] = useState(branch?.description || '');
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(branch? false: true );
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [branchNameInput, setBranchNameInput] = useState('');
+  const [confirmBranchName, setConfirmBranchName] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [modalSuccessVisible, setModalSuccessVisible] = useState(false);
+  const [modalSuccessMessage, setModalSuccessMessage] = useState('');
   // console.log("sucursal elegida", branch);
-  
+  // console.log("promociones de la sucursal", promotions);
   const handleSubmit = async () => {
 
     setIsLoading(true);
@@ -74,12 +90,12 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
     if (branch && branch.branch_id) {
       resp = await dispatch(updateBranch(branch.branch_id, branchData));
       console.log("respuesta del dispatch (update)", resp);
-
+      dispatch(fetchBranches(user.user_id))
       dispatch(fetchPartnerById(user.user_id));
     } else {
       resp = await dispatch(addBranch(branchData));
       console.log(resp);
-      
+      dispatch(fetchBranches(user.user_id))
       dispatch(fetchPartnerById(user.user_id));
       // console.log("respuesta del dispatch (add)", resp);
     }
@@ -132,24 +148,84 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
       console.error('Error al obtener la ubicación:', error);
     }
   };
+
+  const handleDeleteBranch = () => {
+    setShowAlert(true);
+  };
+  const handleCancel = () => {
+    setShowAlert(false);
+  };
+
+  const handleConfirm = () => {
+    setShowAlert(false);
+    setShowDeleteModal(true)
+    // Aquí puedes realizar la acción de eliminación
+  };
+  
+  // Función para eliminar la sucursal
+  const handleConfirmDelete = async () => {
+    const deletedState = statuses.find(status => status?.name === 'deleted');
+    const promotionsIds = promotions.filter(promotion => promotion.branch_id === branch.branch_id).map(promotion => promotion.promotion_id);
+    console.log("ids de as promos a eliminar", promotionsIds);
+    
+    if (branch && branch.name && branchNameInput === confirmBranchName && branchNameInput === branch?.name) {
+      setDeleting(true);
+      try {
+        console.log('Sucursal eliminada:', branch.branch_id, deletedState?.id,promotionsIds);
+        const resp = await dispatch(deleteBranch(branch.branch_id, deletedState?.id,promotionsIds));
+        console.log('Status eliminada:', resp.status);
+        if(resp.status == 200){
+           setModalSuccessMessage('La sucursal y sus promociones se eliminaron correctamente.');
+        setModalSuccessVisible(true);
+        dispatch(fetchBranches(user.user_id))
+        dispatch(fetchPromotions(user.user_id))
+        }
+       
+        // Alert.alert('Éxito', 'La sucursal ha sido eliminada correctamente.');
+        // onClose();
+      } catch (error) {
+        console.error('Error al eliminar la sucursal:', error);
+        Alert.alert('Error', 'Hubo un problema al eliminar la sucursal.');
+      } finally {
+        setDeleting(false);
+        setShowDeleteModal(false);
+      }
+    } else {
+      Alert.alert('Error', 'El nombre de la sucursal no coincide.');
+    }
+  };
+  const handleClose = () => {
+    setBranchNameInput('');
+    setConfirmBranchName('');
+    setShowDeleteModal(false)
+  };
   const formItems = [
     {
       id: 'image',
       component: (
         <View>
-          {!isEditing? <TouchableOpacity onPress={() => setIsEditing(true)} style={styles.editButton}>
+          {!isEditing? 
+          <View><TouchableOpacity onPress={() => setIsEditing(true)} style={styles.editButton}>
               <MaterialCommunityIcons name="file-edit-outline" size={23} color="#fff" />
-            </TouchableOpacity> : <View></View> }
+          </TouchableOpacity>
+          <TouchableOpacity
+      style={styles.deleteButton}
+      onPress={handleDeleteBranch}
+    >
+      <Ionicons name="trash-outline" size={23} color="#d30000"  />
+    </TouchableOpacity>
+          </View> : <View></View> }
           <TouchableOpacity onPress={handleImagePick} disabled={!isEditing}>
             {images && images.length > 0 ? (
               <Image source={{ uri: `data:image/jpeg;base64,${images[0].data}` }} style={styles.image} resizeMode="cover" />
             ) : (
               branch?.image_url?.length? <Image source={{ uri: `${API_URL}${branch.image_url}`  }} style={styles.image} resizeMode='contain' /> :
               <View style={styles.placeholderImage}>
-                <Image source={require('../../assets/noimage.png')} style={styles.image} alt={branch.name}/>
+                <Image source={require('../../assets/noimage.png')} style={styles.image} alt={branch?.name}/>
               </View>
             )}
           </TouchableOpacity>
+          
         </View>
       ),
     },
@@ -301,6 +377,33 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
         renderItem={({ item }) => <View>{item.component}</View>}
         contentContainerStyle={styles.container}
       />
+
+    <ExitoModal
+      visible={modalSuccessVisible}
+      message={modalSuccessMessage}
+      onClose={() => {
+        setModalSuccessVisible(false);
+        onClose();
+      }}
+    />
+    <CustomAlert
+              isVisible={showAlert}
+              title="Eliminar Sucursal"
+              message="¿Estás seguro de eliminar esta sucursal y todas sus promociones asociadas?"
+              onCancel={handleCancel}
+              onConfirm={handleConfirm}
+            />
+       {/* DeleteModal */}
+    <DeleteModal
+      isVisible={showDeleteModal}
+      branchNameInput={branchNameInput}
+      confirmBranchName={confirmBranchName}
+      onInputChange={setBranchNameInput}
+      onConfirmChange={setConfirmBranchName}
+      onSubmit={handleConfirmDelete}
+      onCancel={handleClose}
+      isDeleting={deleting}
+    />
     </View>
   );
 };
@@ -423,14 +526,20 @@ const styles = StyleSheet.create({
     position:'absolute',
     zIndex:1,
     top:screenHeight*0.27,
-    right:screenHeight*0.04,
+    right:screenHeight*0.12,
     width:40,
     height:40,
     padding:5,
-    alignItems:'center',
-    backgroundColor: '#007a8c',
     borderRadius: 25,
+    backgroundColor: '#007a8c',
+    alignItems:'center',
+    justifyContent: 'center',
     alignSelf: 'flex-end',
+    shadowColor: '#000', 
+    shadowOffset: { width: 0, height: 2 }, 
+    shadowOpacity: 0.1, 
+    shadowRadius: 3.5, 
+    elevation: 5,
   },
   editButtonText: {
     color: 'white',
@@ -441,6 +550,63 @@ const styles = StyleSheet.create({
     color: '#555',
     marginBottom: 10,
   },
+  // estilos de eliminar
+  deleteButton: {
+    position: 'absolute',
+    top: screenHeight * 0.27,
+    right: screenHeight * 0.04,
+    backgroundColor: '#e8e8e8',
+    width:40,
+    height:40,
+    borderRadius: 25,
+    padding: 5,
+    alignItems:'center',
+    justifyContent: 'center',
+    alignSelf: 'flex-end',
+    zIndex: 1,
+    shadowColor: '#000', 
+    shadowOffset: { width: 0, height: 2 }, 
+    shadowOpacity: 0.1, 
+    shadowRadius: 3.5, 
+    elevation: 5,
+  },
+  deleteModal: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  // input: {
+  //   height: 40,
+  //   borderWidth: 1,
+  //   borderColor: '#ccc',
+  //   marginBottom: 15,
+  //   paddingLeft: 10,
+  //   width: '80%',
+  //   borderRadius: 8,
+  // },
+  // submitButton: {
+  //   backgroundColor: '#FF4040',
+  //   padding: 10,
+  //   borderRadius: 8,
+  //   alignItems: 'center',
+  //   marginBottom: 10,
+  // },
+  // submitButtonText: {
+  //   color: '#fff',
+  //   fontSize: 16,
+  // },
+  // cancelButton: {
+  //   backgroundColor: '#ccc',
+  //   padding: 10,
+  //   borderRadius: 8,
+  //   alignItems: 'center',
+  // },
+  // cancelButtonText: {
+  //   color: '#fff',
+  //   fontSize: 16,
+  // },
 });
 
 export default BranchForm;

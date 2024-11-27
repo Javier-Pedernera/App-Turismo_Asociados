@@ -15,7 +15,6 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.appturismo.asociados",
       "buildNumber": "2",
-      "version": "1.0.1",
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
@@ -36,13 +35,12 @@
         "android.permission.ACCESS_FINE_LOCATION"
       ],
       "package": "com.camaradeturismocobquecura.Appasociados",
-      "versionCode": 11,
+      "versionCode": 12,
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyAyn6WPUaMwF-7bqGw3-swrSUp4t9lC0wo"
         }
-      },
-      "softwareKeyboardLayoutMode": "pan" 
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"

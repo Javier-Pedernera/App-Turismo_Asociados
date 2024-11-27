@@ -16,6 +16,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import Loader from './Loader';
 import ErrorModal from './ErrorModal';
 import ExitoModal from './ExitoModal';
+import { getMemoizedBranches } from '../redux/selectors/branchSelectors';
 
 interface EditPromotionFormProps {
   promotion: Promotion;
@@ -28,7 +29,7 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
   const user = useSelector(getMemoizedUserData);
   const allCategories = useSelector(getMemoizedAllCategories);
   const partner = useSelector(getMemoizedPartner);
-
+  const branches = useSelector(getMemoizedBranches);
   const [title, setTitle] = useState(promotion.title);
   const [description, setDescription] = useState(promotion.description);
   const [discountPercentage, setDiscountPercentage] = useState<number | null>(promotion.discount_percentage || null);
@@ -59,8 +60,8 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
     setExistingImages(existingImages.filter((img: any) => img.image_id !== imageId));
   };
   const handleSubmit = () => {
-    
-    if (!user?.user_id || !partner?.branches[0].branch_id) {
+    const activeBranch = branches.find((branch:any) => branch.status?.name === 'active');
+    if (!user?.user_id || !activeBranch?.branch_id) {
       Alert.alert('Error', 'No se pudo obtener el ID del socio o la sucursal. Intente de nuevo.');
       return;
     }
@@ -78,7 +79,7 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
         return;
     }
     const promotionData = {
-      branch_id: partner?.branches[0].branch_id,
+      branch_id: activeBranch.branch_id,
       title,
       description,
       start_date: startDate?.toISOString().split('T')[0],

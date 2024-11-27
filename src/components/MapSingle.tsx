@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Platform, Dimensions, ActivityIndicator } from 'react-native';
 import MapView, { Marker, Callout } from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
@@ -53,7 +53,12 @@ const MapSingle: React.FC<MapComponentProps> = ({
     longitude: branch?.longitude || initialRegion?.longitude,
     address: branch?.address || '',
   });
-
+  console.log("ubicacion branch",branch?.latitude, branch?.longitude);
+  
+  useEffect(() => {
+    if(branch?.latitude && branch?.longitude)
+    setSearchLocation({ ...searchLocation, latitude:branch?.latitude , longitude:branch?.longitude })
+  }, [branch?.latitude, branch?.longitude]);
 
   const handleMapPress = (e: any) => {
     // console.log("funcion pressmap", e.nativeEvent);

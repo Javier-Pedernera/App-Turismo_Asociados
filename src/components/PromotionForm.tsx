@@ -15,6 +15,7 @@ import { createPromotion, fetchPromotions } from '../redux/actions/promotionsAct
 import Loader from './Loader';
 import ErrorModal from './ErrorModal';
 import ExitoModal from './ExitoModal';
+import { getMemoizedBranches } from '../redux/selectors/branchSelectors';
 
 interface PromotionFormProps {
   onClose: () => void;
@@ -26,7 +27,8 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
   const user = useSelector(getMemoizedUserData);
   const allCategories = useSelector(getMemoizedAllCategories);
   const partner = useSelector(getMemoizedPartner);
-  // console.log("partner actual", partner?.branches);
+  const branches = useSelector(getMemoizedBranches);
+  // console.log("partner actual", branches);
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -59,27 +61,30 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
   };
   const handleSubmit = async () => {
     // console.log(title, description, startDate?.toISOString().split('T')[0], endDate?.toISOString().split('T')[0], discountPercentage, availableQuantity, selectedCategories, imagePaths.length);
-setLoading(true)
-    if (!user?.user_id || !partner?.branches[0].branch_id) {
+    setLoading(true)
+    const activeBranch = branches.find((branch:any) => branch.status?.name === 'active');
+    // console.log("sucursal activaaaaaaaaaaa", activeBranch);
+    
+    if (!user?.user_id || !activeBranch?.branch_id) {
       Alert.alert('Error', 'No se pudo obtener el ID del socio o la sucursal. Intente de nuevo.');
       return;
     }
-    if (!title || !startDate || !endDate || discountPercentage === null ) {
+    if (!title || !startDate || !endDate || discountPercentage === null) {
       // Validar campos y construir mensaje de error específico
-            const missingFields = [];
-            if (!title) missingFields.push('título');
-            if (!startDate) missingFields.push('fecha de inicio');
-            if (!endDate) missingFields.push('fecha de fin');
-            if (discountPercentage === null) missingFields.push('porcentaje de descuento');
+      const missingFields = [];
+      if (!title) missingFields.push('título');
+      if (!startDate) missingFields.push('fecha de inicio');
+      if (!endDate) missingFields.push('fecha de fin');
+      if (discountPercentage === null) missingFields.push('porcentaje de descuento');
 
-              const errorMessage = `Los siguientes campos son obligatorios: ${missingFields.join(', ')}.`;
-              showErrorModal(errorMessage);
-              setLoading(false);
-              return;
-            
+      const errorMessage = `Los siguientes campos son obligatorios: ${missingFields.join(', ')}.`;
+      showErrorModal(errorMessage);
+      setLoading(false);
+      return;
+
     }
     const promotionData = {
-      branch_id: partner?.branches[0].branch_id,
+      branch_id: activeBranch.branch_id,
       title,
       description,
       start_date: startDate.toISOString().split('T')[0],
@@ -91,16 +96,16 @@ setLoading(true)
       images: imagePaths
     };
     // console.log(promotionData);
-        // Validar el tamaño del payload
-        const MAX_PAYLOAD_SIZE = 500000;
-        const payloadSize = calculatePayloadSize(promotionData);
-        if (payloadSize > MAX_PAYLOAD_SIZE) {
-          showErrorModal(
-            'El tamaño de los datos excede el límite permitido. Reduzca el número o tamaño de las imágenes.'
-          );
-          setLoading(false);
-          return;
-        }
+    // Validar el tamaño del payload
+    const MAX_PAYLOAD_SIZE = 500000;
+    const payloadSize = calculatePayloadSize(promotionData);
+    if (payloadSize > MAX_PAYLOAD_SIZE) {
+      showErrorModal(
+        'El tamaño de los datos excede el límite permitido. Reduzca el número o tamaño de las imágenes.'
+      );
+      setLoading(false);
+      return;
+    }
 
     await dispatch(createPromotion(promotionData))
       .then(() => {

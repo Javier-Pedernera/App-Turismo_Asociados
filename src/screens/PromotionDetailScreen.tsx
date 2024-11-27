@@ -96,8 +96,6 @@ const PromotionDetailScreen: React.FC = () => {
 
   //mapa
   const handleGetDirections = () => {
-    // console.log("dentro de la funcion de buscar ruta____________________",branch,currentPosition);n+
-
     if (branch && currentPosition) {
       setRouteLoading(true)
       setRouteSelected(true)

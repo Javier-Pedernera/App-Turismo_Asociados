@@ -9,7 +9,7 @@
       "env": {
         "EXPO_PUBLIC_API_URL": "https://cobquecurapp-backend.duckdns.org",
         "EXPO_PUBLIC_API_KEYGOOGLE": "AIzaSyAyn6WPUaMwF-7bqGw3-swrSUp4t9lC0wo",
-        "EXPO_PUBLIC_API_VERSION": "1.0.0"
+        "EXPO_PUBLIC_API_VERSION": "1.0.1"
       }
     },
     "preview": {
@@ -20,7 +20,7 @@
       "env": {
         "EXPO_PUBLIC_API_URL": "https://cobquecurapp-backend.duckdns.org",
         "EXPO_PUBLIC_API_KEYGOOGLE": "AIzaSyAyn6WPUaMwF-7bqGw3-swrSUp4t9lC0wo",
-        "EXPO_PUBLIC_API_VERSION": "1.0.0"
+        "EXPO_PUBLIC_API_VERSION": "1.0.1"
       }
     },
     "production": {
@@ -34,7 +34,7 @@
       "env": {
         "EXPO_PUBLIC_API_URL": "https://cobquecurapp-backend.duckdns.org",
         "EXPO_PUBLIC_API_KEYGOOGLE": "AIzaSyAyn6WPUaMwF-7bqGw3-swrSUp4t9lC0wo",
-        "EXPO_PUBLIC_API_VERSION": "1.0.0"
+        "EXPO_PUBLIC_API_VERSION": "1.0.1"
       }
     }
   },

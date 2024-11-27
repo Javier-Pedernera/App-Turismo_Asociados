@@ -20,6 +20,8 @@ import { updatePromotion } from '../redux/reducers/promotionReducer';
 import { deletePromotion, fetchPromotions } from '../redux/actions/promotionsActions';
 import EditPromotionForm from '../components/EditPromotionForm';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { getMemoizedBranches } from '../redux/selectors/branchSelectors';
+import { fetchBranches } from '../redux/actions/branchActions';
 
 const { width: screenWidth, height:screenHeigth } = Dimensions.get('window');
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -27,15 +29,9 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL;
 const PromotionsScreen: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const promotions = useSelector(getMemoizedPromotions);
-  // const categories = useSelector(getMemoizedAllCategories);
-  // const user_categories = useSelector(getMemoizedUserCategories);
   const user = useSelector(getMemoizedUserData);
-  const [filteredPromotions, setFilteredPromotions] = useState<Promotion[]>(promotions);
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
+  const branches = useSelector(getMemoizedBranches);
   const [loading, setLoading] = useState(false);
-  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const statuses = useSelector(getMemoizedStates);
@@ -53,6 +49,7 @@ const PromotionsScreen: React.FC = () => {
         if (user?.user_id) {
           await dispatch(fetchUserCategories(user.user_id));
           await dispatch(fetchUserFavorites());
+          await dispatch(fetchBranches(user.user_id))
         }
         await dispatch(fetchAllCategories());
       } finally {
@@ -63,39 +60,10 @@ const PromotionsScreen: React.FC = () => {
     loadData();
   }, [dispatch, user]);
 
-  useEffect(() => {
-    const activePromotions = promotions.filter(promotion => promotion.status?.name !== 'deleted');
-    setFilteredPromotions(activePromotions);
-  }, [promotions]);
 
   const handlePress = useCallback((promotion: Promotion) => {
     navigation.navigate('PromotionDetail', { promotion });
   }, [navigation]);
-
-  const formatDateString = useCallback((date: Date) => {
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
-  }, []);
-
-  const handleStartDateChange = useCallback((event: any, date?: Date | undefined) => {
-    if (Platform.OS === 'android') {
-      setShowStartDatePicker(false);
-    }
-    if (date) {
-      setStartDate(date);
-    }
-  }, []);
-
-  const handleEndDateChange = useCallback((event: any, date?: Date | undefined) => {
-    if (Platform.OS === 'android') {
-      setShowEndDatePicker(false);
-    }
-    if (date) {
-      setEndDate(date);
-    }
-  }, []);
 
 
   const handleEditPromotion = (promotion: Promotion) => {
@@ -109,6 +77,9 @@ const PromotionsScreen: React.FC = () => {
       const status_id = deletedState.id;
       // Despacha la acción para actualizar la promoción con el estado "deleted"
       await dispatch(deletePromotion(promotionId, status_id));
+      if(user && user.user_id){
+        await dispatch(fetchPromotions(user.user_id))
+      }
     } else {
       console.error('Estado "deleted" no encontrado');
     }
@@ -118,7 +89,7 @@ const PromotionsScreen: React.FC = () => {
     setSelectedPromotion(null);
   };
   const handleCreatePress = useCallback(() => {
-    if (partner && partner.branches.length === 0) {
+    if (branches && branches.length === 0) {
       Alert.alert("Error", "Primero debes crear una sucursal");
     } else {
       setIsCreateModalVisible(true);
@@ -156,8 +127,8 @@ const PromotionsScreen: React.FC = () => {
         </Modal>
         {loading ? (
           <Loader></Loader>
-        ) : (filteredPromotions.length > 0 ? (
-          filteredPromotions.map((promotion: Promotion, index: number) => (
+        ) : (promotions.length > 0 ? (
+          promotions.map((promotion: Promotion, index: number) => (
             <PromotionCard
               key={promotion.promotion_id}
               promotion={promotion}

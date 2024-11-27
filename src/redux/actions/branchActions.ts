@@ -22,8 +22,10 @@ export const fetchBranches = (partnerId: number) => {
           Authorization: `Bearer ${token}`,
         }
       });
+      const activeBranches = response.data.filter(branch => branch.status.name !== "deleted");
+      console.log("sucursales activas", activeBranches);
       
-      dispatch(setBranches(response.data));
+      dispatch(setBranches(activeBranches));
     } catch (error) {
       console.error('Error fetching branches:', error);
       throw error; 
@@ -78,9 +80,46 @@ export const updateBranch = (branchId: number, branchData: BranchCreate) => {
     }
   };
 };
+
 export const clearAllBranches = () => {
   return (dispatch: Dispatch) => {
     dispatch(clearBranches());
+  };
+};
+
+// Acción para hacer un borrado lógico de la sucursal
+export const deleteBranch = (branchId: number, statusId: number | undefined, promotionsIds: number[]) => {
+  return async (dispatch: Dispatch, getState: () => RootState) => {
+    try {
+      const state = getState();
+      const token = state.user.accessToken;
+
+      if (!token) {
+        throw new Error('User not authenticated');
+      }
+
+      // Primero, actualizamos el estado de la sucursal
+      const branchResponse = await axios.put(`${API_URL}/branches/${branchId}`, {
+        status_id: statusId,
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log('Sucursal marcada como eliminada:', branchResponse.data);
+
+      // Ahora, si se proporcionan promociones, actualizamos el estado de esas promociones
+      if (promotionsIds.length > 0) {
+       const branchResponse = await axios.put(`${API_URL}/promotions/bulk_delete`,{promotion_ids:promotionsIds, status_id:statusId})
+       console.log(branchResponse);
+       
+      }
+      return branchResponse
+    } catch (error) {
+      console.error('Error al actualizar el estado de la sucursal y promociones:', error);
+      throw error; 
+    }
   };
 };
 
