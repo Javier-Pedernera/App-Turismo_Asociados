@@ -82,14 +82,34 @@ const ProfileScreen: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [isCategoriesModalVisible, setCategoriesModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [passwordErrors, setPasswordErrors] = useState<string[]>([]); // Lista de errores de la contraseña
+  const [isPasswordValid, setIsPasswordValid] = useState(false); // Indicador de validez de contraseña
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
 
   // console.log(loading);
   // console.log(formData);
   const handleChangePassword = async () => {
+
+    
+
+    if (!isPasswordValid) {
+      
+      setModalMessage(passwordErrors.join('\n')); // Muestra los errores específicos
+      setModalError(true);
+      setModalVisible(true);
+      return;
+    }
+  
+    if (!confirmPassword) {
+      setModalMessage('Por favor, confirma tu nueva contraseña.');
+      setModalError(true);
+      setModalVisible(true);
+      return;
+    }
+  
     if (newPassword !== confirmPassword) {
-      setModalMessage('Las contraseñas no coinciden');
+      setModalMessage('La nueva contraseña y la confirmación no coinciden.');
       setModalError(true);
       setModalVisible(true);
       return;
@@ -119,13 +139,14 @@ const ProfileScreen: React.FC = () => {
     }
   }
 
-  const handleCancelChangePassword = () => {
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
-    setIsChangingPassword(false);
-  }
-
+    const handleCancelChangePassword = () => {
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setPasswordErrors([]); // Limpia los errores de la contraseña
+      setIsPasswordValid(false); // Resetea la validez de la contraseña
+      setIsChangingPassword(false);
+    };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData({
@@ -246,12 +267,53 @@ const ProfileScreen: React.FC = () => {
     setIsEditing(false)
   };
 
+
+  const validatePassword = (password: string) => {
+    const errors = [];
+    if (password.length < 8) errors.push('La contraseña debe tener al menos 8 caracteres.');
+    if (!/[A-Z]/.test(password)) errors.push('Debe incluir al menos una letra mayúscula.');
+    if (!/[0-9]/.test(password)) errors.push('Debe incluir al menos un número.');
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) errors.push('Debe incluir al menos un carácter especial.');
+    return errors;
+  };
+
+  const handleNewPasswordChange = (text: string) => {
+    setNewPassword(text);
+    const errors = validatePassword(text); // Valida la contraseña
+    setPasswordErrors(errors); // Actualiza los errores
+    setIsPasswordValid(errors.length === 0); // Marca como válida si no hay errores
+  };
+
   const showErrorModal = (message: string) => {
     setModalMessage(message);
     setModalError(true);
   };
+
   return (
-    isChangingPassword ?
+    <View style={{ flex: 1 }}>
+      {/* Modal para mostrar mensajes */}
+      <Modal
+      visible={modalVisible}
+      animationType="slide"
+      transparent={true}
+      onRequestClose={() => setModalVisible(false)}
+    >
+      <View style={styles.modalContainer}>
+        <View style={[styles.modalContent, modalError ? styles.modalError : styles.modalSuccess]}>
+          {modalError ? (
+            <Icon name="close-circle" size={50} color="red" />
+          ) : (
+            <Icon name="checkmark-circle" size={50} color="green" />
+          )}
+          <Text style={styles.modalText}>{modalMessage}</Text>
+          <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisible(false)}>
+            <Text style={styles.modalButtonText}>Cerrar</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+    </Modal>
+    {isChangingPassword ?
       (
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -276,9 +338,14 @@ const ProfileScreen: React.FC = () => {
                     style={styles.input}
                     placeholder="Nueva contraseña"
                     value={newPassword}
-                    onChangeText={setNewPassword}
+                    onChangeText={handleNewPasswordChange}
                     secureTextEntry
                   />
+                  {passwordErrors.map((error, index) => (
+                    <Text key={index} style={styles.errorText}>
+                      {error}
+                    </Text>
+                  ))}
                   <TextInput
                     style={styles.input}
                     placeholder="Confirmar nueva ontraseña"
@@ -287,11 +354,12 @@ const ProfileScreen: React.FC = () => {
                     secureTextEntry
                   />
                   <TouchableOpacity
-                    style={styles.buttonPass}
+                    style={[
+                      styles.buttonPass,
+                      !isPasswordValid && { backgroundColor: '#ccc' }, // Cambia el color cuando está deshabilitado
+                    ]}
                     onPress={handleChangePassword}
-                    disabled={
-                      !currentPassword || !newPassword || !confirmPassword || newPassword !== confirmPassword
-                    }
+                    disabled={!isPasswordValid} // Deshabilita el botón si la contraseña no es válida
                   >
                     <Text style={styles.buttonText}>Actualizar Contraseña</Text>
                   </TouchableOpacity>
@@ -465,27 +533,6 @@ const ProfileScreen: React.FC = () => {
               <Text style={styles.text}>{formData.gender}</Text>
             </View>
           )}
-          <Modal
-            visible={modalVisible}
-            animationType="slide"
-            transparent={true}
-            onRequestClose={() => setModalVisible(false)}
-          >
-            <View style={styles.modalContainer}>
-              <View style={[styles.modalContent, modalError ? styles.modalError : styles.modalSuccess]}>
-                {modalError ? (
-                  <Icon name="close-circle" size={50} color="red" />
-                ) : (
-                  <Icon name="checkmark-circle" size={50} color="green" />
-                )}
-                <Text style={styles.modalText}>{modalMessage}</Text>
-                <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisible(false)}>
-                  <Text style={styles.modalButtonText}>Cerrar</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-
-          </Modal>
           <Modal visible={isCategoriesModalVisible} animationType="slide" transparent>
             <View style={styles.modalContainer}>
               <View style={styles.modalContent}>
@@ -511,9 +558,9 @@ const ProfileScreen: React.FC = () => {
             </View>
           </Modal>
         </ScrollView>
-      </View>)
-  )
-};
+      </View>)}
+ </View>
+ )};
 
 const pickerSelectStyles = StyleSheet.create({
   inputIOS: {
@@ -685,6 +732,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
 
   },
+  errorText: {
+    color: 'red',
+    fontSize: 14,
+    marginVertical: 5,
+  },
   button: {
     display: "flex",
     flexDirection: "row",
@@ -737,6 +789,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 9999
   },
   modalContent: {
     backgroundColor: 'white',
