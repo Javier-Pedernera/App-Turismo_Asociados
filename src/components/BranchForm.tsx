@@ -19,6 +19,7 @@ import CustomAlert from './CustomAlert';
 import { getMemoizedPromotions } from '../redux/selectors/promotionSelectors';
 import ExitoModal from './ExitoModal';
 import { fetchPromotions } from '../redux/actions/promotionsActions';
+import ErrorModal from './ErrorModal';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -66,6 +67,8 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
   const [showAlert, setShowAlert] = useState(false);
   const [modalSuccessVisible, setModalSuccessVisible] = useState(false);
   const [modalSuccessMessage, setModalSuccessMessage] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
+  const [modalErrorVisible, setModalErrorVisible] = useState(false);
   // console.log("sucursal elegida", branch);
   // console.log("promociones de la sucursal", promotions);
   const handleSubmit = async () => {
@@ -82,28 +85,44 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
       status_id: 1,
       image_data: image_data.length? image_data : undefined,
     };
+
      try {
     // console.log('Enviando datos de la sucursal:', branchData);
     // console.log('Tiene branch id:', branch.branch_id);
     // console.log('imagen nueva?:', image_data.length);
     let resp;
+    
     if (branch && branch.branch_id) {
+      if(!branchData.name){
+        const errorMessage = `El campo "Nombre" es obligatorio.`;
+        showErrorModal(errorMessage)
+        return
+      }
       resp = await dispatch(updateBranch(branch.branch_id, branchData));
-      console.log("respuesta del dispatch (update)", resp);
+      // console.log("respuesta del dispatch (update)", resp);
       dispatch(fetchBranches(user.user_id))
       dispatch(fetchPartnerById(user.user_id));
+      showSuccessModal('La sucursal se ha actualizado correctamente.');
     } else {
+      if(!branchData.name || !branchData.latitude || !branchData.longitude){
+        const missingFields = [];
+        if (!branchData.name || branchData.name =='') missingFields.push('Nombre');
+        if (!branchData.latitude) missingFields.push('Latitud y Longitud');
+        const errorMessage = `Los siguientes campos son obligatorios: ${missingFields.join(', ')}.`;
+        showErrorModal(errorMessage)
+        return
+      }
       resp = await dispatch(addBranch(branchData));
       console.log(resp);
       dispatch(fetchBranches(user.user_id))
       dispatch(fetchPartnerById(user.user_id));
+      showSuccessModal('La sucursal se ha creado correctamente.');
       // console.log("respuesta del dispatch (add)", resp);
     }
-      Alert.alert('Éxito', 'La sucursal se ha creado/actualizado correctamente.');
       onClose();
     } catch (error) {
       console.error('Error al enviar los datos de la sucursal:', error);
-      Alert.alert('Error', 'Hubo un problema al guardar la sucursal. Por favor, inténtalo de nuevo.');
+      showErrorModal('Hubo un problema al guardar la sucursal. Por favor, inténtalo de nuevo.');
     } finally {
       setIsLoading(false);
     }
@@ -136,7 +155,7 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
       // Pedir permiso para acceder a la ubicación
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        alert('Permiso para acceder a la ubicación denegado');
+        showErrorModal('Permiso para acceder a la ubicación denegado');
         return;
       }
 
@@ -166,17 +185,16 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
   const handleConfirmDelete = async () => {
     const deletedState = statuses.find(status => status?.name === 'deleted');
     const promotionsIds = promotions.filter(promotion => promotion.branch_id === branch.branch_id).map(promotion => promotion.promotion_id);
-    console.log("ids de as promos a eliminar", promotionsIds);
+    // console.log("ids de as promos a eliminar", promotionsIds);
     
     if (branch && branch.name && branchNameInput === confirmBranchName && branchNameInput === branch?.name) {
       setDeleting(true);
       try {
-        console.log('Sucursal eliminada:', branch.branch_id, deletedState?.id,promotionsIds);
+        // console.log('Sucursal eliminada:', branch.branch_id, deletedState?.id,promotionsIds);
         const resp = await dispatch(deleteBranch(branch.branch_id, deletedState?.id,promotionsIds));
-        console.log('Status eliminada:', resp.status);
+        // console.log('Status eliminada:', resp.status);
         if(resp.status == 200){
-           setModalSuccessMessage('La sucursal y sus promociones se eliminaron correctamente.');
-        setModalSuccessVisible(true);
+          showSuccessModal('La sucursal y sus promociones se eliminaron correctamente.');
         dispatch(fetchBranches(user.user_id))
         dispatch(fetchPromotions(user.user_id))
         }
@@ -185,15 +203,47 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
         // onClose();
       } catch (error) {
         console.error('Error al eliminar la sucursal:', error);
-        Alert.alert('Error', 'Hubo un problema al eliminar la sucursal.');
+        showErrorModal('Hubo un problema al eliminar la sucursal.');
       } finally {
         setDeleting(false);
         setShowDeleteModal(false);
       }
     } else {
-      Alert.alert('Error', 'El nombre de la sucursal no coincide.');
+      showErrorModal('El nombre de la sucursal no coincide.');
     }
   };
+  const showErrorModal = (message: string) => {
+    setModalMessage(message);
+    setModalErrorVisible(true);
+  };
+  const showSuccessModal = (message: string) => {
+    setModalSuccessMessage(message);
+    setModalSuccessVisible(true);
+  };
+  const handleNameChange = (text: string) => {
+    if (text.length > 30) {
+      showErrorModal('El nombre no puede superar los 30 caracteres.');
+    } else {
+      setName(text);
+    }
+  };
+  
+  const handleAddressChange = (text: string) => {
+    if (text.length > 50) {
+      showErrorModal('La dirección no puede superar los 50 caracteres.');
+    } else {
+      setAddress(text);
+    }
+  };
+  
+  const handleDescriptionChange = (text: string) => {
+    if (text.length > 250) {
+      showErrorModal('La descripción no puede superar los 250 caracteres.');
+    } else {
+      setDescription(text);
+    }
+  };
+
   const handleClose = () => {
     setBranchNameInput('');
     setConfirmBranchName('');
@@ -237,11 +287,11 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
           <Text style={styles.label}>Nombre</Text>
           <TextInput
             style={styles.input}
-            placeholder="Nombre de la sucursal"
+            placeholder="* Nombre de la sucursal"
             value={name}
-            onChangeText={setName}
+            onChangeText={handleNameChange}
           />
-        </>: <Text style={styles.label}>{name}</Text>
+        </>: <Text style={styles.labelName}>{name}</Text>
       ),
     },
     {
@@ -254,9 +304,12 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
             style={styles.input}
             placeholder="Dirección"
             value={address}
-            onChangeText={setAddress}
+            onChangeText={handleAddressChange}
           />
-        </>:<Text style={styles.label}>{address}</Text>
+        </>:<View>
+         <Text style={styles.labelTitle}>Dirección</Text>
+         <Text style={styles.label}>{address}</Text>
+        </View>
       ),
     },
     {
@@ -269,9 +322,12 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
             style={styles.input}
             placeholder="Descripción de la sucursal"
             value={description}
-            onChangeText={setDescription}
+            onChangeText={handleDescriptionChange}
           />
-        </>: <Text style={styles.label}>{description}</Text>
+        </>: <View>
+         <Text style={styles.labelTitle}>Descripción</Text>
+         <Text style={styles.label}>{description}</Text>
+        </View>
       ),
     },
     {
@@ -292,7 +348,7 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
             <Text style={styles.labellat}>Latitud</Text>
             <TextInput
               style={styles.inputLatLong}
-              placeholder="Latitud"
+              placeholder="* Latitud"
               keyboardType="numeric"
               value={latitude}
               onChangeText={setLatitude}
@@ -303,7 +359,7 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
             <Text style={styles.labellat}>Longitud</Text>
             <TextInput
               style={styles.inputLatLong}
-              placeholder="Longitud"
+              placeholder="* Longitud"
               keyboardType="numeric"
               value={longitude}
               onChangeText={setLongitude}
@@ -386,6 +442,12 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
         onClose();
       }}
     />
+    <ErrorModal
+        visible={modalErrorVisible}
+        message={modalMessage}
+        onClose={() => setModalErrorVisible(false)}
+      />
+
     <CustomAlert
               isVisible={showAlert}
               title="Eliminar Sucursal"
@@ -445,9 +507,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#ccc',
   },
-  label: {
-    fontSize: 16,
+  labelName:{
+    marginTop:15,
+    fontWeight:'bold',
+    fontSize: 20,
     marginBottom: 5,
+    color: '#007a8c'
+  },
+  label: {
+    fontSize: 17,
+    marginBottom: 5,
+    color: '#333'
+  },
+  labelTitle:{
+    marginTop:10,
+    fontSize: 13,
+    marginBottom: 3,
     color: '#333'
   },
   input: {

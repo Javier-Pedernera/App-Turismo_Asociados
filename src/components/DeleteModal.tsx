@@ -29,16 +29,16 @@ const  DeleteModal: React.FC<DeleteModalProps> = ({
     <View style={styles.modalContainer}>
     <View style={styles.modalBackdrop} />
     <View style={styles.deleteModal}>
-      <Text style={styles.label}>Ingresa el nombre de la sucursal para eliminar:</Text>
+      <Text style={styles.label}>Ingresa el nombre de la sucursal para poder eliminarla:</Text>
       <TextInput
         style={styles.input}
-        placeholder="Nombre de la sucursal"
+        placeholder="* Nombre de la sucursal"
         value={branchNameInput}
         onChangeText={onInputChange}
       />
       <TextInput
         style={styles.input}
-        placeholder="Confirmar nombre de la sucursal"
+        placeholder=" * Confirmar nombre de la sucursal"
         value={confirmBranchName}
         onChangeText={onConfirmChange}
       />
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     },
     label: {
       fontSize: 16,
-      color: '#333',
+      color: '#007a8c',
       fontWeight: 'bold',
       marginBottom: 10,
       textAlign: 'center',

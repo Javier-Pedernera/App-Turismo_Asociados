@@ -48,9 +48,14 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
   const [modalMessage, setModalMessage] = useState('');
   const [modalSuccessVisible, setModalSuccessVisible] = useState(false);
   const [modalSuccessMessage, setModalSuccessMessage] = useState('');
-  const handleImagesCompressed = useCallback((images: { filename: string; data: string }[]) => {
+
+ const handleImagesCompressed = useCallback((images: { filename: string; data: string }[]) => {
+  if (images.length <= 10) {
     setNewImages(images);
-  }, []);
+  } else {
+    showErrorModal('No se pueden agregar más de 10 imágenes.');
+  }
+}, []);
 
   const handleSelectCategories = (newSelectedCategories: number[]) => {
     setSelectedCategories(newSelectedCategories);
@@ -62,7 +67,7 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
   const handleSubmit = () => {
     const activeBranch = branches.find((branch:any) => branch.status?.name === 'active');
     if (!user?.user_id || !activeBranch?.branch_id) {
-      Alert.alert('Error', 'No se pudo obtener el ID del socio o la sucursal. Intente de nuevo.');
+      showErrorModal('No se pudo obtener el ID del socio o la sucursal. Intente de nuevo.');
       return;
     }
     // console.log("campos vacios?",title,description,discountPercentage);
@@ -105,7 +110,8 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
         })
         .catch((error: any) => {
           setIsLoading(false)
-          Alert.alert('Error', 'Hubo un problema al actualizar la promoción. Intente de nuevo.');
+
+          showErrorModal('Hubo un problema al actualizar la promoción. Intente de nuevo.');
           console.error("Error al actualizar la promoción: ", error);
         });
     } else {
@@ -115,6 +121,17 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
   };
 
   const handleStartDateChange = (event: any, date?: Date) => {
+    if (date && endDate && date > endDate ) {
+      showErrorModal('La fecha de finalización no puede ser mayor a la fecha de fin.');
+      setEndDate(endDate)
+      setShowStartDatePicker(false);
+      return;
+    }
+    if (date && date < new Date()) {
+      showErrorModal('La fecha de inicio no puede ser menor a la fecha actual.');
+      setShowStartDatePicker(false);
+      return;
+    }
     if (Platform.OS === 'ios') {
       setStartDate(date || startDate);
     } else {
@@ -126,6 +143,17 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
   };
 
   const handleEndDateChange = (event: any, date?: Date) => {
+    if (date && startDate && date < startDate ) {
+      showErrorModal('La fecha de finalización no puede ser menor a la fecha de inicio.');
+      setEndDate(startDate)
+      setShowStartDatePicker(false);
+      return;
+    }
+    if (date && date < new Date()) {
+      showErrorModal('La fecha de fin no puede ser menor a la fecha actual.');
+      setShowStartDatePicker(false);
+      return;
+    }
     if (Platform.OS === 'ios') {
       setEndDate(date || endDate);
     } else {
@@ -165,9 +193,15 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
       <Text style={styles.texttitle}>Título</Text>
       <TextInput
         style={styles.input}
-        placeholder="Título"
+        placeholder="* Título"
         value={title}
-        onChangeText={setTitle}
+        onChangeText={(text) => {
+          if (text.length <= 45) {
+            setTitle(text);
+          } else {
+            showErrorModal('El título no puede superar los 45 caracteres.');
+          }
+        }}
       />
       <Text style={styles.texttitle}>Descripción</Text>
       <TextInput
@@ -202,13 +236,18 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
           if (text === '') {
             setAvailableQuantity(null);
           } else {
-            const value = Number(text);
-            if (value > 0) {
-              setAvailableQuantity(value);
+            if (text.length > 8) {
+              showErrorModal('La cantidad disponible no puede superar los 8 caracteres.');
             } else {
-              showErrorModal('La cantidad debe ser mayor a 0.');
+              const value = Number(text);
+              if (value > 0) {
+                setAvailableQuantity(value);
+              } else {
+                showErrorModal('La cantidad debe ser mayor a 0.');
+              }
             }
-        }}}
+          }
+        }}
       />
       <TouchableOpacity
         style={styles.categoryButton}

@@ -1,10 +1,15 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, FlatList, Modal } from 'react-native';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { getMemoizedBranches } from '../redux/selectors/branchSelectors';
 import { BranchForm } from '../components/BranchForm';
 import SemicirclesOverlay from '../components/SemicirclesOverlay';
 import { Dimensions } from 'react-native';
+import { fetchPartnerById } from '../redux/actions/userActions';
+import { getMemoizedUserData } from '../redux/selectors/userSelectors';
+import { UserData } from '../redux/types/types';
+import { fetchBranches } from '../redux/actions/branchActions';
+import { AppDispatch } from '../redux/store/store';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -13,6 +18,13 @@ const Branches: React.FC = () => {
   const branches = useSelector(getMemoizedBranches);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState(null);
+  const user = useSelector(getMemoizedUserData) as UserData;
+  const dispatch: AppDispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchPartnerById(user.user_id));
+    dispatch(fetchBranches(user.user_id));
+  }, []);
 
   const handleView = (branch: any) => {
     setSelectedBranch(branch);
