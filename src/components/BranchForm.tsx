@@ -205,7 +205,7 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
       component: (
         <View>
           {!isEditing? 
-          <View><TouchableOpacity onPress={() => setIsEditing(true)} style={styles.editButton}>
+          <View style={styles.buttonContainer}><TouchableOpacity onPress={() => setIsEditing(true)} style={styles.editButton}>
               <MaterialCommunityIcons name="file-edit-outline" size={23} color="#fff" />
           </TouchableOpacity>
           <TouchableOpacity
@@ -435,7 +435,17 @@ const styles = StyleSheet.create({
     height: screenHeight * 0.3,
     marginBottom: 16,
     borderRadius: 10,
+    top: 10,
+    zIndex: 1, // Asegura que los botones estén por encima
   },
+
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    zIndex: 2, // Asegura que esté sobre la imagen
+  },
+
   placeholderImage: {
     width: '100%',
     height: screenHeight * 0.3,
