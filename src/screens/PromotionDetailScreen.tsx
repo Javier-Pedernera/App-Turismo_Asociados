@@ -18,6 +18,8 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { addRating, clearBranchRatingsAction, fetchBranchRatings } from '../redux/actions/branchActions';
 import * as Location from 'expo-location';
 import MapSingle from '../components/MapSingle';
+import ErrorModal from '../components/ErrorModal';
+import ExitoModal from '../components/ExitoModal';
 
 type PromotionDetailScreenRouteProp = RouteProp<RootStackParamList, 'PromotionDetail'>;
 
@@ -44,7 +46,11 @@ const PromotionDetailScreen: React.FC = () => {
   const [newRating, setNewRating] = useState<number>(0);
   const [newComment, setNewComment] = useState<string>('');
   const ratings = useSelector(getMemoizedBranchRatingsWithMetadata);
-  const user = useSelector(getMemoizedUserData);
+  const user = useSelector(getMemoizedUserData); 
+  const [modalMessage, setModalMessage] = useState('');
+  const [modalErrorVisible, setModalErrorVisible] = useState(false);
+  const [modalSuccessVisible, setModalSuccessVisible] = useState(false);
+  const [modalSuccessMessage, setModalSuccessMessage] = useState('');
   // console.log("newRating",newRating);
   // console.log("newComment",newComment);
   const promoImage = promotion.images.length > 0 ? `${API_URL}${promotion.images[0].image_path}` : 'https://res.cloudinary.com/dbwmesg3e/image/upload/v1721157537/TurismoApp/no-product-image-400x400_1_ypw1vg_sw8ltj.png';
@@ -72,7 +78,7 @@ const PromotionDetailScreen: React.FC = () => {
     const requestLocationPermission = async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission Denied', 'Location permission is required to show your current location.');
+        showErrorModal('El permiso de geolocalización es necesario para conocer tu ubicacíon actual.');
         return;
       }
 
@@ -86,12 +92,12 @@ const PromotionDetailScreen: React.FC = () => {
     requestLocationPermission();
   }, []);
   const handleShare = async () => {
-    try {
-      const message = `Mira esta promoción: ${promotion.title}`;
-      await Share.share({ message });
-    } catch (error) {
-      console.error('Error al compartir:', error);
-    }
+    // try {
+    //   const message = `Mira esta promoción: ${promotion.title}`;
+    //   await Share.share({ message });
+    // } catch (error) {
+    //   console.error('Error al compartir:', error);
+    // }
   };
 
   //mapa
@@ -113,11 +119,6 @@ const PromotionDetailScreen: React.FC = () => {
   };
 
   const handleFavoritePress = (promotion: Promotion) => {
-    // if (isFavorite(promotion.promotion_id)) {
-    //   dispatch(removeFavoriteAction(promotion.promotion_id));
-    // } else {
-    //   dispatch(addFavoriteAction(promotion));
-    // }
   };
   // console.log(user);
   const openModal = (imagePath: string) => {
@@ -131,24 +132,20 @@ const PromotionDetailScreen: React.FC = () => {
     setModalVisible(false);
     setSelectedImage(null);
   };
-  const Touchmarker = (branch: any) => {
-    setSelectedBranch(branch);
-    setRouteSelected(false)
-  }
-  const handleMapPress = () => {
-    setSelectedBranch(null);
-  };
 
   const handleBackPress = () => {
     dispatch(clearBranchRatingsAction());
     navigation.goBack();
   };
   const handleAddRating = () => {
-    Alert.alert("Solo es una vista previa", "La funcionalidad de enviar valoración no está disponible desde aquí.");
+    showErrorModal("Solo es una vista previa, la funcionalidad de enviar valoración no está disponible desde aquí.");
     setNewRating(0);
     setNewComment('');
   };
-
+  const showErrorModal = (message: string) => {
+    setModalMessage(message);
+    setModalErrorVisible(true);
+  };
   const renderStars = (rating: number) => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
@@ -166,7 +163,7 @@ const PromotionDetailScreen: React.FC = () => {
 
   const renderItem = ({ item }: { item: ImagePromotion }) => (
     <View style={styles.carouselItem}>
-      <Image source={{ uri: item.image_path }} style={styles.carouselImage} onLoadStart={handleImageLoadStart} onLoadEnd={handleImageLoadEnd} />
+      <Image source={{ uri: `${API_URL}${item.image_path}` }} style={styles.carouselImage} onLoadStart={handleImageLoadStart} onLoadEnd={handleImageLoadEnd} />
     </View>
   );
   
@@ -317,6 +314,16 @@ const PromotionDetailScreen: React.FC = () => {
           <Text style={styles.buttonText}>Enviar valoración</Text>
         </TouchableOpacity>
       </View>
+      <ErrorModal
+        visible={modalErrorVisible}
+        message={modalMessage}
+        onClose={() => setModalErrorVisible(false)}
+      />
+      <ExitoModal
+        visible={modalSuccessVisible}
+        message={modalSuccessMessage}
+        onClose={() => {setModalSuccessVisible(false)}}
+        />
     </ScrollView>
   );
 };

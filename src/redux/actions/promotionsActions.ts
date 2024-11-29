@@ -54,11 +54,13 @@ export const modifyPromotion = (promotionId: number, data: any, deletedImageIds:
     try {
       if (deletedImageIds.length) {
         const imgDelete = { 'image_ids': deletedImageIds };
-        // console.log(imgDelete);
+        console.log(imgDelete);
         const responseDeleted = await axios.post(`${API_URL}/promotion_images/delete`, imgDelete);
         console.log(responseDeleted);
       }
       const response = await axios.put(`${API_URL}/promotions/${promotionId}`, data);
+      console.log("respuesta de actualizacion",response);
+      
       dispatch(updatePromotion(response.data));
     } catch (error) {
       console.error('Error updating promotion:', error);

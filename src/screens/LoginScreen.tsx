@@ -10,6 +10,8 @@ import { userLogIn } from '../redux/actions/userActions';
 import Loader from '../components/Loader';
 import { LinearGradient } from 'expo-linear-gradient';
 import Constants from 'expo-constants'; 
+import ErrorModal from '../components/ErrorModal';
+import ExitoModal from '../components/ExitoModal';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const appVersion = Constants.expoConfig?.version;
@@ -25,19 +27,35 @@ const LoginScreen: React.FC = () => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const toggleModal = () => {
-    setModalVisible(!isModalVisible);
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
+  const [errorModalVisible, setErrorModalVisible] = useState(false);
+
+  // const toggleModal = () => {
+  //   setModalVisible(!isModalVisible);
+  // };
+
+  const isEmailValid = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
   };
 
   const handleLogin = async () => {
     const lowerCaseEmail = email.trim().toLowerCase();
-    if (lowerCaseEmail === '' || password === '') {
-      setModalMessage('Por favor ingresa tu correo electrónico y contraseña.');
-      setError(null)
-      setModalVisible(true)
+
+    
+    if (!isEmailValid(lowerCaseEmail)) {
+      setError('Por favor ingresa un correo válido.');
+      setModalMessage('El correo ingresado no es válido.');
+      setErrorModalVisible(true);
       return;
     }
 
+    // if (password.length < 8) {
+    //   setError('La contraseña debe tener al menos 8 caracteres.');
+    //   setModalMessage('Tu contraseña debe contener al menos 8 caracteres.');
+    //   setErrorModalVisible(true);
+    //   return;
+    // }
     try {
       setLoading(true);
       const response = await dispatch<any>(userLogIn(lowerCaseEmail, password));
@@ -45,16 +63,18 @@ const LoginScreen: React.FC = () => {
 
       // Validación del estado del usuario
       if (response.user.status.name !== 'active') {
-        Alert.alert('Asociado inactivo', 'Tu cuenta está inactiva. Contacta al soporte para más información.');
+        setModalMessage('Tu cuenta está inactiva. Contacta al soporte para más información.');
+        setErrorModalVisible(true);
         return;
       }
 
       // Validación del rol del usuario
-      const hasAssociatedRole = response.user.roles.some((role: { role_name: string }) => role.role_name === 'associated');
+      const hasAssociatedRole = response.user.roles.some(
+        (role: { role_name: string }) => role.role_name === 'associated'
+      );
       if (!hasAssociatedRole) {
-
-        Alert.alert('Acceso restringido', 'Solo se permite el ingreso a los asociados.');
-
+        setModalMessage('Solo se permite el ingreso a los asociados.');
+        setErrorModalVisible(true);
         return;
       }
 
@@ -73,7 +93,7 @@ const LoginScreen: React.FC = () => {
       setPassword('');
       setError(err.message == 'Password inválido'? 'Contraseña inválida': err.message);
       setModalMessage(err.message == 'Password inválido'? 'Contraseña inválida': err.message);
-      toggleModal();
+      setErrorModalVisible(true);
     } finally {
 
       setLoading(false);
@@ -126,14 +146,25 @@ const LoginScreen: React.FC = () => {
         {loading && <Loader />}
       </View>
         <Text  style={styles.versionText} >Version {appVersion}</Text>
-      <Modal isVisible={isModalVisible}>
+      {/* <Modal isVisible={isModalVisible}>
         <View style={styles.modalContent}>
           <Text style={styles.modalMessage}>{modalMessage}</Text>
           <TouchableOpacity style={styles.modalButton} onPress={toggleModal}>
             <Text style={styles.modalButtonText}>Cerrar</Text>
           </TouchableOpacity>
         </View>
-      </Modal>
+      </Modal> */}
+       {/* Modales */}
+       <ErrorModal
+        visible={errorModalVisible}
+        message={modalMessage}
+        onClose={() => setErrorModalVisible(false)}
+      />
+      <ExitoModal
+        visible={successModalVisible}
+        message={modalMessage}
+        onClose={() => setSuccessModalVisible(false)}
+      />
     </LinearGradient>
   );
 };

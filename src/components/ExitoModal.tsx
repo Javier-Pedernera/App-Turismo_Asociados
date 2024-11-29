@@ -1,5 +1,6 @@
 import React from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 interface ExitoModalProps {
   visible: boolean;
@@ -8,6 +9,7 @@ interface ExitoModalProps {
 }
 
 const ExitoModal: React.FC<ExitoModalProps> = ({ visible, message, onClose }) => {
+
   return (
     <Modal
       visible={visible}
@@ -16,7 +18,10 @@ const ExitoModal: React.FC<ExitoModalProps> = ({ visible, message, onClose }) =>
       onRequestClose={onClose}>
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Éxito</Text>
+          <View style={styles.titleContainer}>
+            <Ionicons name="checkmark-circle-outline" size={24} color="#249e3e" style={styles.icon}/>
+            <Text style={styles.modalTitle}>Éxito</Text>
+          </View>
           <Text style={styles.modalMessage}>{message}</Text>
           <TouchableOpacity style={styles.modalButton} onPress={onClose}>
             <Text style={styles.modalButtonText}>Cerrar</Text>
@@ -35,30 +40,37 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    width: '80%',
+    width: '90%',
     backgroundColor: '#fff',
     borderRadius: 10,
-    padding: 20,
+    padding: 15,
     alignItems: 'center',
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  icon: {
+    marginRight: 10,
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#007a8c',
+    color: '#249e3e',
   },
   modalMessage: {
     fontSize: 16,
-    width:'90%',
+    width:'100%',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 30,
     color:'#007a8c'
   },
   modalButton: {
     backgroundColor: '#007a8c',
     paddingVertical: 10,
     paddingHorizontal: 20,
-    borderRadius: 5,
+    borderRadius: 25,
   },
   modalButtonText: {
     color: '#fff',

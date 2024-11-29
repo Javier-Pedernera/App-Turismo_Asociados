@@ -65,6 +65,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   alertTitle: {
+    color:'#007a8c',
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
@@ -83,22 +84,23 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: '#8e8e8e',
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 25,
     marginRight: 5,
     alignItems: 'center',
+    
   },
   cancelButtonText: {
-    color: '#333',
+    color:'#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
   confirmButton: {
     flex: 1,
-    backgroundColor: '#d30000',
+    backgroundColor: '#007a8c',
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 25,
     marginLeft: 5,
     alignItems: 'center',
   },
