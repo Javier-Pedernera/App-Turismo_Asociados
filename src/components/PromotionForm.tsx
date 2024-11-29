@@ -63,19 +63,19 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
     // console.log(title, description, startDate?.toISOString().split('T')[0], endDate?.toISOString().split('T')[0], discountPercentage, availableQuantity, selectedCategories, imagePaths.length);
     setLoading(true)
     const activeBranch = branches.find((branch:any) => branch.status?.name === 'active');
-    // console.log("sucursal activaaaaaaaaaaa", activeBranch);
-    
+
     if (!user?.user_id || !activeBranch?.branch_id) {
-      Alert.alert('Error', 'No se pudo obtener el ID del socio o la sucursal. Intente de nuevo.');
+      showErrorModal('No se pudo obtener el ID del socio o la sucursal. Intente de nuevo.');
       return;
     }
-    if (!title || !startDate || !endDate || discountPercentage === null) {
+    if (!title || !startDate || !endDate || discountPercentage === null || !selectedCategories.length) {
       // Validar campos y construir mensaje de error específico
       const missingFields = [];
       if (!title) missingFields.push('título');
+      if (discountPercentage === null) missingFields.push('porcentaje de descuento');
       if (!startDate) missingFields.push('fecha de inicio');
       if (!endDate) missingFields.push('fecha de fin');
-      if (discountPercentage === null) missingFields.push('porcentaje de descuento');
+      if (!selectedCategories.length) missingFields.push('Categorías');
 
       const errorMessage = `Los siguientes campos son obligatorios: ${missingFields.join(', ')}.`;
       showErrorModal(errorMessage);
@@ -117,7 +117,7 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
         // onClose();
       })
       .catch((error: any) => {
-        Alert.alert('Error', 'Hubo un problema al crear la promoción. Intente de nuevo.');
+        showErrorModal('Hubo un problema al crear la promoción. Intente nuevamente por favor.');
         setLoading(false)
         console.error("Error al crear la promoción: ", error);
       });

@@ -84,8 +84,8 @@ const ProfileScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [passwordErrors, setPasswordErrors] = useState<string[]>([]); // Lista de errores de la contraseña
   const [isPasswordValid, setIsPasswordValid] = useState(false); // Indicador de validez de contraseña
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  // console.log("usuario",user);
 
   // console.log(loading);
   // console.log(formData);
@@ -170,6 +170,13 @@ const ProfileScreen: React.FC = () => {
       setShowDatePicker(false);
     }
     if (selectedDate) {
+      const today = new Date();
+    if (selectedDate > today) {
+      setModalMessage('La fecha de nacimiento debe ser menor que la fecha actual.');
+      setModalError(true);
+      setModalVisible(true);
+      return;
+    }
       const formattedDate = formatDateToYYYYMMDD(
         `${selectedDate.getDate()}-${selectedDate.getMonth() + 1}-${selectedDate.getFullYear()}`
       );
@@ -232,8 +239,7 @@ const ProfileScreen: React.FC = () => {
       }
     } catch (error) {
       setLoading(false)
-      setModalMessage('Error al actualizar los datos');
-      setModalError(true);
+      showErrorModal('Error al actualizar los datos');
     } finally {
       setLoading(false)
       setIsEditing(false)
@@ -261,6 +267,7 @@ const ProfileScreen: React.FC = () => {
     setIsEditing(false)
   };
 
+
   const validatePassword = (password: string) => {
     const errors = [];
     if (password.length < 8) errors.push('La contraseña debe tener al menos 8 caracteres.');
@@ -275,6 +282,11 @@ const ProfileScreen: React.FC = () => {
     const errors = validatePassword(text); // Valida la contraseña
     setPasswordErrors(errors); // Actualiza los errores
     setIsPasswordValid(errors.length === 0); // Marca como válida si no hay errores
+  };
+
+  const showErrorModal = (message: string) => {
+    setModalMessage(message);
+    setModalError(true);
   };
 
   return (
@@ -324,7 +336,7 @@ const ProfileScreen: React.FC = () => {
                   />
                   <TextInput
                     style={styles.input}
-                    placeholder="Nueva Contraseña"
+                    placeholder="Nueva contraseña"
                     value={newPassword}
                     onChangeText={handleNewPasswordChange}
                     secureTextEntry
@@ -336,7 +348,7 @@ const ProfileScreen: React.FC = () => {
                   ))}
                   <TextInput
                     style={styles.input}
-                    placeholder="Confirmar Contraseña"
+                    placeholder="Confirmar nueva ontraseña"
                     value={confirmPassword}
                     onChangeText={setConfirmPassword}
                     secureTextEntry
@@ -351,7 +363,6 @@ const ProfileScreen: React.FC = () => {
                   >
                     <Text style={styles.buttonText}>Actualizar Contraseña</Text>
                   </TouchableOpacity>
-
                   <TouchableOpacity style={styles.buttonPass} onPress={handleCancelChangePassword}>
                     <Text style={styles.buttonText}>Cancelar</Text>
                   </TouchableOpacity>
@@ -385,7 +396,7 @@ const ProfileScreen: React.FC = () => {
               <Ionicons name="key-outline" size={26} color="#fff" />
             </TouchableOpacity>
           }
-          {isEditing ? (
+          {isEditing?(
             <>
               <TextInput
                 style={styles.input}
