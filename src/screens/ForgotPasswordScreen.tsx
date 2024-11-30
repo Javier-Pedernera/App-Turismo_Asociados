@@ -30,7 +30,7 @@ const ForgotPasswordScreen: React.FC = () => {
       return;
     }
     if (email.length < 6 || email.length > 320) {
-      setModaErrorlMessage('El correo debe tener entre 5 y 320 caracteres.');
+      setModaErrorlMessage('El correo debe tener entre 6 y 320 caracteres.');
       setModalErrorVisible(true);
       return;
     }
