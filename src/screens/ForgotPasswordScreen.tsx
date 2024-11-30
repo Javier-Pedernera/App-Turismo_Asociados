@@ -18,8 +18,22 @@ const ForgotPasswordScreen: React.FC = () => {
   const [modalSuccessVisible, setModalSuccessVisible] = useState(false);
   const [modalSuccessMessage, setModalSuccessMessage] = useState('');
 
-
+  const isValidEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
   const handleSendResetEmail = async () => {
+
+    if (!isValidEmail(email)) {
+      setModaErrorlMessage('Por favor, ingresa un correo válido.');
+      setModalErrorVisible(true);
+      return;
+    }
+    if (email.length < 6 || email.length > 320) {
+      setModaErrorlMessage('El correo debe tener entre 5 y 320 caracteres.');
+      setModalErrorVisible(true);
+      return;
+    }
     try {
       await sendPasswordResetEmail(email);
       setModalSuccessMessage('Se ha enviado un correo de recuperación. Revisa tu bandeja de entrada.');
