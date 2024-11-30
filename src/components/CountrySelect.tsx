@@ -37,9 +37,10 @@ const CountryPicker: React.FC<CountryPickerProps> = ({ selectedCountry, onCountr
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 5,
+    // marginBottom: 5,
   },
   pickerWrapper: {
+    height:48,    
     justifyContent: 'center',
     borderColor: '#ddd',
     borderWidth: 1,

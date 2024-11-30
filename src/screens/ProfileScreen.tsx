@@ -9,7 +9,6 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { fetchUserCategories, fetchAllCategories } from '../redux/actions/categoryActions';
 import Checkbox from 'expo-checkbox';
-import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
 import { getMemoizedPartner, getMemoizedUserData } from '../redux/selectors/userSelectors';
 import { getMemoizedAllCategories, getMemoizedUserCategories } from '../redux/selectors/categorySelectors';
@@ -24,6 +23,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { KeyboardAvoidingView } from 'react-native';
 import { TouchableWithoutFeedback } from 'react-native';
 import { Keyboard } from 'react-native';
+import ErrorModal from '../components/ErrorModal';
+import ExitoModal from '../components/ExitoModal';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 // const screenHeight = Dimensions.get('window').height;
@@ -75,63 +76,48 @@ const ProfileScreen: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [isChangingPassword, setIsChangingPassword] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modalMessage, setModalMessage] = useState('');
-  const [modalError, setModalError] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [isCategoriesModalVisible, setCategoriesModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [passwordErrors, setPasswordErrors] = useState<string[]>([]); // Lista de errores de la contraseña
   const [isPasswordValid, setIsPasswordValid] = useState(false); // Indicador de validez de contraseña
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
-
+  const [modalErrorVisible, setModalErrorVisible] = useState(false);
+  const [modalErrorMessage, setModaErrorlMessage] = useState('');
+  const [modalSuccessVisible, setModalSuccessVisible] = useState(false);
+  const [modalSuccessMessage, setModalSuccessMessage] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   // console.log(loading);
   // console.log(formData);
   const handleChangePassword = async () => {
-
-    
-
     if (!isPasswordValid) {
       
-      setModalMessage(passwordErrors.join('\n')); // Muestra los errores específicos
-      setModalError(true);
-      setModalVisible(true);
+      showErrorModal(passwordErrors.join('\n')); // Muestra los errores específicos
       return;
     }
   
     if (!confirmPassword) {
-      setModalMessage('Por favor, confirma tu nueva contraseña.');
-      setModalError(true);
-      setModalVisible(true);
+      showErrorModal('Por favor, confirma tu nueva contraseña.');
       return;
     }
   
     if (newPassword !== confirmPassword) {
-      setModalMessage('La nueva contraseña y la confirmación no coinciden.');
-      setModalError(true);
-      setModalVisible(true);
+      showErrorModal('La nueva contraseña y la confirmación no coinciden.');
       return;
     }
 
     try {
       setLoading(true);
       const response = await dispatch(changePasswordAction(user.user_id, newPassword, currentPassword));
-
       if (response.status === 200) {
-        setModalMessage('Contraseña cambiada con éxito');
-        setModalError(false);
+        showSuccessModal('Contraseña cambiada con éxito');
       } else {
-        setModalMessage('Error al cambiar la contraseña');
-        setModalError(true);
+        showErrorModal('Error al cambiar la contraseña');
       }
     } catch (error) {
-      setModalMessage('Error al cambiar la contraseña');
-      setModalError(true);
+      showErrorModal('Error al cambiar la contraseña');
     } finally {
       setLoading(false);
-      setModalVisible(true);
       setNewPassword('');
       setCurrentPassword('');
       setConfirmPassword('');
@@ -149,11 +135,27 @@ const ProfileScreen: React.FC = () => {
     };
 
   const handleInputChange = (field: string, value: string) => {
+
+    if ((field === 'first_name' || field === 'last_name') && value.length > 30) {
+        showErrorModal('No debe exceder los 30 caracteres.')
+      return;
+    }
+    if ((field === 'city' || field === 'address' ) && value.length > 50) {
+      showErrorModal('No debe exceder los 50 caracteres.')
+    return;
+  } 
+    if ((field === 'business_type' || field === 'contact_info') && value.length > 25) {
+      showErrorModal('No debe exceder los 30 caracteres.')
+    return;
+  }
+
+
     setFormData({
       ...formData,
       [field]: value,
     });
   };
+
   useEffect(() => {
     if (formData.birth_date) {
       const [year, month, day] = formData.birth_date.split('-');
@@ -172,9 +174,7 @@ const ProfileScreen: React.FC = () => {
     if (selectedDate) {
       const today = new Date();
     if (selectedDate > today) {
-      setModalMessage('La fecha de nacimiento debe ser menor que la fecha actual.');
-      setModalError(true);
-      setModalVisible(true);
+      showErrorModal('La fecha de nacimiento debe ser menor que la fecha actual.');
       return;
     }
       const formattedDate = formatDateToYYYYMMDD(
@@ -201,6 +201,14 @@ const ProfileScreen: React.FC = () => {
   };
 
   const handleUpdate = async () => {
+    console.log("datos en form data", formData);
+    if (formData.phone_number) {
+      const phoneRegex = /^[+]?[0-9]{7,15}$/;
+      if (!phoneRegex.test(formData.phone_number)) {
+          showErrorModal('Número de teléfono no válido. Debe contener entre 7 y 15 dígitos.');
+          return;
+      }
+  }
     try {
       setLoading(true)
       const { user_id, address, contact_info, business_type, image_data, ...dataToSend } = formData;
@@ -225,16 +233,13 @@ const ProfileScreen: React.FC = () => {
         if (categoriesResponse.status == 200) {
           // dispatch(fetchUserCategories())
           setLoading(false)
-          setModalMessage('Datos actualizados con éxito');
-          setModalError(false);
+          showSuccessModal('Datos actualizados con éxito');
         } else {
-          setModalMessage('Error al actualizar usuario');
-          setModalError(true);
+          showErrorModal('Error al actualizar usuario');
           setLoading(false)
         }
       } else {
-        setModalMessage('Error al actualizar los datos');
-        setModalError(true);
+        showErrorModal('Error al actualizar los datos');
         setLoading(false)
       }
     } catch (error) {
@@ -243,7 +248,6 @@ const ProfileScreen: React.FC = () => {
     } finally {
       setLoading(false)
       setIsEditing(false)
-      setModalVisible(true);
     }
   };
 
@@ -257,6 +261,10 @@ const ProfileScreen: React.FC = () => {
     });
   };
   const handleCountryChange = (value: string) => {
+    if (value === "") {
+      showErrorModal('El país es un campo obligatorio, por favor seleccione uno.')
+    return;
+  } 
     handleInputChange('country', value);
   };
   const handleSaveCategories = () => {
@@ -285,34 +293,51 @@ const ProfileScreen: React.FC = () => {
   };
 
   const showErrorModal = (message: string) => {
-    setModalMessage(message);
-    setModalError(true);
+    setModaErrorlMessage(message);
+    setModalErrorVisible(true);
   };
+  const showSuccessModal = (message: string) => {
+    setModalSuccessMessage(message);
+    setModalSuccessVisible(true);
+  };
+
+  const resetFormData = () => {
+    setFormData(
+      {
+    user_id: user?.user_id || 0,
+    first_name: user?.first_name || '',
+    last_name: user?.last_name || '',
+    email: user?.email || '',
+    country: user?.country || '',
+    city: user?.city || '',
+    phone_number: user?.phone_number || '',
+    gender: user?.gender || '',
+    birth_date: user?.birth_date || '',
+    image_data: `${API_URL}${user?.image_url}` || null,
+    subscribed_to_newsletter: user?.subscribed_to_newsletter || false,
+    //partner
+    address: partner?.address || '',
+    contact_info: partner?.contact_info || '',
+    business_type: partner?.business_type || '',
+  })
+  };
+  const cancelEdit = () => {
+    setIsEditing(false)
+    resetFormData()
+  }
 
   return (
     <View style={{ flex: 1 }}>
-      {/* Modal para mostrar mensajes */}
-      <Modal
-      visible={modalVisible}
-      animationType="slide"
-      transparent={true}
-      onRequestClose={() => setModalVisible(false)}
-    >
-      <View style={styles.modalContainer}>
-        <View style={[styles.modalContent, modalError ? styles.modalError : styles.modalSuccess]}>
-          {modalError ? (
-            <Icon name="close-circle" size={50} color="red" />
-          ) : (
-            <Icon name="checkmark-circle" size={50} color="green" />
-          )}
-          <Text style={styles.modalText}>{modalMessage}</Text>
-          <TouchableOpacity style={styles.modalButton} onPress={() => setModalVisible(false)}>
-            <Text style={styles.modalButtonText}>Cerrar</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-    </Modal>
+       <ErrorModal
+        visible={modalErrorVisible}
+        message={modalErrorMessage}
+        onClose={() => setModalErrorVisible(false)}
+      />
+      <ExitoModal
+        visible={modalSuccessVisible}
+        message={modalSuccessMessage}
+        onClose={() => {setModalSuccessVisible(false)}}
+        />
     {isChangingPassword ?
       (
         <KeyboardAvoidingView
@@ -327,31 +352,40 @@ const ProfileScreen: React.FC = () => {
               <View style={styles.passFormCont2}>
                 <View style={styles.passForm}>
                   <Text style={styles.buttonTextpass}>Actualiza tu contraseña</Text>
-                  <TextInput
-                    style={styles.input}
+                  <View style={styles.passwordContainer}>
+                    <TextInput
+                    style={styles.inputPassword}
                     placeholder="Contraseña actual"
                     value={currentPassword}
                     onChangeText={setCurrentPassword}
-                    secureTextEntry
+                    secureTextEntry={!showPassword}
                   />
+                 <TouchableOpacity 
+                  onPress={() => setShowPassword(!showPassword)}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                    <Icon name={showPassword ? 'eye-off' : 'eye'} size={20} color="#acd0d5" />
+                  </TouchableOpacity>
+                  </View>
+                  
                   <TextInput
-                    style={styles.input}
+                    style={styles.inputPass}
                     placeholder="Nueva contraseña"
                     value={newPassword}
                     onChangeText={handleNewPasswordChange}
-                    secureTextEntry
+                    secureTextEntry={!showPassword}
                   />
+                  
                   {passwordErrors.map((error, index) => (
                     <Text key={index} style={styles.errorText}>
                       {error}
                     </Text>
                   ))}
                   <TextInput
-                    style={styles.input}
-                    placeholder="Confirmar nueva ontraseña"
+                    style={styles.inputPass}
+                    placeholder="Confirmar nueva contraseña"
                     value={confirmPassword}
                     onChangeText={setConfirmPassword}
-                    secureTextEntry
+                    secureTextEntry={!showPassword}
                   />
                   <TouchableOpacity
                     style={[
@@ -378,9 +412,16 @@ const ProfileScreen: React.FC = () => {
         <ScrollView contentContainerStyle={styles.container}>
           <ImageCompressor onImageCompressed={handleImageCompressed} initialImageUri={formData.image_data || undefined} isButtonDisabled={isEditing} />
           <View style={styles.iconContainer}>
+            {isEditing?
             <TouchableOpacity
+            style={styles.editButton}
+            onPress={cancelEdit}
+          >
+            <AntDesign name="close" size={24} color="#007a8b" />
+          </TouchableOpacity>:
+          <><TouchableOpacity
               style={styles.editButton}
-              onPress={() => setIsEditing(!isEditing)}
+              onPress={() => setIsEditing(true)}
             >
               <AntDesign name="edit" size={24} color="#007a8b" />
             </TouchableOpacity>
@@ -390,6 +431,8 @@ const ProfileScreen: React.FC = () => {
             >
               <MaterialIcons name="logout" size={24} color="#007a8b" />
             </TouchableOpacity>
+            </>
+            }
           </View>
           {!isEditing && !isChangingPassword &&
             <TouchableOpacity style={styles.passButton} onPress={() => setIsChangingPassword(!isChangingPassword)}>
@@ -443,7 +486,7 @@ const ProfileScreen: React.FC = () => {
                 value={formData.address}
                 onChangeText={(value) => handleInputChange('address', value)}
               />
-              <TextInput
+              <TextInput   
                 style={styles.input}
                 placeholder="Información de Contacto"
                 value={formData.contact_info}
@@ -468,7 +511,8 @@ const ProfileScreen: React.FC = () => {
                     <DateTimePicker
                       value={selectedDate || new Date()}
                       mode="date"
-                      display="spinner"
+                      display="default"
+                      // display="spinner"
                       onChange={handleDateChange}
                     />
                     {Platform.OS === 'ios' && (
@@ -509,15 +553,15 @@ const ProfileScreen: React.FC = () => {
                   </View>
                 )}
               <TouchableOpacity
-                style={styles.button}
+                style={styles.buttonCategories}
                 onPress={() => setCategoriesModalVisible(true)}
               >
                 <MaterialIcons name="category" size={22} color="white" />
                 <Text style={styles.buttonText}>Mis categorías</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.button} onPress={handleUpdate}>
-                <MaterialIcons name="send" size={22} color="white" />
-                <Text style={styles.buttonText}>Actualizar datos</Text>
+                <MaterialIcons name="save" size={22} color="white" />
+                <Text style={styles.buttonText}>Guardar</Text>
               </TouchableOpacity>
             </>
           ) : (
@@ -564,7 +608,7 @@ const ProfileScreen: React.FC = () => {
 
 const pickerSelectStyles = StyleSheet.create({
   inputIOS: {
-    height: 35,
+    height: 40,
     width: Platform.OS === 'web' ? '50%' : screenWidth,
     maxWidth: Platform.OS === 'web' ? 400 : screenWidth * 0.8,
     borderColor: 'rgb(172, 208, 213)',
@@ -578,7 +622,7 @@ const pickerSelectStyles = StyleSheet.create({
     
   },
   inputAndroid: {
-    height: 35,
+    height: 48,
     width: Platform.OS === 'web' ? '50%' : screenWidth,
     maxWidth: Platform.OS === 'web' ? '30%' : screenWidth * 0.8,
     borderColor: 'rgb(172, 208, 213)',
@@ -598,7 +642,7 @@ const styles = StyleSheet.create({
     paddingTop:80
   },
   text:{
-    fontSize:14,
+    fontSize:15,
     color:'#007a8c',
     fontWeight:'600',
     padding:5
@@ -653,6 +697,34 @@ const styles = StyleSheet.create({
     height:screenHeight,
     display:'flex',
   },
+  passwordContainer:{
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 48,
+    width: '90%',
+    borderColor: 'rgb(172, 208, 213)',
+    borderWidth: 1,
+    borderRadius: 15,
+    marginBottom: 0,
+    paddingHorizontal: 15,
+    backgroundColor: '#fff',
+  },
+  inputPassword: {
+    minHeight:48,
+    flex: 1,
+    fontSize: 14,
+  },
+  inputPass:{
+    height: 48,
+    width: '90%',
+    borderColor: 'rgb(172, 208, 213)',
+    borderWidth: 1,
+    borderRadius: 15,
+    marginTop:10,
+    paddingHorizontal: 15,
+    backgroundColor: '#fff',
+    fontSize: 16,
+  },
   passForm:{
     display:'flex',
     flexDirection:'column',
@@ -669,8 +741,10 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     padding: 7,
     alignItems: 'center',
-    marginVertical: 5,
-    width:'80%'
+    justifyContent:'center',
+    marginTop: 15,
+    width:'80%',
+    height:48
   },
   exitButton:{
     position:'absolute',
@@ -698,10 +772,10 @@ const styles = StyleSheet.create({
     marginTop:20
   },
   inputSelect: {
-    height: 35,
+    height: 43,
     width: '90%',
-    borderColor: 'rgb(172, 208, 213)',
-    borderWidth: 1,
+    // borderColor: 'rgb(172, 208, 213)',
+    // borderWidth: 1,
     borderRadius: 8,
     marginBottom: 10,
     display: 'flex',
@@ -712,7 +786,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   input: {
-    height: 35,
+    height: 48,
     width: '90%',
     borderColor: 'rgb(172, 208, 213)',
     borderWidth: 1,
@@ -738,16 +812,37 @@ const styles = StyleSheet.create({
     marginVertical: 5,
   },
   button: {
+    height:48,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: 'space-around',
+    backgroundColor: 'rgb(0, 122, 140)',
+    paddingVertical: 5,
+    paddingHorizontal: 40,
+    borderRadius: 25,
+    marginTop: 5,
+    marginBottom:15,
+    alignItems: 'center',
+    width: '60%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 5,
+  },
+  buttonCategories: {
+    height:48,
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-evenly",
-    backgroundColor: 'rgb(0, 122, 140)',
+    backgroundColor: '#00a6bc',
     paddingVertical: 5,
     paddingHorizontal: 20,
-    borderRadius: 6,
-    marginTop: 10,
+    borderRadius: 25,
+    marginTop: 5,
+    marginBottom:15,
     alignItems: 'center',
-    width: '70%',
+    width: '60%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.8,
@@ -772,7 +867,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   select: {
-    height: 50,
+    height: 48,
     width: screenWidth,
     borderWidth: 1,
     borderRadius: 8,
@@ -859,12 +954,12 @@ const styles = StyleSheet.create({
     display: 'flex',
     justifyContent: 'center',
     alignContent: 'center',
-    height: 40,
+    height: 48,
     width: '90%',
     borderColor: 'rgb(172, 208, 213)',
     borderWidth: 1,
     borderRadius: 8,
-    marginBottom: 15,
+    marginBottom: 10,
     paddingHorizontal: 15,
     backgroundColor: '#fff',
     fontSize: 16,
