@@ -5,31 +5,32 @@ import { RootStackParamList } from '../navigation/AppNavigator';
 import { StackNavigationProp } from '@react-navigation/stack';
 import Modal from 'react-native-modal';
 import { sendPasswordResetEmail } from '../services/authService';
+import ErrorModal from '../components/ErrorModal';
+import ExitoModal from '../components/ExitoModal';
 
 type ForgotPasswordScreenProp = StackNavigationProp<RootStackParamList, 'ForgotPassword'>;
 
 const ForgotPasswordScreen: React.FC = () => {
   const navigation = useNavigation<ForgotPasswordScreenProp>();
   const [email, setEmail] = useState('');
-  const [isModalVisible, setModalVisible] = useState(false);
-  const [modalMessage, setModalMessage] = useState('');
+  const [modalErrorVisible, setModalErrorVisible] = useState(false);
+  const [modalErrorMessage, setModaErrorlMessage] = useState('');
+  const [modalSuccessVisible, setModalSuccessVisible] = useState(false);
+  const [modalSuccessMessage, setModalSuccessMessage] = useState('');
 
-  const toggleModal = () => {
-    setModalVisible(!isModalVisible);
-  };
 
   const handleSendResetEmail = async () => {
     try {
       await sendPasswordResetEmail(email);
-      setModalMessage('Se ha enviado un correo de recuperación. Revisa tu bandeja de entrada.');
-      toggleModal();
+      setModalSuccessMessage('Se ha enviado un correo de recuperación. Revisa tu bandeja de entrada.');
+      setModalSuccessVisible(true)
       setTimeout(() => {
-        setModalVisible(false);
+        setModalSuccessVisible(false);
         navigation.navigate('Login');
       }, 3000);
     } catch (error) {
-      setModalMessage('Error al enviar el correo de recuperación.');
-      toggleModal();
+      setModaErrorlMessage('Error al enviar el correo de recuperación.');
+      setModalErrorVisible(true);
     }
   };
 
@@ -51,14 +52,24 @@ const ForgotPasswordScreen: React.FC = () => {
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Text style={styles.backButtonText}>Cancelar</Text>
       </TouchableOpacity>
-      <Modal isVisible={isModalVisible}>
+      {/* <Modal isVisible={isModalVisible}>
         <View style={styles.modalContent}>
           <Text style={styles.modalMessage}>{modalMessage}</Text>
           <TouchableOpacity style={styles.modalButton} onPress={toggleModal}>
             <Text style={styles.modalButtonText}>Cerrar</Text>
           </TouchableOpacity>
         </View>
-      </Modal>
+      </Modal> */}
+      <ErrorModal
+        visible={modalErrorVisible}
+        message={modalErrorMessage}
+        onClose={() => setModalErrorVisible(false)}
+      />
+      <ExitoModal
+        visible={modalSuccessVisible}
+        message={modalSuccessMessage}
+        onClose={() => {setModalSuccessVisible(false)}}
+        />
     </View>
   );
 };
@@ -72,11 +83,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#f7f7f7',
   },
   title: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 25,
     marginTop: 50,
-    color: '#333',
+    color: 'rgb(0, 122, 140)',
   },
   logoHome: {
     width: 70,
