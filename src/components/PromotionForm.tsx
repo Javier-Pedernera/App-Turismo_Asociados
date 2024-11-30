@@ -47,11 +47,13 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
   const [modalSuccessVisible, setModalSuccessVisible] = useState(false);
   const [modalSuccessMessage, setModalSuccessMessage] = useState('');
   const handleImagesCompressed = useCallback((images: { filename: string; data: string }[]) => {
-    setImagePaths(images);
+    if (images.length <= 10) {
+    setImagePaths(images);}else{
+      showErrorModal('No se pueden agregar más de 10 imágenes.');
+    }
   }, []);
   const handleSelectCategories = (newSelectedCategories: number[]) => {
     // console.log("categorias seleccionadas", newSelectedCategories);
-
     setSelectedCategories(newSelectedCategories);
   };
 
@@ -244,7 +246,13 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
         style={styles.input}
         placeholder="* Título"
         value={title}
-        onChangeText={setTitle}
+        onChangeText={(text) => {
+          if (text.length <= 45) {
+            setTitle(text);
+          } else {
+            showErrorModal('El título no puede superar los 45 caracteres.');
+          }
+        }}
       />
       <TextInput
         style={styles.descriptionInput}
@@ -277,13 +285,18 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
           if (text === '') {
             setAvailableQuantity(null);
           } else {
-            const value = Number(text);
-            if (value > 0) {
-              setAvailableQuantity(value);
+            if (text.length > 8) {
+              showErrorModal('La cantidad disponible no puede superar los 8 caracteres.');
             } else {
-              showErrorModal('La cantidad debe ser mayor a 0.');
+              const value = Number(text);
+              if (value > 0) {
+                setAvailableQuantity(value);
+              } else {
+                showErrorModal('La cantidad debe ser mayor a 0.');
+              }
             }
-        }}}
+          }
+        }}
       />
       {/* Agregar lógica para seleccionar categorías */}
       <TouchableOpacity

@@ -71,6 +71,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 25,
+    justifyContent:'center',
+    height:48
   },
   modalButtonText: {
     color: '#fff',

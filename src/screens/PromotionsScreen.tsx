@@ -8,20 +8,19 @@ import { RootStackParamList } from '../navigation/AppNavigator';
 import Modal from 'react-native-modal';
 import { fetchAllCategories, fetchUserCategories } from '../redux/actions/categoryActions';
 import { getMemoizedPromotions } from '../redux/selectors/promotionSelectors';
-import { getMemoizedAllCategories, getMemoizedUserCategories } from '../redux/selectors/categorySelectors';
 import { getMemoizedPartner, getMemoizedUserData } from '../redux/selectors/userSelectors';
 import { fetchUserFavorites } from '../redux/actions/userActions';
 import PromotionCard from '../components/PromotionCard';
 import Loader from '../components/Loader';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import PromotionForm from '../components/PromotionForm';
-import { getMemoizedCountries, getMemoizedRoles, getMemoizedStates } from '../redux/selectors/globalSelectors';
-import { updatePromotion } from '../redux/reducers/promotionReducer';
+import { getMemoizedStates } from '../redux/selectors/globalSelectors';
 import { deletePromotion, fetchPromotions } from '../redux/actions/promotionsActions';
 import EditPromotionForm from '../components/EditPromotionForm';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { getMemoizedBranches } from '../redux/selectors/branchSelectors';
 import { fetchBranches } from '../redux/actions/branchActions';
+import ErrorModal from '../components/ErrorModal';
+import ExitoModal from '../components/ExitoModal';
 
 const { width: screenWidth, height:screenHeigth } = Dimensions.get('window');
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -38,6 +37,10 @@ const PromotionsScreen: React.FC = () => {
   const [selectedPromotion, setSelectedPromotion] = useState<Promotion | null>(null);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const partner = useSelector(getMemoizedPartner);
+  const [modalErrorVisible, setModalErrorVisible] = useState(false);
+  const [modalErrorMessage, setModaErrorlMessage] = useState('');
+  const [modalSuccessVisible, setModalSuccessVisible] = useState(false);
+  const [modalSuccessMessage, setModalSuccessMessage] = useState('');
   // console.log("statuses en card", statuses);
   // console.log("countries en card", countries);
   // console.log("roles en card", roles);
@@ -90,11 +93,17 @@ const PromotionsScreen: React.FC = () => {
   };
   const handleCreatePress = useCallback(() => {
     if (branches && branches.length === 0) {
-      Alert.alert("Error", "Primero debes crear una sucursal");
+      showErrorModal("Primero debes crear una sucursal");
     } else {
       setIsCreateModalVisible(true);
     }
   }, [partner]);
+
+  const showErrorModal = (message: string) => {
+    setModaErrorlMessage(message);
+    setModalErrorVisible(true);
+  };
+
   return (
     <View style={styles.gradient}
     >
@@ -105,7 +114,6 @@ const PromotionsScreen: React.FC = () => {
             <Text style={styles.createButtonText}>+</Text>
           <MaterialCommunityIcons name="ticket-percent-outline" size={24} color="#fff" />
           </View>
-          
           <Text style={styles.createButtonText}>Crear</Text>
         </TouchableOpacity>
       </View>
@@ -144,6 +152,16 @@ const PromotionsScreen: React.FC = () => {
           </View>
         ))}
       </ScrollView>
+      <ErrorModal
+        visible={modalErrorVisible}
+        message={modalErrorMessage}
+        onClose={() => setModalErrorVisible(false)}
+      />
+      <ExitoModal
+        visible={modalSuccessVisible}
+        message={modalSuccessMessage}
+        onClose={() => {setModalSuccessVisible(false)}}
+        />
     </View>
   );
 };
