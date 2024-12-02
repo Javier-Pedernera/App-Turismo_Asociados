@@ -106,7 +106,7 @@ const handleInactivate = async (branchId: number, currentStatus: string) => {
                 style={styles.viewButton}
                 onPress={() => handleView(item)}
               >
-                <MaterialCommunityIcons name="store-cog-outline" size={32} color="#007a8c" />
+                <MaterialCommunityIcons name="store-cog-outline" size={28} color="#007a8c" />
                 {/* <Text style={styles.buttonText}>Ver</Text> */}
               </TouchableOpacity>
             </View>
@@ -202,15 +202,22 @@ const styles = StyleSheet.create({
     marginLeft:20
   },
   viewButton: {
-    // backgroundColor: '#007a8c',
-    padding: 8,
-    borderRadius: 8,
-    width:80,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 122, 140,0.1)',
+    padding: 2,
+    borderRadius: 50,
+    width:48,
     textAlign:'center',
     height:48,
     alignItems:'center',
-    justifyContent:'center'
-
+    justifyContent:'center',
+    marginRight:15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 3,
   },
   buttonText: {
 
