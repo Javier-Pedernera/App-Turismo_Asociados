@@ -8,8 +8,13 @@ import { Dimensions } from 'react-native';
 import { fetchPartnerById } from '../redux/actions/userActions';
 import { getMemoizedUserData } from '../redux/selectors/userSelectors';
 import { UserData } from '../redux/types/types';
-import { fetchBranches } from '../redux/actions/branchActions';
+import { fetchBranches, inactivateBranch, updateBranch } from '../redux/actions/branchActions';
 import { AppDispatch } from '../redux/store/store';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Switch } from 'react-native';
+import { getMemoizedStates } from '../redux/selectors/globalSelectors';
+import ErrorModal from '../components/ErrorModal';
+import ExitoModal from '../components/ExitoModal';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -20,6 +25,11 @@ const Branches: React.FC = () => {
   const [selectedBranch, setSelectedBranch] = useState(null);
   const user = useSelector(getMemoizedUserData) as UserData;
   const dispatch: AppDispatch = useDispatch();
+  const statuses = useSelector(getMemoizedStates);
+  const [modalErrorVisible, setModalErrorVisible] = useState(false);
+  const [modalErrorMessage, setModalErrorMessage] = useState('');
+  const [modalSuccessVisible, setModalSuccessVisible] = useState(false);
+  const [modalSuccessMessage, setModalSuccessMessage] = useState('');
 
   useEffect(() => {
     dispatch(fetchPartnerById(user.user_id));
@@ -40,13 +50,28 @@ const Branches: React.FC = () => {
     setIsModalVisible(false);
     setSelectedBranch(null);
   };
-console.log("sucursales",branches);
+// console.log("sucursales",branches);
 // console.log("imprimo imagende la sucursal miniatura",`${API_URL}${branches[0].image_url}`);
+const handleInactivate = async (branchId: number, currentStatus: string) => {
+  const statusInactive = statuses.find(status => status.name === 'inactive');
+  const statusActive = statuses.find(status => status.name === 'active');
+  // console.log("estado inactivo", statusInactive);
+  const newStatusId = currentStatus === 'active' ? statusInactive?.id : statusActive?.id;
+  try {
 
+    // Aquí despachamos la acción para inactivar la sucursal
+    await dispatch(inactivateBranch(branchId, newStatusId));
+    setModalSuccessMessage('Estado cambiado exitosamente');
+    setModalSuccessVisible(true);
+  } catch (err) {
+    setModalErrorMessage('Hubo un error al inactivar la sucursal');
+    setModalErrorVisible(true);
+  }
+};
   return (
     <View style={styles.container}>
       <SemicirclesOverlay/>
-      <Text style={styles.nameTitle}>Sucursal activa</Text>
+      <Text style={styles.nameTitle}>Sucursal</Text>
       {!branches?.length?
         <TouchableOpacity style={styles.createButton} onPress={handleCreate}>
           <Text style={styles.createButtonText}>Crear Sucursal</Text>
@@ -56,6 +81,7 @@ console.log("sucursales",branches);
         keyExtractor={(item) => item.branch_id.toString()}
         renderItem={({ item }) => (
           <View style={styles.branchContainer}>
+            <View  style={styles.branchimage_title}>
             {item.image_url ? <Image source={{ uri: `${API_URL}${item.image_url}` }} style={styles.image} /> :
               <Image
                 source={require('../../assets/noimage.png')}
@@ -63,12 +89,25 @@ console.log("sucursales",branches);
                 alt={item.name}
               />}
             <Text style={styles.name}>{item.name}</Text>
+            </View>
+            <View style={styles.line}></View>
             <View style={styles.buttonContainer}>
+              <View  style={styles.buttonActivebranch}>
+              <Text style={styles.namestatus}>Sucursal {item?.status?.name == 'active'? 'activa' : 'inactiva'}</Text>
+              <Switch
+                  value={item.status?.name === 'active'}
+                  onValueChange={() => handleInactivate(item.branch_id, item.status?.name)}
+                  thumbColor={item?.status?.name === 'active' ? '#007a8c' : '#ccc'}
+                  trackColor={{ false: '#9cd1d8', true: '#00c8e2' }}
+                  ios_backgroundColor="#9cd1d8"
+                />
+              </View>
               <TouchableOpacity
                 style={styles.viewButton}
                 onPress={() => handleView(item)}
               >
-                <Text style={styles.buttonText}>Ver</Text>
+                <MaterialCommunityIcons name="store-cog-outline" size={32} color="#007a8c" />
+                {/* <Text style={styles.buttonText}>Ver</Text> */}
               </TouchableOpacity>
             </View>
           </View>
@@ -78,6 +117,18 @@ console.log("sucursales",branches);
       <Modal visible={isModalVisible} animationType="slide">
         <BranchForm branch={selectedBranch} onClose={closeModal} />
       </Modal>
+      <ErrorModal
+        visible={modalErrorVisible}
+        message={modalErrorMessage}
+        onClose={() => setModalErrorVisible(false)}
+      />
+      <ExitoModal
+        visible={modalSuccessVisible}
+        message={modalSuccessMessage}
+        onClose={() => {
+          setModalSuccessVisible(false);
+        }}
+        />
     </View>
   );
 };
@@ -97,30 +148,61 @@ const styles = StyleSheet.create({
     textAlign:'center',
   },
   branchContainer: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     marginBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius:5,
     paddingTop: 10,
     paddingBottom: 8,
     paddingLeft:5,
     paddingRight:5
   },
+  branchimage_title:{
+    width:'95%',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   image: {
     width: 90,
     height: 50,
     marginRight: 16,
+    borderRadius:5
   },
   name: {
     fontSize: 16,
     flex: 1,
   },
+  namestatus:{
+    fontSize: 12,
+  },
+  line:{
+    marginTop: 15,
+    width:'95%',
+    borderTopWidth: 1,
+    borderColor: '#ccc',
+    paddingBottom: 5,
+    paddingLeft:5,
+    paddingRight:5
+  },
   buttonContainer: {
     flexDirection: 'row',
+    width:'100%',
+    alignContent:'center',
+    justifyContent:'space-between',
+    alignItems:'center',
+    marginTop:15
+  },
+  buttonActivebranch:{
+    flexDirection: 'row',
+    justifyContent:'center',
+    alignContent:'center',
+    alignItems:'center',
+    marginLeft:20
   },
   viewButton: {
-    backgroundColor: '#007a8c',
+    // backgroundColor: '#007a8c',
     padding: 8,
     borderRadius: 8,
     width:80,
@@ -149,6 +231,19 @@ const styles = StyleSheet.create({
   createButtonText: {
     color: '#fff',
     fontSize: 16,
+  },
+  inactivateButton: {
+    backgroundColor: '#ff3b3b',
+    padding: 8,
+    borderRadius: 8,
+    marginLeft: 10,
+    width: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 48,
+  },
+  inactive: {
+    backgroundColor: '#ccc',
   },
 });
 
