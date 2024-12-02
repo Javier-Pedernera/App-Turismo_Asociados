@@ -66,8 +66,11 @@ console.log("fecha actual", startDate,"fecha finalizacion", endDate);
   const handleSubmit = async () => {
     // console.log(title, description, startDate?.toISOString().split('T')[0], endDate?.toISOString().split('T')[0], discountPercentage, availableQuantity, selectedCategories, imagePaths.length);
     setLoading(true)
-    const activeBranch = branches.find((branch:any) => branch.status?.name === 'active');
-
+    const activeBranch = branches.find(
+      (branch: any) => branch.status?.name === 'active' || branch.status?.name === 'inactive'
+    );
+    // console.log("sucursal activa o inactiva",activeBranch);
+    
     if (!user?.user_id || !activeBranch?.branch_id) {
       showErrorModal('No se pudo obtener el ID del socio o la sucursal. Intente de nuevo.');
       return;

@@ -65,7 +65,9 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
     setExistingImages(existingImages.filter((img: any) => img.image_id !== imageId));
   };
   const handleSubmit = () => {
-    const activeBranch = branches.find((branch:any) => branch.status?.name === 'active');
+    const activeBranch = branches.find(
+      (branch: any) => branch.status?.name === 'active' || branch.status?.name === 'inactive'
+    );
     if (!user?.user_id || !activeBranch?.branch_id) {
       showErrorModal('No se pudo obtener el ID del socio o la sucursal. Intente de nuevo.');
       return;
