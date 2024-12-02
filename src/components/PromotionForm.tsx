@@ -46,6 +46,8 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
   const [modalMessage, setModalMessage] = useState('');
   const [modalSuccessVisible, setModalSuccessVisible] = useState(false);
   const [modalSuccessMessage, setModalSuccessMessage] = useState('');
+console.log("fecha actual", startDate,"fecha finalizacion", endDate);
+
   const handleImagesCompressed = useCallback((images: { filename: string; data: string }[]) => {
     if (images.length <= 10) {
     setImagePaths(images);}else{
@@ -89,8 +91,8 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
       branch_id: activeBranch.branch_id,
       title,
       description,
-      start_date: startDate.toISOString().split('T')[0],
-      expiration_date: endDate.toISOString().split('T')[0],
+      start_date: startDate?.toLocaleDateString(),
+      expiration_date: endDate?.toLocaleDateString(),
       discount_percentage: discountPercentage,
       available_quantity: availableQuantity,
       partner_id: user?.user_id || 0,
@@ -126,64 +128,8 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
 
   };
 
-
-// const handleSubmit = async () => {
-//   setLoading(true);
-//   if (
-//     !user?.user_id ||
-//     !partner?.branches[0].branch_id ||
-//     !title ||
-//     !description ||
-//     !startDate ||
-//     !endDate ||
-//     discountPercentage === null ||
-//     selectedCategories.length === 0 ||
-//     imagePaths.length === 0
-//   ) {
-//     Alert.alert('Error', 'Por favor complete todos los campos.');
-//     setLoading(false);
-//     return;
-//   }
-
-//   const promotionData = {
-//     branch_id: partner?.branches[0].branch_id,
-//     title,
-//     description,
-//     start_date: startDate.toISOString().split('T')[0],
-//     expiration_date: endDate.toISOString().split('T')[0],
-//     discount_percentage: discountPercentage,
-//     available_quantity: availableQuantity,
-//     partner_id: user?.user_id || 0,
-//     category_ids: selectedCategories,
-//     images: imagePaths,
-//   };
-
-//   // Validar el tamaño del payload
-//   const MAX_PAYLOAD_SIZE = 500000; // 500 KB
-//   const payloadSize = calculatePayloadSize(promotionData);
-//   if (payloadSize > MAX_PAYLOAD_SIZE) {
-//     Alert.alert(
-//       'Error',
-//       'El tamaño de los datos excede el límite permitido. Reduzca el número o tamaño de las imágenes.'
-//     );
-//     setLoading(false);
-//     return;
-//   }
-
-//   // Enviar datos al backend
-//   await dispatch(createPromotion(promotionData))
-//     .then(() => {
-//       setLoading(false);
-//       Alert.alert('Éxito', 'La promoción ha sido creada correctamente.');
-//       onClose();
-//     })
-//     .catch((error: any) => {
-//       Alert.alert('Error', 'Hubo un problema al crear la promoción. Intente de nuevo.');
-//       console.error('Error al crear la promoción: ', error);
-//       setLoading(false);
-//     });
-// };
   const handleStartDateChange = (event: any, date?: Date) => {
+    
     if (Platform.OS === 'ios') {
       setStartDate(date || startDate);
       setEndDate(null);
@@ -321,7 +267,7 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
           <TouchableOpacity onPress={() => ShowDatePicker("init")} style={styles.inputdate}>
             {startDate ? <Text style={styles.textDate}>* Inicia</Text> : <Text></Text>}
             <Text style={styles.textDate}>
-              {startDate ? formatDateToDDMMYYYY(startDate.toISOString().split('T')[0]) : '* Fecha de Inicio (DD-MM-YYYY)'}
+              {startDate ? startDate.toLocaleDateString() : '* Fecha de Inicio (DD-MM-YYYY)'}
             </Text>
           </TouchableOpacity>
         )}
@@ -330,8 +276,9 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
             <DateTimePicker
               value={startDate || new Date()}
               mode="date"
-              display="spinner"
+              display="default"
               onChange={handleStartDateChange}
+              minimumDate={new Date()}
             />
             {Platform.OS === 'ios' && (
               <TouchableOpacity onPress={confirmStartDate} style={styles.submitButton}>
@@ -347,7 +294,7 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
           <TouchableOpacity onPress={() => ShowDatePicker("end")} style={[styles.inputdate, !startDate && { opacity: 0.5 }]} disabled={!startDate}>
             {endDate ? <Text style={styles.textDate}>* Finaliza</Text> : <Text></Text>}
             <Text style={styles.textDate}>
-              {endDate ? formatDateToDDMMYYYY(endDate.toISOString().split('T')[0]) : '* Fecha de Fin (DD-MM-YYYY)'}
+              {endDate ? endDate.toLocaleDateString()  : '* Fecha de Fin (DD-MM-YYYY)'}
             </Text>
           </TouchableOpacity>
         )}
@@ -356,8 +303,9 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
             <DateTimePicker
               value={endDate || new Date()}
               mode="date"
-              display="spinner"
+              display="default"
               onChange={handleEndDateChange}
+              minimumDate={startDate? startDate : new Date()}
             />
             {Platform.OS === 'ios' && (
               <TouchableOpacity onPress={confirmEndDate} style={styles.submitButton}>
@@ -437,7 +385,7 @@ const styles = StyleSheet.create({
   submitButton: {
     backgroundColor: 'rgb(0, 122, 140)',
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 25,
     marginTop: 10,
     minHeight: 48,
     alignItems:'center',
@@ -450,7 +398,7 @@ const styles = StyleSheet.create({
   closeButton: {
     backgroundColor: '#8e8e8e',
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 25,
     marginTop: 10,
     minHeight: 48,
     alignItems:'center',
@@ -470,7 +418,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     textAlign: 'center',
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 25,
     marginTop: 10,
     minHeight: 48,
   },

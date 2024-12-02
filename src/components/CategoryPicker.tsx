@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   modalButton: {
     backgroundColor: 'rgb(0, 122, 140)',
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 25,
     marginVertical: 10,
     width: '100%',
     alignItems: 'center',
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
   modalButtonCancel: {
     backgroundColor: '#F1AD3E',
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 25,
     width: '100%',
     alignItems: 'center',
   },

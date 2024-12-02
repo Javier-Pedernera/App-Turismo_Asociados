@@ -87,8 +87,8 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
       branch_id: activeBranch.branch_id,
       title,
       description,
-      start_date: startDate?.toISOString().split('T')[0],
-      expiration_date: endDate?.toISOString().split('T')[0],
+      start_date: startDate?.toLocaleDateString(),
+      expiration_date: endDate?.toLocaleDateString(),
       discount_percentage: discountPercentage,
       available_quantity: availableQuantity,
       partner_id: user?.user_id || 0,
@@ -294,7 +294,7 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
         {!showStartDatePicker && (
           <TouchableOpacity onPress={() => setShowStartDatePicker(true)} style={styles.inputdate}>
             <Text style={styles.textDate}>
-              {startDate ? formatDateToDDMMYYYY(startDate.toISOString().split('T')[0]) : 'Modificar fecha de inicio'}
+              {startDate ? startDate.toLocaleDateString() : 'Modificar fecha de inicio'}
             </Text>
           </TouchableOpacity>
         )}
@@ -303,8 +303,9 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
             <DateTimePicker
               value={startDate || new Date()}
               mode="date"
-              display="spinner"
+              display="default"
               onChange={handleStartDateChange}
+              minimumDate={new Date()}
             />
             {Platform.OS === 'ios' && (
               <TouchableOpacity onPress={confirmStartDate} style={styles.submitButton}>
@@ -321,7 +322,7 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
         {!showEndDatePicker && (
           <TouchableOpacity onPress={() => setShowEndDatePicker(true)} style={styles.inputdate}>
             <Text style={styles.textDate}>
-              {endDate ? formatDateToDDMMYYYY(endDate.toISOString().split('T')[0]) : 'Modificar fecha de Fin'}
+              {endDate ? endDate.toLocaleDateString() : 'Modificar fecha de Fin'}
             </Text>
           </TouchableOpacity>
         )}
@@ -330,8 +331,9 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
             <DateTimePicker
               value={endDate || new Date()}
               mode="date"
-              display="spinner"
+              display="default"
               onChange={handleEndDateChange}
+              minimumDate={startDate? startDate : new Date()}
             />
             {Platform.OS === 'ios' && (
               <TouchableOpacity onPress={confirmEndDate} style={styles.submitButton}>
