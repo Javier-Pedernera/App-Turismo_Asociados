@@ -11,6 +11,8 @@ export const fetchAllCategories = () => {
   return async (dispatch: AppDispatch) => {
     try {
       const response = await axios.get<Category[]>(`${API_URL}/categories`);
+      console.log("respuesta de categorias", response.data);
+      
       dispatch(setAllCategories(response.data));
     } catch (error) {
       throw error;
@@ -29,7 +31,7 @@ export const fetchUserCategories = (userId: number) => {
       }
 
       const response = await axios.get(`${API_URL}/tourists/${userId}`);
-    //   console.log("response categorias usuario",response.data);
+      console.log("response categorias usuario",response.data);
 
       
       dispatch(setUserCategories(response.data.categories));

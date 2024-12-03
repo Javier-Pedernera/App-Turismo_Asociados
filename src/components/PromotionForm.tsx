@@ -47,6 +47,7 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
   const [modalSuccessVisible, setModalSuccessVisible] = useState(false);
   const [modalSuccessMessage, setModalSuccessMessage] = useState('');
 console.log("fecha actual", startDate,"fecha finalizacion", endDate);
+console.log("todas las categorias",allCategories);
 
   const handleImagesCompressed = useCallback((images: { filename: string; data: string }[]) => {
     if (images.length <= 10) {
@@ -256,7 +257,7 @@ console.log("fecha actual", startDate,"fecha finalizacion", endDate);
         <Text style={styles.submitButtonText}>Seleccionar Categorías</Text>
       </TouchableOpacity >
       <CategoryPicker
-        categories={allCategories}
+        // categories={allCategories}
         selectedCategories={selectedCategories}
         onSelectCategories={handleSelectCategories}
         isVisible={isCategoriesModalVisible}

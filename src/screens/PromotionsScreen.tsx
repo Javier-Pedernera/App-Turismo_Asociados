@@ -21,6 +21,7 @@ import { getMemoizedBranches } from '../redux/selectors/branchSelectors';
 import { fetchBranches } from '../redux/actions/branchActions';
 import ErrorModal from '../components/ErrorModal';
 import ExitoModal from '../components/ExitoModal';
+import { loadData } from '../redux/actions/dataLoader';
 
 const { width: screenWidth, height:screenHeigth } = Dimensions.get('window');
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -44,9 +45,10 @@ const PromotionsScreen: React.FC = () => {
   // console.log("statuses en card", statuses);
   // console.log("countries en card", countries);
   // console.log("roles en card", roles);
-
+  console.log("sucursales", branches);
   useEffect(() => {
-    const loadData = async () => {
+    dispatch(loadData());
+    const loadUserData = async () => {
       setLoading(true);
       try {
         if (user?.user_id) {
@@ -59,8 +61,7 @@ const PromotionsScreen: React.FC = () => {
         setLoading(false);
       }
     };
-
-    loadData();
+    loadUserData();
   }, [dispatch, user]);
 
 
@@ -91,13 +92,13 @@ const PromotionsScreen: React.FC = () => {
     setIsEditModalVisible(false);
     setSelectedPromotion(null);
   };
-  const handleCreatePress = useCallback(() => {
+  const handleCreatePress = () => {
     if (branches && branches.length === 0) {
       showErrorModal("Primero debes crear una sucursal");
     } else {
       setIsCreateModalVisible(true);
     }
-  }, [partner]);
+  };
 
   const showErrorModal = (message: string) => {
     setModaErrorlMessage(message);

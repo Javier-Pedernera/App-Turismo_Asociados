@@ -194,9 +194,9 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
         const resp = await dispatch(deleteBranch(branch.branch_id, deletedState?.id,promotionsIds));
         // console.log('Status eliminada:', resp.status);
         if(resp.status == 200){
+          dispatch(fetchBranches(user.user_id))
+          dispatch(fetchPromotions(user.user_id))
           showSuccessModal('La sucursal y sus promociones se eliminaron correctamente.');
-        dispatch(fetchBranches(user.user_id))
-        dispatch(fetchPromotions(user.user_id))
         }
        
         // Alert.alert('Éxito', 'La sucursal ha sido eliminada correctamente.');

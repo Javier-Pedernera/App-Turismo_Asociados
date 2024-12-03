@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Modal, ScrollView, StyleSheet } from 'react-native';
 import Checkbox from 'expo-checkbox'; // Asegúrate de que expo-checkbox esté instalado
+import { getMemoizedAllCategories } from '../redux/selectors/categorySelectors';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch } from '../redux/store/store';
+import { fetchAllCategories } from '../redux/actions/categoryActions';
 
 interface Category {
   category_id: number;
@@ -8,15 +12,24 @@ interface Category {
 }
 
 interface CategoryPickerProps {
-  categories: Category[];
+  
   selectedCategories: number[];
   onSelectCategories: (selected: number[]) => void;
   isVisible: boolean;
   onClose: () => void;
 }
 
-const CategoryPicker: React.FC<CategoryPickerProps> = ({ categories, selectedCategories, onSelectCategories, isVisible, onClose }) => {
+const CategoryPicker: React.FC<CategoryPickerProps> = ({ selectedCategories, onSelectCategories, isVisible, onClose }) => {
+  const dispatch: AppDispatch = useDispatch();
   const [localSelectedCategories, setLocalSelectedCategories] = useState<number[]>(selectedCategories);
+  const categories = useSelector(getMemoizedAllCategories);
+// console.log("categorías en el picker",categories);
+
+useEffect(() => {
+  if(!categories.length ){
+   dispatch(fetchAllCategories());
+  }
+}, []);
 
   useEffect(() => {
     setLocalSelectedCategories(selectedCategories);
@@ -41,7 +54,7 @@ const CategoryPicker: React.FC<CategoryPickerProps> = ({ categories, selectedCat
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>Seleccionar Categorías</Text>
           <ScrollView>
-            {categories.map(category => (
+            {categories?.map(category => (
               <View key={category.category_id} style={styles.checkboxContainer}>
                 <Checkbox
                   value={localSelectedCategories.includes(category.category_id)}
@@ -71,6 +84,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)'
   },
   modalContent: {
+    height:"95%",
     width: '80%',
     backgroundColor: 'white',
     borderRadius: 10,

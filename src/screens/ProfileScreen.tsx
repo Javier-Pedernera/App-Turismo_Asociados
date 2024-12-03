@@ -25,6 +25,7 @@ import { TouchableWithoutFeedback } from 'react-native';
 import { Keyboard } from 'react-native';
 import ErrorModal from '../components/ErrorModal';
 import ExitoModal from '../components/ExitoModal';
+import { loadData } from '../redux/actions/dataLoader';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 // const screenHeight = Dimensions.get('window').height;
@@ -42,6 +43,7 @@ const ProfileScreen: React.FC = () => {
   // console.log("categorias seleccionadas",selectedCategories);
   // console.log("allCategories",allCategories);
   useEffect(() => {
+    dispatch(loadData());
     if (user?.user_id) {
       dispatch(fetchUserCategories(user.user_id));
     }

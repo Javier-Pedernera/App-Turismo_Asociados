@@ -15,6 +15,7 @@ import { Switch } from 'react-native';
 import { getMemoizedStates } from '../redux/selectors/globalSelectors';
 import ErrorModal from '../components/ErrorModal';
 import ExitoModal from '../components/ExitoModal';
+import { loadData } from '../redux/actions/dataLoader';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -32,6 +33,7 @@ const Branches: React.FC = () => {
   const [modalSuccessMessage, setModalSuccessMessage] = useState('');
 
   useEffect(() => {
+    dispatch(loadData());
     dispatch(fetchPartnerById(user.user_id));
     dispatch(fetchBranches(user.user_id));
   }, []);
@@ -50,7 +52,7 @@ const Branches: React.FC = () => {
     setIsModalVisible(false);
     setSelectedBranch(null);
   };
-// console.log("sucursales",branches);
+console.log("sucursales",branches);
 // console.log("imprimo imagende la sucursal miniatura",`${API_URL}${branches[0].image_url}`);
 const handleInactivate = async (branchId: number, currentStatus: string) => {
   const statusInactive = statuses.find(status => status.name === 'inactive');
