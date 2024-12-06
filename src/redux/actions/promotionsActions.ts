@@ -11,7 +11,7 @@ export const fetchPromotions = (partnerId: number) => {
     try {
       const response = await axios.get(`${API_URL}/partners/${partnerId}/promotions`);
       const activePromotions = response.data.filter((promotion:any) => promotion.status?.name !== 'deleted');
-      console.log("promociones activaaaaaaaaaas",activePromotions);
+      // console.log("promociones activaaaaaaaaaas",activePromotions);
       
       dispatch(setPromotions(activePromotions));
     } catch (firstError: any) {
@@ -27,12 +27,12 @@ export const fetchPromotions = (partnerId: number) => {
 
 export const createPromotion = (promotion: PromotionCreate) => {
   return async (dispatch: Dispatch) => {
+    console.log("promocion en la action", promotion);
     try {
       // Validar que las imágenes estén en el formato correcto
       // if (!promotion.images || promotion.images.length === 0) {
       //   throw new Error('No se han proporcionado imágenes para la promoción.');
       // }
-
       // Enviar datos al backend
       const response = await axios.post(`${API_URL}/promotions`, promotion);
 
@@ -75,6 +75,8 @@ export const deletePromotion = (promotionId: number, data: any) => {
       // console.log("imprimo status",dataSend);
       
       const response = await axios.put(`${API_URL}/promotions/${promotionId}`, dataSend);
+      console.log(response.data);
+      
       dispatch(updatePromotion(response.data));
     } catch (error) {
       console.error('Error updating promotion:', error);

@@ -43,7 +43,7 @@ const PromotionsScreen: React.FC = () => {
   const [modalSuccessVisible, setModalSuccessVisible] = useState(false);
   const [modalSuccessMessage, setModalSuccessMessage] = useState('');
   // console.log("statuses en card", statuses);
-  // console.log("countries en card", countries);
+  console.log("promociones en el screennnnnnnnnnn", promotions);
   // console.log("roles en card", roles);
   console.log("sucursales", branches);
   useEffect(() => {

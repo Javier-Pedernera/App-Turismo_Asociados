@@ -259,7 +259,7 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
         <Text style={styles.submitButtonText}>Seleccionar Categorías</Text>
       </TouchableOpacity>
       <CategoryPicker
-        categories={allCategories}
+        // categories={allCategories}
         selectedCategories={selectedCategories}
         onSelectCategories={handleSelectCategories}
         isVisible={isCategoriesModalVisible}

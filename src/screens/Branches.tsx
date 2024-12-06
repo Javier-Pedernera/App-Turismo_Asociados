@@ -16,6 +16,7 @@ import { getMemoizedStates } from '../redux/selectors/globalSelectors';
 import ErrorModal from '../components/ErrorModal';
 import ExitoModal from '../components/ExitoModal';
 import { loadData } from '../redux/actions/dataLoader';
+import { fetchPromotions } from '../redux/actions/promotionsActions';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -63,6 +64,7 @@ const handleInactivate = async (branchId: number, currentStatus: string) => {
 
     // Aquí despachamos la acción para inactivar la sucursal
     await dispatch(inactivateBranch(branchId, newStatusId));
+    await dispatch(fetchPromotions(user.user_id))
     setModalSuccessMessage('Estado cambiado exitosamente');
     setModalSuccessVisible(true);
   } catch (err) {

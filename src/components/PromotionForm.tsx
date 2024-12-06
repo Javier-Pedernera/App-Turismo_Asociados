@@ -95,15 +95,15 @@ console.log("todas las categorias",allCategories);
       branch_id: activeBranch.branch_id,
       title,
       description,
-      start_date: startDate?.toLocaleDateString(),
-      expiration_date: endDate?.toLocaleDateString(),
+      start_date: startDate?.toISOString().split('T')[0],
+      expiration_date: endDate?.toISOString().split('T')[0],
       discount_percentage: discountPercentage,
       available_quantity: availableQuantity,
       partner_id: user?.user_id || 0,
       category_ids: selectedCategories,
       images: imagePaths
     };
-    // console.log(promotionData);
+    console.log("informacion de la promocion____________________",promotionData);
     // Validar el tamaño del payload
     const MAX_PAYLOAD_SIZE = 500000;
     const payloadSize = calculatePayloadSize(promotionData);
