@@ -38,7 +38,7 @@ const ProfileScreen: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   // console.log("categorias de usuario",categories);
   // console.log("partner en el profile", partner);
-  const [selectedCategories, setSelectedCategories] = useState<any>(categories.map(cat => cat.id)
+  const [selectedCategories, setSelectedCategories] = useState<any>(categories.map(cat => cat.category_id)
   );
   // console.log("categorias seleccionadas",selectedCategories);
   // console.log("allCategories",allCategories);
@@ -51,8 +51,8 @@ const ProfileScreen: React.FC = () => {
   }, [dispatch, user?.user_id]);
 
   useEffect(() => {
-    setSelectedCategories(categories.map(cat => cat.id));
-  }, [categories]);
+    setSelectedCategories(categories.map(cat => cat.category_id));
+  }, [categories, dispatch]);
   // console.log(user);
 
   const [formData, setFormData] = useState({
@@ -150,8 +150,6 @@ const ProfileScreen: React.FC = () => {
       showErrorModal('No debe exceder los 30 caracteres.')
     return;
   }
-
-
     setFormData({
       ...formData,
       [field]: value,
@@ -233,7 +231,7 @@ const ProfileScreen: React.FC = () => {
         // console.log("categoriesResponse",categoriesResponse);
         // console.log("categoriesResponse ver status",categoriesResponse.status);
         if (categoriesResponse.status == 200) {
-          // dispatch(fetchUserCategories())
+          dispatch(fetchUserCategories(user.user_id))
           setLoading(false)
           showSuccessModal('Datos actualizados con éxito');
         } else {
@@ -595,7 +593,7 @@ const ProfileScreen: React.FC = () => {
                   ))}
                 </ScrollView>
                 <TouchableOpacity onPress={handleSaveCategories} style={styles.modalButton}>
-                  <Text style={styles.modalButtonText}>Guardar Categorías</Text>
+                  <Text style={styles.modalButtonText}>Confirmar categorías</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => setCategoriesModalVisible(false)} style={styles.modalButtonCancel}>
                   <Text style={styles.modalButtonText}>Cancelar</Text>
@@ -911,14 +909,15 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     backgroundColor: 'rgb(0, 122, 140)',
-    borderRadius: 5,
+    borderRadius: 25,
     padding: 10,
     alignItems: 'center',
     marginVertical: 5,
+    marginTop:10
   },
   modalButtonCancel: {
-    backgroundColor: '#ba2f09',
-    borderRadius: 5,
+    backgroundColor: '#F1AD3E',
+    borderRadius: 25,
     padding: 10,
     alignItems: 'center',
     marginVertical: 5,

@@ -11,7 +11,7 @@ export const fetchAllCategories = () => {
   return async (dispatch: AppDispatch) => {
     try {
       const response = await axios.get<Category[]>(`${API_URL}/categories`);
-      console.log("respuesta de categorias", response.data);
+      // console.log("respuesta de categorias", response.data);
       
       dispatch(setAllCategories(response.data));
     } catch (error) {
@@ -30,8 +30,8 @@ export const fetchUserCategories = (userId: number) => {
         throw new Error('User not authenticated');
       }
 
-      const response = await axios.get(`${API_URL}/tourists/${userId}`);
-      console.log("response categorias usuario",response.data);
+      const response = await axios.get(`${API_URL}/partners/${userId}`);
+      // console.log("response categorias usuario",response.data);
 
       
       dispatch(setUserCategories(response.data.categories));

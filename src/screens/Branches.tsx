@@ -53,7 +53,7 @@ const Branches: React.FC = () => {
     setIsModalVisible(false);
     setSelectedBranch(null);
   };
-console.log("sucursales",branches);
+// console.log("sucursales",branches);
 // console.log("imprimo imagende la sucursal miniatura",`${API_URL}${branches[0].image_url}`);
 const handleInactivate = async (branchId: number, currentStatus: string) => {
   const statusInactive = statuses.find(status => status.name === 'inactive');
