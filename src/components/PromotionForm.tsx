@@ -48,11 +48,14 @@ const PromotionForm: React.FC<PromotionFormProps> = ({ onClose }) => {
   const [modalSuccessMessage, setModalSuccessMessage] = useState('');
 console.log("fecha actual", startDate,"fecha finalizacion", endDate);
 console.log("todas las categorias",allCategories);
+console.log("imagenes",imagePaths.length);
 
   const handleImagesCompressed = useCallback((images: { filename: string; data: string }[]) => {
-    if (images.length <= 10) {
-    setImagePaths(images);}else{
-      showErrorModal('No se pueden agregar más de 10 imágenes.');
+    if (images.length <= 6) {
+    setImagePaths(images);
+  }else{
+    setImagePaths([]);
+      showErrorModal('No se pueden agregar más de 6 imágenes.');
     }
   }, []);
   const handleSelectCategories = (newSelectedCategories: number[]) => {
@@ -100,20 +103,21 @@ console.log("todas las categorias",allCategories);
       discount_percentage: discountPercentage,
       available_quantity: availableQuantity,
       partner_id: user?.user_id || 0,
+      status_id:activeBranch.status.id,
       category_ids: selectedCategories,
       images: imagePaths
     };
     console.log("informacion de la promocion____________________",promotionData);
     // Validar el tamaño del payload
-    const MAX_PAYLOAD_SIZE = 500000;
-    const payloadSize = calculatePayloadSize(promotionData);
-    if (payloadSize > MAX_PAYLOAD_SIZE) {
-      showErrorModal(
-        'El tamaño de los datos excede el límite permitido. Reduzca el número o tamaño de las imágenes.'
-      );
-      setLoading(false);
-      return;
-    }
+    // const MAX_PAYLOAD_SIZE = 500000;
+    // const payloadSize = calculatePayloadSize(promotionData);
+    // if (payloadSize > MAX_PAYLOAD_SIZE) {
+    //   showErrorModal(
+    //     'El tamaño de los datos excede el límite permitido. Reduzca el número o tamaño de las imágenes.'
+    //   );
+    //   setLoading(false);
+    //   return;
+    // }
 
     await dispatch(createPromotion(promotionData))
       .then(() => {

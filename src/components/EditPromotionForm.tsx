@@ -266,7 +266,7 @@ const EditPromotionForm: React.FC<EditPromotionFormProps> = ({ promotion, onClos
         onClose={() => setCategoriesModalVisible(false)}
       />
       {/* Mostrar las imágenes existentes */}
-      <MultiImageCompressor onImagesCompressed={handleImagesCompressed} />
+      <MultiImageCompressor onImagesCompressed={handleImagesCompressed} initialImages={existingImages?.length}/>
       <Text style={styles.texttitle}>Imágenes actuales</Text>
       <View style={styles.imagesContainer}>
         {existingImages.length > 0 ? (
@@ -393,10 +393,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-evenly',
-    backgroundColor: '#F1AD3E',
+    backgroundColor: '#00abc1',
     padding: 10,
-    borderRadius: 5,
-    marginBottom: 15,
+    borderRadius: 25,
+    marginTop:10,
+    marginBottom: 5,
     width: '80%',
     alignSelf: 'center',
 

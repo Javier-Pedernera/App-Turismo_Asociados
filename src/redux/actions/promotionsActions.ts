@@ -2,7 +2,7 @@
 import { Dispatch } from 'redux';
 import axios from 'axios';
 import { addPromotion, setConsumedPromotions, setPromotions, setPromotionsError, updateConsumedPromotion, updatePromotion } from '../reducers/promotionReducer';
-import {  PromotionCreate, PromotionUpdate } from '../types/types';
+import {  PromotionCreate } from '../types/types';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -29,10 +29,6 @@ export const createPromotion = (promotion: PromotionCreate) => {
   return async (dispatch: Dispatch) => {
     console.log("promocion en la action", promotion);
     try {
-      // Validar que las imágenes estén en el formato correcto
-      // if (!promotion.images || promotion.images.length === 0) {
-      //   throw new Error('No se han proporcionado imágenes para la promoción.');
-      // }
       // Enviar datos al backend
       const response = await axios.post(`${API_URL}/promotions`, promotion);
 
@@ -49,21 +45,51 @@ export const createPromotion = (promotion: PromotionCreate) => {
   };
 };
 
-export const modifyPromotion = (promotionId: number, data: any, deletedImageIds: number[]) => {
+export const modifyPromotion = (
+  promotionId: number,
+  data: any,
+  deletedImageIds: number[]
+) => {
   return async (dispatch: Dispatch) => {
     try {
+      // Eliminar imágenes si es necesario
       if (deletedImageIds.length) {
-        const imgDelete = { 'image_ids': deletedImageIds };
-        console.log(imgDelete);
-        const responseDeleted = await axios.post(`${API_URL}/promotion_images/delete`, imgDelete);
-        console.log(responseDeleted);
+        const imgDelete = { image_ids: deletedImageIds };
+        console.log('Imágenes eliminadas:', imgDelete);
+        await axios.post(`${API_URL}/promotion_images/delete`, imgDelete);
       }
-      const response = await axios.put(`${API_URL}/promotions/${promotionId}`, data);
-      console.log("respuesta de actualizacion",response);
+
+      // Extraer imágenes del resto de los datos
+      const { images, ...restData } = data;
+
+      // Dividir las imágenes en lotes de 2
+      const imageBatches = [];
+      for (let i = 0; i < images.length; i += 2) {
+        imageBatches.push(images.slice(i, i + 2));
+      }
+      console.log("imagenes a enviar en bloques", imageBatches.length);
       
+      // Subir imágenes en lotes
+     // Aquí se guardan las URLs o identificadores retornados
+      for (const batch of imageBatches) {
+        console.log("cada batch",batch.length);
+        
+        const imageResponse = await axios.put(`${API_URL}/promotions/${promotionId}`, {
+          images: batch,
+        });
+        console.log('Respuesta de envío de imágenes:', imageResponse.data);
+      }
+
+
+      // Actualizar los datos principales de la promoción
+      const response = await axios.put(`${API_URL}/promotions/${promotionId}`, restData);
+      console.log('Respuesta de actualización datos:', response.data);
+
+      // Despachar al store
       dispatch(updatePromotion(response.data));
     } catch (error) {
-      console.error('Error updating promotion:', error);
+      console.error('Error al actualizar la promoción:', error);
+      throw error;
     }
   };
 };
