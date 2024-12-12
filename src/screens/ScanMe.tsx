@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Animated, Image, Alert, TextInput } from 'react-native';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useDispatch, useSelector } from 'react-redux';
@@ -13,7 +13,6 @@ import { fetchBranches } from '../redux/actions/branchActions';
 import Feather from '@expo/vector-icons/Feather';
 import SemicirclesOverlay from '../components/SemicirclesOverlay';
 import { Modal } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
 import { getMemoizedStates } from '../redux/selectors/globalSelectors';
 import ConsumedPromotionsModal from '../components/ConsumedPromotionsModalProps ';
 import axios from 'axios';
@@ -25,6 +24,8 @@ import Loader from '../components/Loader';
 import ExitoModal from '../components/ExitoModal';
 import ErrorModal from '../components/ErrorModal';
 import { ScrollView } from 'react-native';
+import RNPickerSelect from 'react-native-picker-select';
+import Icon from 'react-native-vector-icons/Feather';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 type homeScreenProp = StackNavigationProp<RootStackParamList>;
@@ -76,8 +77,8 @@ const QRScanButton = () => {
     const expirationDate = new Date(promotion.expiration_date);
     return promotion.status?.name === 'active' && currentDate >= startDate && currentDate <= expirationDate;
   });
-  // console.log("filteredPromotions",filteredPromotions);
-
+  console.log("filteredPromotions",filteredPromotions);
+  console.log("promocion seleccionada",selectedPromotion);
   useEffect(() => {
     dispatch(loadData());
     fetchCurrentTerms();
@@ -214,8 +215,13 @@ const QRScanButton = () => {
       clearTimeout(timeoutRef.current);
     }
   };
-  const handlePromotionSelect = (promotion: any) => {
-    setSelectedPromotion(promotion);
+  const handlePromotionSelect = (promotionId: number) => {
+    const selectedPromotion = filteredPromotions.find(promo => promo.promotion_id == promotionId);
+    if (selectedPromotion) {
+      setSelectedPromotion(selectedPromotion);
+    } else {
+      setSelectedPromotion(null); 
+    }
   };
 
   const handleConfirm = async () => {
@@ -345,7 +351,10 @@ const QRScanButton = () => {
       </View>
     );
   }
-
+  const promotionsActiv = filteredPromotions.map((promotion: any) => ({
+    label: promotion.title,
+    value: promotion.promotion_id.toString(),
+  }));
   return (
     <View style={styles.container}>
       {isloading && <Loader />}
@@ -409,20 +418,27 @@ const QRScanButton = () => {
             <View style={styles.line} />
             <Text style={styles.modalTitle}>Selecciona la promoción a consumir</Text>
             <View style={styles.pickerContainer}>
-            {filteredPromotions && filteredPromotions.length ? <Picker
-                selectedValue={selectedPromotion}
-                onValueChange={(itemValue) => handlePromotionSelect(itemValue)}
-                style={styles.picker}
-              ><Picker.Item label="* Selecciona una promoción" value={null} />
-                {filteredPromotions.map((promotion) => (
-                  <Picker.Item
-                    key={promotion.promotion_id}
-                    label={promotion.title}
-                    value={promotion}
-                    style={styles.pickerItem}
-                  />
-                ))}
-              </Picker>: 
+            {filteredPromotions && filteredPromotions.length ? 
+             <RNPickerSelect
+             onValueChange={(itemValue) => handlePromotionSelect(itemValue)}
+             value={selectedPromotion?.promotion_id}
+             items={promotionsActiv}
+             placeholder={{ label: '* Seleccione una promoción', value: '' }}
+             style={{
+               inputIOS: styles.picker,
+               inputAndroid: styles.picker,
+               iconContainer: {
+                position: 'absolute',
+                right: 15,
+                top: '50%',
+                transform: [{ translateY: -12 }],
+              }
+        }}
+        useNativeAndroidPickerStyle={false}
+        Icon={() => {
+          return <Icon name="chevron-down" size={26} color="#007a8c" />;
+        }}
+           />: 
                 <Text>No tienes promociones disponibles o en curso</Text>}
             </View>
             {
@@ -768,16 +784,20 @@ const styles = StyleSheet.create({
     alignContent:'center',
     alignItems:'center',
     justifyContent:'center',
-    // borderWidth: 1,
-    // borderColor: '#ccc',
+    borderWidth: 1,
+    borderColor: 'rgb(172, 208, 213)',
     borderRadius: 5,
     marginBottom: 10,
     padding: 5,
   },
   picker: {
     fontSize: screenWidth * 0.04,
-    height: 35,
-    width: '100%',
+    height: 45,
+    width:screenWidth *0.7,
+    alignItems:'center',
+    justifyContent:'center',
+    paddingVertical: 12,
+    paddingHorizontal:10
   },
   pickerItem:{
     fontSize: screenWidth * 0.04,
