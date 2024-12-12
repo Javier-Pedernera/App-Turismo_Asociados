@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Animated, Image, Alert, TextInput } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Animated, Image, Alert, TextInput, TouchableWithoutFeedback } from 'react-native';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useDispatch, useSelector } from 'react-redux';
 import { Promotion, UserData } from '../redux/types/types';
@@ -26,7 +26,7 @@ import ErrorModal from '../components/ErrorModal';
 import { ScrollView } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import Icon from 'react-native-vector-icons/Feather';
-
+import { KeyboardAvoidingView, Platform, Keyboard,Touchable } from 'react-native';
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 type homeScreenProp = StackNavigationProp<RootStackParamList>;
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -163,6 +163,14 @@ const QRScanButton = () => {
     navigation.navigate('Login');
   };
 
+  const isFormValid = () => {
+    return (
+      selectedPromotion &&
+      parseInt(quantityConsumed, 10) > 0 &&
+      parseFloat(amountSpent) > 0
+    );
+  };
+
   const startLineAnimation = () => {
     Animated.sequence([
       Animated.timing(lineAnimation, {
@@ -225,6 +233,12 @@ const QRScanButton = () => {
   };
 
   const handleConfirm = async () => {
+
+    if (!isFormValid()) {
+      showErrorModal("Debes completar todos los campos correctamente.");
+      return;
+    }
+    
     const status = statuses.find(status => status.name === 'active');
 
     if (!selectedPromotion || !quantityConsumed || !amountSpent) {
@@ -396,102 +410,105 @@ const QRScanButton = () => {
         <Text style={styles.buttonTextconsum}>Consumos</Text>
       </TouchableOpacity>
       <Modal visible={modalVisible} animationType="slide" transparent={true}>
-        <View style={styles.modalContainer}>
-        <View style={styles.formContainer}>
-        <ScrollView contentContainerStyle={styles.formContainer} showsVerticalScrollIndicator={false}>
-            <View style={styles.userName}>
-              <Text style={styles.userText}>
-                Cliente:
-              </Text>
-              {scannedEmail ? (
-                <Text style={styles.userText2}>
-                  {scannedEmail}
-                </Text>
-              ) : (
-                <Text style={styles.quantityTextError}>
-                  Usuario no detectado
-                </Text>
-              )}
-            </View>
-
-            {/* Línea horizontal */}
-            <View style={styles.line} />
-            <Text style={styles.modalTitle}>Selecciona la promoción a consumir</Text>
-            <View style={styles.pickerContainer}>
-            {filteredPromotions && filteredPromotions.length ? 
-             <RNPickerSelect
-             onValueChange={(itemValue) => handlePromotionSelect(itemValue)}
-             value={selectedPromotion?.promotion_id}
-             items={promotionsActiv}
-             placeholder={{ label: '* Seleccione una promoción', value: '' }}
-             style={{
-               inputIOS: styles.picker,
-               inputAndroid: styles.picker,
-               iconContainer: {
-                position: 'absolute',
-                right: 15,
-                top: '50%',
-                transform: [{ translateY: -12 }],
-              }
-        }}
-        useNativeAndroidPickerStyle={false}
-        Icon={() => {
-          return <Icon name="chevron-down" size={26} color="#007a8c" />;
-        }}
-           />: 
-                <Text>No tienes promociones disponibles o en curso</Text>}
-            </View>
-            {
-              selectedPromotion &&
-              <View style={styles.quantity}>
-                <Text style={styles.quantityText}>
-                  Disponibles:
-                </Text>
-                <Text style={styles.quantityText2}>
-                  {selectedPromotion.available_quantity ? selectedPromotion.available_quantity : 'Sin límite'}
-                </Text>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <KeyboardAvoidingView
+            style={styles.modalContainer}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          >
+            <ScrollView
+              contentContainerStyle={styles.scrollViewContainer}
+              keyboardShouldPersistTaps="handled"
+            >
+              <View style={styles.formContainer}>
+                <View style={styles.userName}>
+                  <Text style={styles.userText}>Cliente:</Text>
+                  {scannedEmail ? (
+                    <Text style={styles.userText2}>{scannedEmail}</Text>
+                  ) : (
+                    <Text style={styles.quantityTextError}>Usuario no detectado</Text>
+                  )}
+                </View>
+                <View style={styles.line} />
+                <Text style={styles.modalTitle}>Selecciona la promoción a consumir</Text>
+                <View style={styles.pickerContainer}>
+                  {filteredPromotions && filteredPromotions.length ? (
+                    <RNPickerSelect
+                      onValueChange={(itemValue) => handlePromotionSelect(itemValue)}
+                      value={selectedPromotion?.promotion_id}
+                      items={promotionsActiv}
+                      placeholder={{ label: '* Seleccione una promoción', value: '' }}
+                      style={{
+                        inputIOS: styles.picker,
+                        inputAndroid: styles.picker,
+                        iconContainer: {
+                          position: 'absolute',
+                          right: 15,
+                          top: '50%',
+                          transform: [{ translateY: -12 }],
+                        },
+                      }}
+                      useNativeAndroidPickerStyle={false}
+                      Icon={() => <Icon name="chevron-down" size={26} color="#007a8c" />}
+                    />
+                  ) : (
+                    <Text>No tienes promociones disponibles o en curso</Text>
+                  )}
+                </View>
+                {selectedPromotion && (
+                  <View style={styles.quantity}>
+                    <Text style={styles.quantityText}>Disponibles:</Text>
+                    <Text style={styles.quantityText2}>
+                      {selectedPromotion.available_quantity
+                        ? selectedPromotion.available_quantity
+                        : 'Sin límite'}
+                    </Text>
+                  </View>
+                )}
+                <TextInput
+                  style={styles.input}
+                  placeholder="Cantidad de promociones consumidas"
+                  keyboardType="numeric"
+                  value={quantityConsumed}
+                  onChangeText={handleQuantityChange}
+                  editable={!!selectedPromotion}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Monto consumido (CLP)"
+                  keyboardType="numeric"
+                  value={amountSpent}
+                  onChangeText={handleAmountChange}
+                  editable={!!selectedPromotion}
+                />
+                <TextInput
+                  style={styles.descriptionInput}
+                  placeholder="Descripción de la transacción"
+                  value={description}
+                  onChangeText={handleDescriptionChange}
+                  editable={!!selectedPromotion}
+                  multiline={true}
+                />
+                <View style={styles.btnsFormcons}>
+                  <TouchableOpacity
+                    onPress={handleConfirm}
+                    style={[
+                      styles.confirmButton,
+                      !isFormValid() && styles.disabledButton,
+                    ]}
+                    disabled={!selectedPromotion}
+                  >
+                    <Text style={styles.confirmButtonText}>Confirmar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={handleCancel} style={styles.cancelButton}>
+                    <Text style={styles.cancelButtonText}>Cancelar</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            }
-            <TextInput
-              style={styles.input}
-              placeholder="Cantidad de promociones consumidas"
-              keyboardType="numeric"
-              value={quantityConsumed}
-              onChangeText={handleQuantityChange}
-              editable={!!selectedPromotion}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Monto consumido (CLP)"
-              keyboardType="numeric"
-              value={amountSpent}
-              onChangeText={handleAmountChange}
-              editable={!!selectedPromotion}
-            />
-            <TextInput
-              style={styles.descriptioninput}
-              placeholder="Descripción de la transacción"
-              value={description}
-              onChangeText={handleDescriptionChange }
-              editable={!!selectedPromotion}
-              multiline={true} 
-            />
-            <View style={styles.btnsFormcons}>
-            <TouchableOpacity onPress={handleConfirm} style={[
-              styles.confirmButton,
-              !selectedPromotion && styles.disabledButton
-            ]} disabled={!selectedPromotion}>
-              <Text style={styles.confirmButtonText}>Confirmar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleCancel} style={styles.cancelButton}>
-              <Text style={styles.cancelButtonText}>Cancelar</Text>
-            </TouchableOpacity>
-            </View>
-          </ScrollView>
-          </View>
-          {/* form */}
-        </View>
-      </Modal>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </TouchableWithoutFeedback>
+      </Modal>  
+
       {/* Modal para aceptar los términos y condiciones */}
       {currentTerms &&
         <View style={styles.Terms}>
@@ -671,8 +688,8 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   scrollViewContainer: {
-    flex: 1,
-    width: '100%',
+    flexGrow: 1,
+    justifyContent: 'center',
   },
   modalTitle: {
     width:screenWidth *0.8,
@@ -853,7 +870,16 @@ const styles = StyleSheet.create({
   },
   Terms:{
     borderRadius:10
-  }
+  },
+  descriptionInput: {
+    height: 100, // Ajusta la altura según lo necesario
+    borderColor: '#acd1d6',
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+    textAlignVertical: 'top', // Alinea el texto al principio
+  },
 });
 
 export default QRScanButton;
