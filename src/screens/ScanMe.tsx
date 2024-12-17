@@ -570,7 +570,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgb(0, 122, 140)',
-    elevation: 3,
+    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 1
   },
   buttonconsumidas:{
     marginTop: 15,
@@ -579,10 +582,15 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth:0.7,
-    borderColor: 'rgb(0, 122, 140)',
+    backgroundColor:'#fff',
+    borderWidth:1,
+    borderColor: '#acd1d6',
     color: 'rgb(0, 122, 140)',
     minHeight: 48,
+    elevation: 2,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 1
     
   },
   buttonTextconsum: {
@@ -872,13 +880,13 @@ const styles = StyleSheet.create({
     borderRadius:10
   },
   descriptionInput: {
-    height: 100, // Ajusta la altura según lo necesario
+    height: 100, 
     borderColor: '#acd1d6',
     borderWidth: 1,
     borderRadius: 5,
     padding: 10,
     marginBottom: 10,
-    textAlignVertical: 'top', // Alinea el texto al principio
+    textAlignVertical: 'top', 
   },
 });
 
