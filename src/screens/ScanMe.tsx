@@ -25,7 +25,7 @@ import ExitoModal from '../components/ExitoModal';
 import ErrorModal from '../components/ErrorModal';
 import { ScrollView } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
-import Icon from 'react-native-vector-icons/Feather';
+import Icon from '@expo/vector-icons/Feather';
 import { KeyboardAvoidingView, Platform, Keyboard,Touchable } from 'react-native';
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 type homeScreenProp = StackNavigationProp<RootStackParamList>;

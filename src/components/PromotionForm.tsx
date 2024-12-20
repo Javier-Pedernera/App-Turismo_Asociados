@@ -1,15 +1,12 @@
 import React, { useCallback, useState } from 'react';
 import { ScrollView, View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import ImageCompressor from './ImageCompressor';
 import MultiImageCompressor from './MultiImageCompressor';
 import { useDispatch, useSelector } from 'react-redux';
 import { getMemoizedPartner, getMemoizedUserData } from '../redux/selectors/userSelectors';
-import { Category } from '../redux/types/types';
 import CategoryPicker from './CategoryPicker';
 import { getMemoizedAllCategories } from '../redux/selectors/categorySelectors';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { formatDateToDDMMYYYY, formatDateToYYYYMMDD } from '../utils/formatDate';
 import { AppDispatch } from '../redux/store/store';
 import { createPromotion, fetchPromotions } from '../redux/actions/promotionsActions';
 import Loader from './Loader';

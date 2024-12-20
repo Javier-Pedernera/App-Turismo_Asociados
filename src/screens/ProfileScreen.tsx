@@ -5,7 +5,6 @@ import { AppDispatch } from '../redux/store/store';
 import RNPickerSelect from 'react-native-picker-select';
 import { UserData } from '../redux/types/types';
 import { changePasswordAction, updatePartner, updateUserAction } from '../redux/actions/userActions';
-import Icon from 'react-native-vector-icons/Ionicons';
 import { fetchUserCategories, fetchAllCategories } from '../redux/actions/categoryActions';
 import Checkbox from 'expo-checkbox';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -332,7 +331,7 @@ const ProfileScreen: React.FC = () => {
                  <TouchableOpacity 
                   onPress={() => setShowPassword(!showPassword)}
                   hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                    <Icon name={showPassword ? 'eye-off' : 'eye'} size={20} color="#acd0d5" />
+                    <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={20} color="#acd0d5" />
                   </TouchableOpacity>
                   </View>
                   
@@ -521,7 +520,7 @@ const ProfileScreen: React.FC = () => {
                       }}
                       useNativeAndroidPickerStyle={false}
                       Icon={() => {
-                        return <Icon name="chevron-down" size={26} color="#007a8c" />;
+                        return <Ionicons name="chevron-down" size={26} color="#007a8c" />;
                       }}
                     />
                   </View>

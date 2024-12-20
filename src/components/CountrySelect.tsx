@@ -4,7 +4,7 @@ import RNPickerSelect from 'react-native-picker-select';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../redux/store/store';
 import { getMemoizedCountries } from '../redux/selectors/globalSelectors';
-import Icon from 'react-native-vector-icons/Feather';
+import Icon from '@expo/vector-icons/Feather';
 
 interface CountryPickerProps {
   selectedCountry: string;
