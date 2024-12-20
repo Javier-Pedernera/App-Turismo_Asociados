@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useDispatch } from 'react-redux';
-import Icon from 'react-native-vector-icons/Ionicons';
+import Icon from '@expo/vector-icons/Ionicons';
 import { userLogIn } from '../redux/actions/userActions';
 import Loader from '../components/Loader';
 import { LinearGradient } from 'expo-linear-gradient';

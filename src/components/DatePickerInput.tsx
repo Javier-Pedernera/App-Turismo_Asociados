@@ -42,8 +42,8 @@ const DatePickerInput: React.FC<DatePickerInputProps> = ({ selectedDate, onDateC
   return (
     <>
       <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.inputdate}>
-        <Text style={styles.textDate}>
-          {selectedDate ? selectedDate.toLocaleDateString() : 'Fecha de Nacimiento (DD-MM-YYYY)'}
+        <Text style={selectedDate? styles.textDate:styles.textDateplaceholder}>
+          {selectedDate ? selectedDate.toLocaleDateString() : 'Fecha de Nacimiento'}
         </Text>
       </TouchableOpacity>
 
@@ -56,7 +56,7 @@ const DatePickerInput: React.FC<DatePickerInputProps> = ({ selectedDate, onDateC
           onRequestClose={() => setShowDatePicker(false)}
         >
           <View style={styles.modalOverlay}>
-            <View style={styles.datePickerContainer}>
+            <View style={Platform.OS === 'ios' ? styles.datePickerContainer:null}>
               <DateTimePicker
                 value={selectedDate || new Date()}
                 mode="date"
@@ -97,6 +97,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
     color: '#333',
+  },
+  textDateplaceholder:{
+    textAlign: 'center',
+    fontSize: 16,
+    color: 'rgba(0, 0, 0,0.4)',
   },
   modalOverlay: {
     flex: 1,

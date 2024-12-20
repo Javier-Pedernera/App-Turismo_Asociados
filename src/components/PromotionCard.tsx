@@ -112,7 +112,7 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ promotion, index, handleP
                 <TouchableOpacity onPress={() => handleEdit(promotion)}>
                   <MaterialCommunityIcons name="square-edit-outline" size={28} color="rgb(0, 122, 140)" style={styles.actionIcon} />
                 </TouchableOpacity>
-                <TouchableOpacity  onPress={() => showDeleteConfirmation(promotion.promotion_id)}>
+                <TouchableOpacity  onPress={() => showDeleteConfirmation(promotion.promotion_id)}  style={styles.actionIcon} >
                   <Ionicons name="trash-outline" size={25} color="#e04545" />
                 </TouchableOpacity>
               </View>
