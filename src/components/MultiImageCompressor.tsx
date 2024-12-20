@@ -4,31 +4,52 @@ import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import ErrorModal from './ErrorModal';
 
 interface MultiImageCompressorProps {
     onImagesCompressed: (images: { filename: string; data: string }[]) => void;
+    initialImages?: number;
 }
 
-const MultiImageCompressor: React.FC<MultiImageCompressorProps> = ({ onImagesCompressed }) => {
+const MultiImageCompressor: React.FC<MultiImageCompressorProps> = ({ onImagesCompressed, initialImages = 0 }) => {
     const [imageUris, setImageUris] = useState<string[]>([]);
+    const [modalMessage, setModalMessage] = useState('');
+    const [modalErrorVisible, setModalErrorVisible] = useState(false);
 
     const pickImages = async () => {
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsMultipleSelection: true, // Permite seleccionar varias imágenes
-            quality: 1,
-        });
-
-        if (!result.canceled) {
-            const { assets } = result;
-            if (assets) {
-                const uris = assets.map(asset => asset.uri);
-                // Agregar nuevas imágenes sin eliminar las anteriores
-                setImageUris(prevUris => [...prevUris, ...uris]);
-                compressImages([...imageUris, ...uris]);
-            }
-        }
-    };
+      const totalInitialImages = initialImages + imageUris.length;
+      console.log("imagenes totales al iniciar",totalInitialImages);
+      
+      if (totalInitialImages >= 6) {
+        showErrorModal('Solo puedes cargar hasta 6 imágenes.');
+          return;
+      }
+  
+      const result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsMultipleSelection: true, // Permite seleccionar varias imágenes
+          quality: 1,
+      });
+  
+      if (!result.canceled) {
+          const { assets } = result;
+          if (assets) {
+              const newUris = assets.map(asset => asset.uri);
+              const totalImages = imageUris.length + newUris.length + initialImages;
+              console.log("imagenes totales",totalImages);
+              if (totalImages > 6) {
+                showErrorModal(
+                      `Solo puedes agregar ${6 - imageUris.length - initialImages} imagen(es) más.`
+                  );
+                  return;
+              }
+  
+              // Agregar nuevas imágenes sin eliminar las anteriores
+              setImageUris(prevUris => [...prevUris, ...newUris]);
+              compressImages([...imageUris, ...newUris]);
+          }
+      }
+  };
 
     const compressImages = async (uris: string[]) => {
         try {
@@ -36,7 +57,7 @@ const MultiImageCompressor: React.FC<MultiImageCompressorProps> = ({ onImagesCom
             uris.map(async (uri) => {
               const { base64 } = await ImageManipulator.manipulateAsync(
                 uri,
-                [{ resize: { width: 800 } }], // Reducir tamaño a 800px de ancho
+                [{ resize: { width: 700 } }], // Reducir tamaño a 700px de ancho
                 { base64: true, compress: 0.7 } // Comprimir al 70% de calidad
               );
       
@@ -51,7 +72,7 @@ const MultiImageCompressor: React.FC<MultiImageCompressorProps> = ({ onImagesCom
           );
           onImagesCompressed(compressedImages);
         } catch (error) {
-          Alert.alert('Error', 'No se pudo comprimir las imágenes.');
+          showErrorModal('No se pudo comprimir las imágenes.');
         }
       };
 
@@ -59,8 +80,17 @@ const MultiImageCompressor: React.FC<MultiImageCompressorProps> = ({ onImagesCom
         setImageUris(prevUris => prevUris.filter(imageUri => imageUri !== uri));
     };
 
+    const showErrorModal = (message: string) => {
+      setModalMessage(message);
+      setModalErrorVisible(true);
+    };
     return (
         <View style={styles.container}>
+          <ErrorModal
+        visible={modalErrorVisible}
+        message={modalMessage}
+        onClose={() => setModalErrorVisible(false)}
+      />
        <TouchableOpacity style={styles.submitButton} onPress={pickImages}>
        <MaterialCommunityIcons name="image-plus" size={24} color="#fff" />
         <Text style={styles.submitButtonText}>Agregar Imágenes</Text>

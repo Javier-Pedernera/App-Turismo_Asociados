@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, FlatList, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, FlatList, Modal, Platform } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { getMemoizedBranches } from '../redux/selectors/branchSelectors';
 import { BranchForm } from '../components/BranchForm';
@@ -8,7 +8,7 @@ import { Dimensions } from 'react-native';
 import { fetchPartnerById } from '../redux/actions/userActions';
 import { getMemoizedUserData } from '../redux/selectors/userSelectors';
 import { UserData } from '../redux/types/types';
-import { fetchBranches, inactivateBranch, updateBranch } from '../redux/actions/branchActions';
+import { fetchBranches, inactivateBranch } from '../redux/actions/branchActions';
 import { AppDispatch } from '../redux/store/store';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Switch } from 'react-native';
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     display:'flex',
     height: screenHeight ,
     padding: 15,
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
   },
   nameTitle:{
     height: screenHeight *0.25,
@@ -219,8 +219,8 @@ const styles = StyleSheet.create({
     marginRight:15,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
+    shadowOpacity: 0.3,
+    shadowRadius: 1,
     elevation: 3,
   },
   buttonText: {

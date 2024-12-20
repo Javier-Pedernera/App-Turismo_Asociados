@@ -192,6 +192,7 @@ const PromotionDetailScreen: React.FC = () => {
         onLoadEnd={handleImageLoadEnd}
       />
       <View style={styles.thumbnailsContainer}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         {promotion.images.length > 1 &&
           promotion.images.slice(1).map((item) => (
             <TouchableOpacity key={item.image_id} onPress={() => openModal(item.image_path)}>
@@ -204,6 +205,7 @@ const PromotionDetailScreen: React.FC = () => {
             </TouchableOpacity>
           ))
         }
+        </ScrollView>
       </View>
 
       {/* Modal de imagenes */}

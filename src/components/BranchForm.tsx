@@ -98,6 +98,8 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
         showErrorModal(errorMessage)
         return
       }
+      // console.log('status id:', branch.status.id);
+      branchData.status_id = branch.status.id
       resp = await dispatch(updateBranch(branch.branch_id, branchData));
       // console.log("respuesta del dispatch (update)", resp);
       dispatch(fetchBranches(user.user_id))
@@ -151,6 +153,7 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
     }
   };
   const handleSetCurrentLocation = async () => {
+    setIsLoading(true);
     try {
       // Pedir permiso para acceder a la ubicación
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -165,6 +168,8 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
       setLongitude(location.coords.longitude.toString());
     } catch (error) {
       console.error('Error al obtener la ubicación:', error);
+    }finally{
+      setIsLoading(false);
     }
   };
 
@@ -253,7 +258,7 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
     {
       id: 'image',
       component: (
-        <View>
+        <View  style={styles.imageContainer} >
           {!isEditing? 
           <View style={styles.buttonContainer}><TouchableOpacity onPress={() => setIsEditing(true)} style={styles.editButton}>
               <MaterialCommunityIcons name="file-edit-outline" size={23} color="#fff" />
@@ -267,9 +272,9 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
           </View> : <View></View> }
           <TouchableOpacity onPress={handleImagePick} disabled={!isEditing}>
             {images && images.length > 0 ? (
-              <Image source={{ uri: `data:image/jpeg;base64,${images[0].data}` }} style={styles.image} resizeMode="cover" />
+              <Image source={{ uri: `data:image/jpeg;base64,${images[0].data}` }} style={styles.image} resizeMode='cover' />
             ) : (
-              branch?.image_url?.length? <Image source={{ uri: `${API_URL}${branch.image_url}`  }} style={styles.image} resizeMode='contain' /> :
+              branch?.image_url?.length? <Image source={{ uri: `${API_URL}${branch.image_url}`  }} style={styles.image} resizeMode='cover' /> :
               <View style={styles.placeholderImage}>
                 <Image source={require('../../assets/noimage.png')} style={styles.image} alt={branch?.name}/>
               </View>
@@ -284,7 +289,7 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
       component: (
         isEditing?
         <>
-          <Text style={styles.label}>Nombre</Text>
+          <Text style={styles.labelTitle}>Nombre</Text>
           <TextInput
             style={styles.input}
             placeholder="* Nombre de la sucursal"
@@ -299,7 +304,7 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
       component: (
         isEditing?
         <>
-          <Text style={styles.label}>Dirección</Text>
+          <Text style={styles.labelTitle}>Dirección</Text>
           <TextInput
             style={styles.input}
             placeholder="Dirección"
@@ -317,12 +322,13 @@ export const BranchForm: React.FC<BranchFormProps> = ({ branch, onClose }) => {
       component: (
         isEditing?
         <>
-          <Text style={styles.label}>Descripción</Text>
+          <Text style={styles.labelTitle}>Descripción</Text>
           <TextInput
-            style={styles.input}
+            style={styles.descriptioninput}
             placeholder="Descripción de la sucursal"
             value={description}
             onChangeText={handleDescriptionChange}
+            multiline={true} 
           />
         </>: <View>
          <Text style={styles.labelTitle}>Descripción</Text>
@@ -498,14 +504,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderRadius: 10,
     top: 10,
-    zIndex: 1, // Asegura que los botones estén por encima
+    zIndex: 1,
   },
 
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    zIndex: 2, // Asegura que esté sobre la imagen
+    zIndex: 2, 
   },
 
   placeholderImage: {
@@ -531,14 +537,14 @@ const styles = StyleSheet.create({
   },
   labelTitle:{
     marginTop:10,
-    fontSize: 13,
+    fontSize: 14,
     marginBottom: 3,
-    color: '#333'
+    color: '#007a8b'
   },
   input: {
     height: 35,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: '#acd1d6',
     padding: 8,
     borderRadius: 8,
     marginBottom: 16,
@@ -662,36 +668,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  // input: {
-  //   height: 40,
-  //   borderWidth: 1,
-  //   borderColor: '#ccc',
-  //   marginBottom: 15,
-  //   paddingLeft: 10,
-  //   width: '80%',
-  //   borderRadius: 8,
-  // },
-  // submitButton: {
-  //   backgroundColor: '#FF4040',
-  //   padding: 10,
-  //   borderRadius: 8,
-  //   alignItems: 'center',
-  //   marginBottom: 10,
-  // },
-  // submitButtonText: {
-  //   color: '#fff',
-  //   fontSize: 16,
-  // },
-  // cancelButton: {
-  //   backgroundColor: '#ccc',
-  //   padding: 10,
-  //   borderRadius: 8,
-  //   alignItems: 'center',
-  // },
-  // cancelButtonText: {
-  //   color: '#fff',
-  //   fontSize: 16,
-  // },
+  descriptioninput: {
+      height: 150,
+      borderColor: '#acd1d6',
+      borderWidth: 1,
+      marginBottom: 10,
+      padding: 10,
+      textAlignVertical: 'top',
+      borderRadius:5
+    },
+    imageContainer:{
+      
+    }
 });
 
 export default BranchForm;

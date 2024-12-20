@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Animated, Image, Alert, TextInput } from 'react-native';
+import { useState, useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Animated, Image, Alert, TextInput, TouchableWithoutFeedback } from 'react-native';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useDispatch, useSelector } from 'react-redux';
 import { Promotion, UserData } from '../redux/types/types';
@@ -13,7 +13,6 @@ import { fetchBranches } from '../redux/actions/branchActions';
 import Feather from '@expo/vector-icons/Feather';
 import SemicirclesOverlay from '../components/SemicirclesOverlay';
 import { Modal } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
 import { getMemoizedStates } from '../redux/selectors/globalSelectors';
 import ConsumedPromotionsModal from '../components/ConsumedPromotionsModalProps ';
 import axios from 'axios';
@@ -22,7 +21,12 @@ import { RootStackParamList } from '../navigation/AppNavigator';
 import { StackNavigationProp } from '@react-navigation/stack';
 import TermsModal from '../components/TermsModal';
 import Loader from '../components/Loader';
-
+import ExitoModal from '../components/ExitoModal';
+import ErrorModal from '../components/ErrorModal';
+import { ScrollView } from 'react-native';
+import RNPickerSelect from 'react-native-picker-select';
+import Icon from 'react-native-vector-icons/Feather';
+import { KeyboardAvoidingView, Platform, Keyboard,Touchable } from 'react-native';
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 type homeScreenProp = StackNavigationProp<RootStackParamList>;
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -59,10 +63,13 @@ const QRScanButton = () => {
   const [isModalTermsVisible, setModalTermsVisible] = useState(false);
   const [currentTerms, setCurrentTerms] = useState<any>(undefined);
   const [isloading, setIsLoading] = useState(false);
-
+  const [modalSuccessVisible, setModalSuccessVisible] = useState(false);
+  const [modalSuccessMessage, setModalSuccessMessage] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
+  const [modalErrorVisible, setModalErrorVisible] = useState(false);
   // console.log("access token",accessToken);
   // console.log("terminos actuales",currentTerms);
-  // console.log("promotions",promotions[0]);
+  console.log("promotions",promotions.length);
   // console.log("statuses",statuses);
   // console.log("promotions consumidas",promotionsConsumed);
   const filteredPromotions = promotions.filter(promotion => {
@@ -70,8 +77,8 @@ const QRScanButton = () => {
     const expirationDate = new Date(promotion.expiration_date);
     return promotion.status?.name === 'active' && currentDate >= startDate && currentDate <= expirationDate;
   });
-  // console.log("filteredPromotions",filteredPromotions);
-
+  console.log("filteredPromotions",filteredPromotions);
+  console.log("promocion seleccionada",selectedPromotion);
   useEffect(() => {
     dispatch(loadData());
     fetchCurrentTerms();
@@ -144,7 +151,7 @@ const QRScanButton = () => {
       await dispatch(getUserInfo(accessToken))
       setModalTermsVisible(false);
       setIsLoading(false)
-      Alert.alert('Términos aceptados', 'Has aceptado los términos y condiciones.');
+      showSuccessModal( 'Has aceptado los términos y condiciones.');
     } catch (error) {
       console.error('Error al aceptar los términos:', error);
     }
@@ -152,8 +159,16 @@ const QRScanButton = () => {
   const handleCancelTerms = async () => {
     await dispatch(logOutUser());
     setModalTermsVisible(false);
-    Alert.alert('Términos no aceptados', 'Has rechazado los términos y condiciones.');
+    showErrorModal('Has rechazado los términos y condiciones.');
     navigation.navigate('Login');
+  };
+
+  const isFormValid = () => {
+    return (
+      selectedPromotion &&
+      parseInt(quantityConsumed, 10) > 0 &&
+      parseFloat(amountSpent) > 0
+    );
   };
 
   const startLineAnimation = () => {
@@ -193,7 +208,7 @@ const QRScanButton = () => {
         setCameraVisible(false);
       }, 10000);
     } else {
-      Alert.alert("Permiso denegado", "Por favor, habilita el permiso de la cámara en la configuración.");
+      showErrorModal("Por favor, habilita el permiso de la cámara en la configuración.");
     }
   };
 
@@ -208,15 +223,26 @@ const QRScanButton = () => {
       clearTimeout(timeoutRef.current);
     }
   };
-  const handlePromotionSelect = (promotion: any) => {
-    setSelectedPromotion(promotion);
+  const handlePromotionSelect = (promotionId: number) => {
+    const selectedPromotion = filteredPromotions.find(promo => promo.promotion_id == promotionId);
+    if (selectedPromotion) {
+      setSelectedPromotion(selectedPromotion);
+    } else {
+      setSelectedPromotion(null); 
+    }
   };
 
   const handleConfirm = async () => {
+
+    if (!isFormValid()) {
+      showErrorModal("Debes completar todos los campos correctamente.");
+      return;
+    }
+    
     const status = statuses.find(status => status.name === 'active');
 
     if (!selectedPromotion || !quantityConsumed || !amountSpent) {
-      Alert.alert("Error", "Debes completar todos los campos.");
+      showErrorModal( "Debes completar todos los campos.");
       return;
     }
 
@@ -235,19 +261,20 @@ const QRScanButton = () => {
     try {
       const result = await dispatch(submitConsumption(data));
       if (result?.status == 200) {
-        dispatch(fetchPromotions(user.user_id));
+        await dispatch(fetchPromotions(user.user_id));
+        await dispatch(fetchConsumedPromotions(user.user_id));
         setSelectedPromotion(null);
         setQuantityConsumed('');
         setAmountSpent('');
         setDescription('');
         setScannedUser(null);
         setScannedEmail(null);
-        Alert.alert("Éxito", "Consumo de promoción registrado correctamente.");
+        showSuccessModal("Consumo de promoción registrado correctamente.");
       } else {
-        Alert.alert("Error", "No se pudo registrar el consumo de la promoción. Intenta de nuevo.");
+        showErrorModal("No se pudo registrar el consumo de la promoción. Intenta de nuevo.");
       }
     } catch (error) {
-      Alert.alert("Error", "Ocurrió un error al registrar el consumo de la promoción.");
+      showErrorModal("Ocurrió un error al registrar el consumo de la promoción.");
     }
 
     setModalVisible(false);
@@ -270,20 +297,46 @@ const QRScanButton = () => {
   };
   const handleQuantityChange = (text: string) => {
     const quantity = parseInt(text, 10);
+    if (text.length > 10) {
+      showErrorModal("La cantidad no puede tener más de 8 dígitos.");
+      return;
+    }
     if (selectedPromotion && selectedPromotion.available_quantity && quantity > selectedPromotion.available_quantity) {
-      Alert.alert("Error", `No puedes consumir más de ${selectedPromotion.available_quantity} promociones.`);
+      showErrorModal(`No puedes consumir más de ${selectedPromotion.available_quantity} promociones.`);
       return;
     }
     setQuantityConsumed(text);
   };
-
+  const handleDescriptionChange = (text: string) => {
+    if (text.length > 255) {
+      showErrorModal("La descripción no puede exceder los 255 caracteres.");
+      return;
+    }
+    setDescription(text);
+  };
   const openConsumedPromotionsModal = () => {
     setModalConsumedVisible(true);
   };
-
+  const handleAmountChange = (text: string) => {
+    const formattedText = text.replace(/[^0-9]/g, '');
+    if (formattedText.length <= 15) {
+      setAmountSpent(formattedText);
+    } else {
+      Alert.alert("Error", "El monto no puede tener más de 15 dígitos.");
+    }
+  };
   // Función para cerrar el modal
   const closeConsumedPromotionsModal = () => {
     setModalConsumedVisible(false);
+  };
+
+  const showErrorModal = (message: string) => {
+    setModalMessage(message);
+    setModalErrorVisible(true);
+  };
+  const showSuccessModal = (message: string) => {
+    setModalSuccessMessage(message);
+    setModalSuccessVisible(true);
   };
   const ScannerFrame = () => (
     <View style={styles.frameContainer}>
@@ -312,10 +365,26 @@ const QRScanButton = () => {
       </View>
     );
   }
-
+  const promotionsActiv = filteredPromotions.map((promotion: any) => ({
+    label: promotion.title,
+    value: promotion.promotion_id.toString(),
+  }));
   return (
     <View style={styles.container}>
       {isloading && <Loader />}
+      <ExitoModal
+      visible={modalSuccessVisible}
+      message={modalSuccessMessage}
+      onClose={() => {
+        setModalSuccessVisible(false);
+      }}
+    />
+    <ErrorModal
+        visible={modalErrorVisible}
+        message={modalMessage}
+        onClose={() => setModalErrorVisible(false)}
+      />
+
       <View style={styles.containercircle}>
         <SemicirclesOverlay />
       </View>
@@ -341,88 +410,105 @@ const QRScanButton = () => {
         <Text style={styles.buttonTextconsum}>Consumos</Text>
       </TouchableOpacity>
       <Modal visible={modalVisible} animationType="slide" transparent={true}>
-        <View style={styles.modalContainer}>
-          <View style={styles.formContainer}>
-            <View style={styles.userName}>
-              <Text style={styles.userText}>
-                Cliente:
-              </Text>
-              {scannedEmail ? (
-                <Text style={styles.userText2}>
-                  {scannedEmail}
-                </Text>
-              ) : (
-                <Text style={styles.quantityTextError}>
-                  Usuario no detectado
-                </Text>
-              )}
-            </View>
-
-            {/* Línea horizontal */}
-            <View style={styles.line} />
-            <Text style={styles.modalTitle}>Selecciona la promoción a consumir</Text>
-            <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={selectedPromotion}
-                onValueChange={(itemValue) => handlePromotionSelect(itemValue)}
-                style={styles.picker}
-              ><Picker.Item label="* Selecciona una promoción" value={null} />
-                {filteredPromotions.map((promotion) => (
-                  <Picker.Item
-                    key={promotion.promotion_id}
-                    label={promotion.title}
-                    value={promotion}
-                    style={styles.pickerItem}
-                  />
-                ))}
-              </Picker>
-            </View>
-            {
-              selectedPromotion &&
-              <View style={styles.quantity}>
-                <Text style={styles.quantityText}>
-                  Disponibles:
-                </Text>
-                <Text style={styles.quantityText2}>
-                  {selectedPromotion.available_quantity ? selectedPromotion.available_quantity : 'Sin límite'}
-                </Text>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <KeyboardAvoidingView
+            style={styles.modalContainer}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          >
+            <ScrollView
+              contentContainerStyle={styles.scrollViewContainer}
+              keyboardShouldPersistTaps="handled"
+            >
+              <View style={styles.formContainer}>
+                <View style={styles.userName}>
+                  <Text style={styles.userText}>Cliente:</Text>
+                  {scannedEmail ? (
+                    <Text style={styles.userText2}>{scannedEmail}</Text>
+                  ) : (
+                    <Text style={styles.quantityTextError}>Usuario no detectado</Text>
+                  )}
+                </View>
+                <View style={styles.line} />
+                <Text style={styles.modalTitle}>Selecciona la promoción a consumir</Text>
+                <View style={styles.pickerContainer}>
+                  {filteredPromotions && filteredPromotions.length ? (
+                    <RNPickerSelect
+                      onValueChange={(itemValue) => handlePromotionSelect(itemValue)}
+                      value={selectedPromotion?.promotion_id}
+                      items={promotionsActiv}
+                      placeholder={{ label: '* Seleccione una promoción', value: '' }}
+                      style={{
+                        inputIOS: styles.picker,
+                        inputAndroid: styles.picker,
+                        iconContainer: {
+                          position: 'absolute',
+                          right: 15,
+                          top: '50%',
+                          transform: [{ translateY: -12 }],
+                        },
+                      }}
+                      useNativeAndroidPickerStyle={false}
+                      Icon={() => <Icon name="chevron-down" size={26} color="#007a8c" />}
+                    />
+                  ) : (
+                    <Text>No tienes promociones disponibles o en curso</Text>
+                  )}
+                </View>
+                {selectedPromotion && (
+                  <View style={styles.quantity}>
+                    <Text style={styles.quantityText}>Disponibles:</Text>
+                    <Text style={styles.quantityText2}>
+                      {selectedPromotion.available_quantity
+                        ? selectedPromotion.available_quantity
+                        : 'Sin límite'}
+                    </Text>
+                  </View>
+                )}
+                <TextInput
+                  style={styles.input}
+                  placeholder="Cantidad de promociones consumidas"
+                  keyboardType="numeric"
+                  value={quantityConsumed}
+                  onChangeText={handleQuantityChange}
+                  editable={!!selectedPromotion}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Monto consumido (CLP)"
+                  keyboardType="numeric"
+                  value={amountSpent}
+                  onChangeText={handleAmountChange}
+                  editable={!!selectedPromotion}
+                />
+                <TextInput
+                  style={styles.descriptionInput}
+                  placeholder="Descripción de la transacción"
+                  value={description}
+                  onChangeText={handleDescriptionChange}
+                  editable={!!selectedPromotion}
+                  multiline={true}
+                />
+                <View style={styles.btnsFormcons}>
+                  <TouchableOpacity
+                    onPress={handleConfirm}
+                    style={[
+                      styles.confirmButton,
+                      !isFormValid() && styles.disabledButton,
+                    ]}
+                    disabled={!selectedPromotion}
+                  >
+                    <Text style={styles.confirmButtonText}>Confirmar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={handleCancel} style={styles.cancelButton}>
+                    <Text style={styles.cancelButtonText}>Cancelar</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            }
-            <TextInput
-              style={styles.input}
-              placeholder="Cantidad de promociones consumidas"
-              keyboardType="numeric"
-              value={quantityConsumed}
-              onChangeText={handleQuantityChange}
-              editable={!!selectedPromotion}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Monto consumido"
-              keyboardType="numeric"
-              value={amountSpent}
-              onChangeText={setAmountSpent}
-              editable={!!selectedPromotion}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Descripción"
-              value={description}
-              onChangeText={setDescription}
-              editable={!!selectedPromotion}
-            />
-            <TouchableOpacity onPress={handleConfirm} style={[
-              styles.confirmButton,
-              !selectedPromotion && styles.disabledButton
-            ]} disabled={!selectedPromotion}>
-              <Text style={styles.confirmButtonText}>Confirmar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleCancel} style={styles.cancelButton}>
-              <Text style={styles.cancelButtonText}>Cancelar</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </TouchableWithoutFeedback>
+      </Modal>  
+
       {/* Modal para aceptar los términos y condiciones */}
       {currentTerms &&
         <View style={styles.Terms}>
@@ -484,7 +570,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgb(0, 122, 140)',
-    elevation: 3,
+    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 1
   },
   buttonconsumidas:{
     marginTop: 15,
@@ -493,10 +582,15 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth:0.7,
-    borderColor: 'rgb(0, 122, 140)',
+    backgroundColor:'#fff',
+    borderWidth:1,
+    borderColor: '#acd1d6',
     color: 'rgb(0, 122, 140)',
     minHeight: 48,
+    elevation: 2,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 1
     
   },
   buttonTextconsum: {
@@ -589,21 +683,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   modalContainer: {
-    flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    flex: 1, // Ocupa toda la pantalla
     justifyContent: 'center',
     alignItems: 'center',
   },
-  formContainer:{
-    display:'flex',
-    flexDirection:'column',
-    width:screenWidth *0.9,
-    height:screenHeight*0.8,
-    borderRadius:20,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    justifyContent:'center',
-    alignContent:'center',
-    alignItems:'center'
+  formContainer: {
+    width: screenWidth * 0.9, // Ajusta el ancho según tus necesidades
+    maxHeight: screenHeight * 0.9, // Limita la altura máxima
+    borderRadius: 20,
+    backgroundColor: 'white',
+    padding: 10,
+  },
+  scrollViewContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
   },
   modalTitle: {
     width:screenWidth *0.8,
@@ -635,15 +729,48 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     fontSize: screenWidth * 0.04,
     marginVertical: 8,
+    borderColor: '#acd1d6',
+    borderWidth: 1,
+    marginBottom: 10,
+    padding: 10,
+  },
+  descriptioninput:{
+    height: screenHeight*0.25,
+    width:screenWidth *0.8,
+    backgroundColor: '#fff',
+    borderRadius: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    fontSize: screenWidth * 0.04,
+    borderColor: '#acd1d6',
+    borderWidth: 1,
+    marginBottom: 10,
+    padding: 10,
+    marginVertical: 8,
+    justifyContent:'flex-start',
+    alignContent:'flex-start',
+    alignItems:'flex-start',
+    textAlignVertical:'top'
+  },
+  btnsFormcons:{
+    width:'100%',
+    display:'flex',
+    flexDirection:'row',
+    justifyContent:'center'
   },
   confirmButton: {
     backgroundColor: 'rgb(0, 122, 140)',
     padding: 10,
-    borderRadius: 5,
     marginHorizontal: 5,
-    width:screenWidth *0.5,
+    width:screenWidth *0.35,
     marginTop:screenWidth *0.04,
     minHeight: 48,
+    borderRadius: 25,
+    display:'flex',
+    flexDirection:'row',
+    justifyContent:'center',
+    alignItems:'center',
+    alignContent:'center',
   },
   disabledButton: {
     opacity: 0.5, 
@@ -657,11 +784,16 @@ const styles = StyleSheet.create({
   cancelButton: {
     backgroundColor: '#686868',
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 25,
     marginHorizontal: 5,
-    width:screenWidth *0.5,
+    width:screenWidth *0.35,
     marginTop:screenWidth *0.04,
     minHeight: 48,
+    display:'flex',
+    flexDirection:'row',
+    justifyContent:'center',
+    alignItems:'center',
+    alignContent:'center',
   },
   cancelButtonText: {
     
@@ -677,16 +809,20 @@ const styles = StyleSheet.create({
     alignContent:'center',
     alignItems:'center',
     justifyContent:'center',
-    // borderWidth: 1,
-    // borderColor: '#ccc',
+    borderWidth: 1,
+    borderColor: 'rgb(172, 208, 213)',
     borderRadius: 5,
     marginBottom: 10,
     padding: 5,
   },
   picker: {
     fontSize: screenWidth * 0.04,
-    height: 35,
-    width: '100%',
+    height: 45,
+    width:screenWidth *0.7,
+    alignItems:'center',
+    justifyContent:'center',
+    paddingVertical: 12,
+    paddingHorizontal:10
   },
   pickerItem:{
     fontSize: screenWidth * 0.04,
@@ -742,7 +878,16 @@ const styles = StyleSheet.create({
   },
   Terms:{
     borderRadius:10
-  }
+  },
+  descriptionInput: {
+    height: 100, 
+    borderColor: '#acd1d6',
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+    textAlignVertical: 'top', 
+  },
 });
 
 export default QRScanButton;

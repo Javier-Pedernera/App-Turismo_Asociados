@@ -26,7 +26,12 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ promotion, index, handleP
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedPromotionId, setSelectedPromotionId] = useState<number | null>(null);
 
-
+  const stateTranslations: { [key: string]: string } = {
+    active: 'activa',
+    inactive: 'inactiva',
+    deleted: 'eliminada',
+    suspended: 'suspendida'
+  };
   const handleImageLoadStart = () => setLoadingImg(true);
   const handleImageLoadEnd = () => setLoadingImg(false);
 
@@ -82,6 +87,20 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ promotion, index, handleP
           <Text style={styles.promotionDates}>
             Disponibles: {promotion.available_quantity? promotion.available_quantity:'sin límite'}
           </Text>
+          <View style={styles.statusContainer}>
+            <Text style={styles.promotionDates}>
+            Estado:
+            </Text>
+            <Text style={promotion.status && promotion.status.name.toLowerCase() === 'active'? styles.active: styles.inactive}>
+              {promotion.status ? stateTranslations[promotion.status.name.toLowerCase()] || promotion.status.name : 'sin estado'}
+            </Text>
+            {promotion.status && promotion.status.name.toLowerCase() === 'active'? (
+              <Ionicons name="bag-check-outline" size={18} color="#34c3d8" style={styles.statusIcon} />
+            ):(
+              null
+            )
+            }
+          </View>
         </View>
         <View style={styles.discountContainer}>
           <View style={styles.discountContText}>
@@ -262,6 +281,21 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
   },
+  statusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusIcon: {
+    marginLeft: 10, 
+  },
+  active:{
+    marginLeft: 10, 
+    color:'#34c3d8'
+  },
+  inactive:{
+    marginLeft: 10, 
+    color:'#e04545'
+  }
 });
 
 export default React.memo(PromotionCard);

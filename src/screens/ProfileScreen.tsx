@@ -6,7 +6,6 @@ import RNPickerSelect from 'react-native-picker-select';
 import { UserData } from '../redux/types/types';
 import { changePasswordAction, updatePartner, updateUserAction } from '../redux/actions/userActions';
 import Icon from 'react-native-vector-icons/Ionicons';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { fetchUserCategories, fetchAllCategories } from '../redux/actions/categoryActions';
 import Checkbox from 'expo-checkbox';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -26,6 +25,7 @@ import { Keyboard } from 'react-native';
 import ErrorModal from '../components/ErrorModal';
 import ExitoModal from '../components/ExitoModal';
 import { loadData } from '../redux/actions/dataLoader';
+import DatePickerInput from '../components/DatePickerInput';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 // const screenHeight = Dimensions.get('window').height;
@@ -79,7 +79,7 @@ const ProfileScreen: React.FC = () => {
   const [isChangingPassword, setIsChangingPassword] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isCategoriesModalVisible, setCategoriesModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [passwordErrors, setPasswordErrors] = useState<string[]>([]); // Lista de errores de la contraseña
@@ -162,37 +162,6 @@ const ProfileScreen: React.FC = () => {
       setSelectedDate(new Date(parseInt(year), parseInt(month) - 1, parseInt(day)));
     }
   }, [formData.birth_date]);
-  const formatDateToYYYYMMDD = (dateString: string): string => {
-    const [day, month, year] = dateString.split('-');
-    return `${year}-${month}-${day}`;
-  };
-
-  const handleDateChange = (event: any, selectedDate?: Date) => {
-    if (Platform.OS !== 'ios') {
-      setShowDatePicker(false);
-    }
-    if (selectedDate) {
-      const today = new Date();
-    if (selectedDate > today) {
-      showErrorModal('La fecha de nacimiento debe ser menor que la fecha actual.');
-      return;
-    }
-      const formattedDate = formatDateToYYYYMMDD(
-        `${selectedDate.getDate()}-${selectedDate.getMonth() + 1}-${selectedDate.getFullYear()}`
-      );
-      handleInputChange('birth_date', formattedDate);
-    }
-  };
-
-  const confirmDate = () => {
-    if (selectedDate) {
-      const formattedDate = formatDateToYYYYMMDD(
-        `${selectedDate.getDate()}-${selectedDate.getMonth() + 1}-${selectedDate.getFullYear()}`
-      );
-      handleInputChange('birth_date', formattedDate);
-    }
-    setShowDatePicker(false);
-  };
 
   const handleImageCompressed = (uri: string) => {
     // console.log("imagencomprimida");
@@ -498,46 +467,40 @@ const ProfileScreen: React.FC = () => {
                 value={formData.business_type}
                 onChangeText={(value) => handleInputChange('business_type', value)}
               />
-              <View style={styles.datePickerContainer}>
-                {!showDatePicker && (
-                  <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.inputdate}>
-                    <Text style={styles.textDate}>
-                      {formData.birth_date ? formatDateToDDMMYYYY(formData.birth_date) : 'Fecha de Nacimiento (DD-MM-YYYY)'}
-                    </Text>
-                  </TouchableOpacity>
-                )}
-                {showDatePicker && (
-                  <View>
-                    <DateTimePicker
-                      value={selectedDate || new Date()}
-                      mode="date"
-                      display="default"
-                      // display="spinner"
-                      onChange={handleDateChange}
-                    />
-                    {Platform.OS === 'ios' && (
-                      <TouchableOpacity onPress={confirmDate} style={styles.confirmButton}>
-                        <Text style={styles.confirmButtonText}>Confirmar fecha</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                )}
+              <View style={styles.container}>
+                <DatePickerInput selectedDate={selectedDate} onDateChange={handleInputChange} />
               </View>
-              {Platform.OS === 'web' ?
-                (<View style={styles.selectView}>
-                  <select
-                    style={styles.select}
-                    value={formData.gender}
-                    onChange={(e) => handleInputChange('gender', e.target.value)}
-                  >
-                    <option value="" disabled>Seleccione Género</option>
-                    <option value="Masculino">Masculino</option>
-                    <option value="Femenino">Femenino</option>
-                    <option value="Otro">Otro</option>
-                  </select>
-                </View>) :
-                (
-                  <View>
+              {/* <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.inputdate}>
+                <Text style={styles.textDate}>
+                  {selectedDate ? selectedDate.toLocaleDateString() : 'Fecha de Nacimiento (DD-MM-YYYY)'}
+                </Text>
+              </TouchableOpacity>
+              {showDatePicker && (
+                <Modal
+                  transparent
+                  animationType="slide"
+                  visible={showDatePicker}
+                  onRequestClose={() => setShowDatePicker(false)} // Cerrar con back en Android
+                >
+                  <View style={styles.modalOverlay}>
+                    <View style={styles.datePickerContainer}>
+                      <DateTimePicker
+                        value={selectedDate || new Date()}
+                        mode="date"
+                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                        maximumDate={new Date()}
+                        onChange={handleDateChange}
+                      />
+                      {Platform.OS === 'ios' && (
+                        <TouchableOpacity onPress={confirmDate} style={styles.confirmButton}>
+                          <Text style={styles.confirmButtonText}>Confirmar fecha</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </View>
+                </Modal>
+              )} */}
+                  <View style={styles.pickerContainer}>
                     <RNPickerSelect
                       onValueChange={(value) => handleInputChange('gender', value)}
                       value={formData.gender}
@@ -547,11 +510,21 @@ const ProfileScreen: React.FC = () => {
                         { label: 'Otro', value: 'Otro' },
                       ]}
                       placeholder={{ label: 'Seleccione Género', value: '' }}
-                      style={pickerSelectStyles}
+                      style={{
+                        ...pickerSelectStyles,
+                        iconContainer: {
+                            position: 'absolute',
+                            right: 15,
+                            top: '43%',
+                            transform: [{ translateY: -12 }],
+                          },
+                      }}
                       useNativeAndroidPickerStyle={false}
+                      Icon={() => {
+                        return <Icon name="chevron-down" size={26} color="#007a8c" />;
+                      }}
                     />
                   </View>
-                )}
               <TouchableOpacity
                 style={styles.buttonCategories}
                 onPress={() => setCategoriesModalVisible(true)}
@@ -608,9 +581,9 @@ const ProfileScreen: React.FC = () => {
 
 const pickerSelectStyles = StyleSheet.create({
   inputIOS: {
-    height: 40,
-    width: Platform.OS === 'web' ? '50%' : screenWidth,
-    maxWidth: Platform.OS === 'web' ? 400 : screenWidth * 0.8,
+    height: 48,
+    width:  screenWidth *0.8,
+    // maxWidth: screenWidth * 0.8,
     borderColor: 'rgb(172, 208, 213)',
     borderWidth: 1,
     borderRadius: 8,
@@ -618,8 +591,8 @@ const pickerSelectStyles = StyleSheet.create({
     paddingHorizontal: 15,
     backgroundColor: '#fff',
     fontSize: 16,
+    justifyContent:'center',
     alignSelf: 'center',
-    
   },
   inputAndroid: {
     height: 48,
@@ -633,10 +606,16 @@ const pickerSelectStyles = StyleSheet.create({
     backgroundColor: '#fff',
     fontSize: 16,
     alignSelf: 'center',
+    paddingRight: 30,
   },
 });
 
 const styles = StyleSheet.create({
+  pickerContainer: {
+    marginBottom: 10,
+    width: screenWidth*0.8,
+    alignSelf: 'center',
+  },
   Containertext:{
     padding:20,
     paddingTop:80
@@ -653,7 +632,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingLeft: 20,
     paddingRight:20
-    // backgroundColor: '#f7f7f7',
   },
   iconContainer:{
     position:'absolute',
@@ -675,11 +653,9 @@ const styles = StyleSheet.create({
     position:'absolute',
     zIndex:1,
     alignItems:'center',
-    // justifyContent:'center',
     paddingTop:screenHeight
     *0.2,
     backgroundColor:'rgba(232, 232, 232,0.9)',
-    // borderRadius:20,
     width:screenWidth,
     height:screenHeight,
     display:'flex',
@@ -688,11 +664,9 @@ const styles = StyleSheet.create({
     position:'absolute',
     zIndex:1,
     alignItems:'center',
-    // justifyContent:'center',
     paddingTop:screenHeight
     *0.02,
     backgroundColor:'rgba(232, 232, 232,0.9)',
-    // borderRadius:20,
     width:screenWidth,
     height:screenHeight,
     display:'flex',
@@ -765,23 +739,24 @@ const styles = StyleSheet.create({
     justifyContent:'center',
     borderRadius:25,
     backgroundColor:'#007a8b',
-    height:45,
-    width:45,
+    height:48,
+    width:48,
     bottom:0,
     right:40,
-    marginTop:20
+    // marginTop:20,
+    margin:4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
+    elevation: 3,
   },
   inputSelect: {
-    height: 43,
+    height: 48,
     width: '90%',
-    // borderColor: 'rgb(172, 208, 213)',
-    // borderWidth: 1,
     borderRadius: 8,
     marginBottom: 10,
     display: 'flex',
     justifyContent: 'center',
-
-    // paddingHorizontal: 10,
     backgroundColor: '#fff',
     fontSize: 16,
   },
@@ -815,7 +790,7 @@ const styles = StyleSheet.create({
     height:48,
     display: "flex",
     flexDirection: "row",
-    justifyContent: 'space-around',
+    justifyContent: "space-evenly",
     backgroundColor: 'rgb(0, 122, 140)',
     paddingVertical: 5,
     paddingHorizontal: 40,
@@ -826,9 +801,9 @@ const styles = StyleSheet.create({
     width: '60%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
+    shadowOpacity: 0.2,
     shadowRadius: 2,
-    elevation: 5,
+    elevation: 3,
   },
   buttonCategories: {
     height:48,
@@ -845,9 +820,9 @@ const styles = StyleSheet.create({
     width: '60%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
+    shadowOpacity: 0.2,
     shadowRadius: 2,
-    elevation: 5,
+    elevation: 3,
   },
   buttonText: {
     color: '#fff',
@@ -874,7 +849,6 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     paddingHorizontal: 15,
     backgroundColor: '#fff',
-    // outLineColor: 'rgb(172, 208, 213)',
     borderColor: 'rgb(172, 208, 213)',
     fontSize: 16,
     color: '#595959',
@@ -908,6 +882,8 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   modalButton: {
+    minHeight:48,
+    justifyContent:'center',
     backgroundColor: 'rgb(0, 122, 140)',
     borderRadius: 25,
     padding: 10,
@@ -916,6 +892,8 @@ const styles = StyleSheet.create({
     marginTop:10
   },
   modalButtonCancel: {
+    minHeight:48,
+    justifyContent:'center',
     backgroundColor: '#F1AD3E',
     borderRadius: 25,
     padding: 10,
@@ -930,50 +908,23 @@ const styles = StyleSheet.create({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center'
-    // backgroundColor: '#f8d7da',
   },
   modalSuccess: {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center'
-    // backgroundColor: '#d4edda',
   },
-  datePickerContainer: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-    alignSelf: 'center'
-  },
-  textDate: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    alignContent: 'center'
-  },
-  inputdate: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignContent: 'center',
-    height: 48,
-    width: '90%',
-    borderColor: 'rgb(172, 208, 213)',
-    borderWidth: 1,
-    borderRadius: 8,
-    marginBottom: 10,
-    paddingHorizontal: 15,
-    backgroundColor: '#fff',
-    fontSize: 16,
-
-  },
+  
   confirmButton: {
-    backgroundColor: 'rgb(0, 122, 140)',
+    minHeight:48,
+    justifyContent:'center',
+    backgroundColor: '#007a8c',
     paddingVertical: 10,
     paddingHorizontal: 20,
-    borderRadius: 50,
+    borderRadius: 25,
     alignItems: 'center',
     marginBottom: 10,
-    width: 250,
+    width: screenWidth*0.5,
     alignSelf: 'center'
   },
   confirmButtonText: {
