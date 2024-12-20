@@ -131,8 +131,8 @@ const ProfileScreen: React.FC = () => {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      setPasswordErrors([]); // Limpia los errores de la contraseña
-      setIsPasswordValid(false); // Resetea la validez de la contraseña
+      setPasswordErrors([]);
+      setIsPasswordValid(false);
       setIsChangingPassword(false);
     };
 
