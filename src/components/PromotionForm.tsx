@@ -383,7 +383,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 10,
     flexGrow: 1,
-    paddingBottom: 40, 
+    paddingBottom: 40,
   },
   input: {
     minHeight: 48,
