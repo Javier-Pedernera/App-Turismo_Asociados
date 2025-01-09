@@ -42,7 +42,7 @@ const BranchDetails = () => {
   const [selectedBranch, setSelectedBranch] = useState<any>(null);
   const [destination, setDestination] = useState<{ latitude: number, longitude: number } | null>(null);
   const [hashedId, setHashedId] = useState<string>('');
-
+const [QRBranch, setQRBranch] = useState<string | null>(null);
 console.log(branch);
 
   useEffect(() => {
@@ -100,7 +100,12 @@ console.log(branch);
     const encrypted = CryptoES.AES.encrypt(idString, secretKey);
     return encrypted.toString();
   };
-
+useEffect(() => {
+    if(!QRBranch && branch){
+      const QRencrypt = generateQRCodeValue(branch.branch_id)
+      setQRBranch(QRencrypt)
+    }
+  }, [branch]);
   const generateQRCodeValue = (id: number) => {
     const hashedId = encryptId(id);
     const appLink = `https://www.cobquecurapp.cl/BranchDetails/${hashedId}`;
@@ -159,9 +164,9 @@ console.log(branch);
       {/* QR Code */}
       <View style={styles.qrContainer}>
         <Text style={styles.qrTitle}>Escanea para ver la sucursal:</Text>
-        {branch && branch.branch_id &&
+        {QRBranch &&
         <QRCode
-        value={generateQRCodeValue(branch.branch_id)}
+        value={QRBranch}
         size={200}
         color="#007a8c"
         backgroundColor="#ffffff"
