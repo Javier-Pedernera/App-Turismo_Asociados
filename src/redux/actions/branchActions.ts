@@ -1,5 +1,5 @@
 import { Dispatch } from 'redux';
-import { setBranches, clearBranches, fetchBranchRatingsRequest, fetchBranchRatingsSuccess, fetchBranchRatingsFailure, addBranchRating, editBranchRating, deleteBranchRating, clearBranchRatings, addBranchRequest, addBranchSuccess, addBranchFailure, updateBranchSuccess, updateBranchFailure, updateBranchRequest } from '../reducers/branchReducer';
+import { setBranches, clearBranches, fetchBranchRatingsRequest, fetchBranchRatingsSuccess, fetchBranchRatingsFailure, addBranchRating, editBranchRating, deleteBranchRating, clearBranchRatings, addBranchRequest, addBranchSuccess, addBranchFailure, updateBranchSuccess, updateBranchFailure, updateBranchRequest, setAllBranches } from '../reducers/branchReducer';
 import { RootState } from '../store/store';
 import axios from 'axios';
 import { Branch, Rating, RatingBranch } from '../types/types';
@@ -32,6 +32,28 @@ export const fetchBranches = (partnerId: number) => {
     }
   };
 };
+
+export const fetchAllBranches = () => {
+  return async (dispatch: Dispatch, getState: () => RootState) => {
+    try {
+      // const state = getState();
+      // const token = state.user.accessToken;
+
+      // if (!token) {
+      //   throw new Error('User not authenticated');
+      // }
+      const response = await axios.get<Branch[]>(`${API_URL}/branches`);
+      
+      // console.log(response.data);
+      
+      // Enviar las sucursales activas ordenadas al estado
+      dispatch(setAllBranches(response.data));
+    } catch (error) {
+      throw error;
+    }
+  };
+};
+
 export const addBranch = (branchData: any) => {
   return async (dispatch: Dispatch, getState: () => RootState) => {
     dispatch(addBranchRequest());

@@ -14,6 +14,7 @@ import PromotionDetailScreen from '../screens/PromotionDetailScreen';
 import { Promotion, TouristPoint } from '../redux/types/types';
 import { getMemoizedAccessToken } from '../redux/selectors/userSelectors';
 import LandingPage from '../screens/LandingPage';
+import BranchDetails from '../screens/BranchDetails ';
 
 
 
@@ -29,6 +30,7 @@ export type RootStackParamList = {
   PromotionDetail: { promotion: Promotion };
   TouristDetailScreen: { touristPoint: TouristPoint };
   MainTabs: { screen: string };
+  BranchDetails: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -77,6 +79,14 @@ const AppNavigator = () => {
                 headerStyle: { backgroundColor: 'rgb(0, 122, 140)' },
                 headerTintColor: '#fff',
               }} />
+              <Stack.Screen
+              name="BranchDetails"
+              component={BranchDetails}
+              options={{
+                headerShown: true,
+                header: () => <CustomHeader />
+              }}
+              />
           </>
         )}
       </Stack.Navigator>

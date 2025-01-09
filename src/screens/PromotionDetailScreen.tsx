@@ -20,6 +20,8 @@ import * as Location from 'expo-location';
 import MapSingle from '../components/MapSingle';
 import ErrorModal from '../components/ErrorModal';
 import ExitoModal from '../components/ExitoModal';
+import CryptoES from 'crypto-es';
+import Loader from '../components/Loader';
 
 type PromotionDetailScreenRouteProp = RouteProp<RootStackParamList, 'PromotionDetail'>;
 
@@ -51,13 +53,19 @@ const PromotionDetailScreen: React.FC = () => {
   const [modalErrorVisible, setModalErrorVisible] = useState(false);
   const [modalSuccessVisible, setModalSuccessVisible] = useState(false);
   const [modalSuccessMessage, setModalSuccessMessage] = useState('');
+  const [QR, setQR] = useState<string | null>(null);
   // console.log("newRating",newRating);
   // console.log("newComment",newComment);
   const promoImage = promotion.images.length > 0 ? `${API_URL}${promotion.images[0].image_path}` : 'https://res.cloudinary.com/dbwmesg3e/image/upload/v1721157537/TurismoApp/no-product-image-400x400_1_ypw1vg_sw8ltj.png';
 
   // console.log("ratings en descripcion ",ratings);
   // console.log("branch en descripcion ",branch);
-
+  useEffect(() => {
+    if(!QR && promotion){
+      const QRencrypt = encryptId(promotion.promotion_id)
+      setQR(QRencrypt)
+    }
+  }, [promotion]);
   useEffect(() => {
     if (branches.length) {
       const branchProm = branches.find(branch => branch.branch_id == promotion.branch_id) || null;
@@ -134,6 +142,7 @@ const PromotionDetailScreen: React.FC = () => {
   };
 
   const handleBackPress = () => {
+    setQR(null)
     dispatch(clearBranchRatingsAction());
     navigation.goBack();
   };
@@ -146,6 +155,18 @@ const PromotionDetailScreen: React.FC = () => {
     setModalMessage(message);
     setModalErrorVisible(true);
   };
+  // Función para encriptar el ID usando AES y una clave secreta
+const encryptId = (id: any): string => {
+  const secretKey = process.env.EXPO_PUBLIC_API_SECRET_KEY;
+  if (!secretKey) {
+    throw new Error("La clave secreta no está definida en las variables de entorno.");
+  }
+  const idString = id.toString();
+  // Encriptar el ID
+  const encrypted = CryptoES.AES.encrypt(idString, secretKey);
+  // Devolver el resultado en formato string
+  return encrypted.toString();
+};
   const renderStars = (rating: number) => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
@@ -244,12 +265,13 @@ const PromotionDetailScreen: React.FC = () => {
         <Text style={styles.descriptiontitle}>Descripción:</Text>
         <Text style={styles.description}>{promotion.description}</Text>
         <View style={styles.qrCode}>
-          <QRCode
-            value={promotion.qr_code}
+
+          { QR ?<QRCode
+            value={QR}
             size={screenWidth * 0.5}
-            color="black"
+            color="#007a8c"
             backgroundColor="white"
-          />
+          />: <Loader></Loader>}
           <Text style={styles.dates}>Validez:</Text>
           <View style={styles.dates2}>
             <Text style={styles.dates}>Desde: {promotion.start_date}</Text>

@@ -3,6 +3,7 @@ import { Branch, RatingBranch } from '../types/types';
 
 export interface BranchState {
   branches: Branch[] | null;
+  allBranches: Branch[] | null;
   branchRatings: {
     ratings: RatingBranch[];
     average_rating: number;
@@ -19,6 +20,7 @@ export interface BranchState {
 
 const initialState: BranchState = {
   branches: null,
+  allBranches: null,
   branchRatings: {
     ratings: [],
     average_rating: 0,
@@ -39,6 +41,9 @@ const branchSlice = createSlice({
   reducers: {
     setBranches: (state, action: PayloadAction<Branch[]>) => {
       state.branches = action.payload;
+    },
+    setAllBranches: (state, action: PayloadAction<Branch[]>) => {
+      state.allBranches = action.payload;
     },
     clearBranches: (state) => {
       state.branches = null;
@@ -105,6 +110,7 @@ const branchSlice = createSlice({
 
 export const {
   setBranches,
+  setAllBranches,
   clearBranches,
   fetchBranchRatingsRequest,
   fetchBranchRatingsSuccess,

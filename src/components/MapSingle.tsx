@@ -135,7 +135,7 @@ const MapSingle: React.FC<MapComponentProps> = ({
       {selectedBranch && !routeSelected && Platform.OS === 'android' && (
         <View style={isEditing?  styles.calloutContainer:styles.calloutContainerPrev}>
          {isEditing? <Text style={styles.labelMap}>Ejemplo de marcador</Text>:<></>} 
-          <CustomCallout branch={selectedBranch} handleRoutePress={handleGetDirections} prevSee={justSee}/>
+          <CustomCallout branch={selectedBranch} setbranch={setSelectedBranch} handleRoutePress={handleGetDirections}  prevSee={justSee}/>
         </View>
       )}
     </View>
