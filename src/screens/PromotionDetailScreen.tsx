@@ -62,10 +62,16 @@ const PromotionDetailScreen: React.FC = () => {
   // console.log("branch en descripcion ",branch);
   useEffect(() => {
     if(!QR && promotion){
-      const QRencrypt = encryptId(promotion.promotion_id)
+      const QRencrypt = generateQRCodeValue(promotion.promotion_id)
       setQR(QRencrypt)
     }
   }, [promotion]);
+  const generateQRCodeValue = (id: number) => {
+    const hashedId = encryptId(id);
+    const appLink = `https://www.cobquecurapp.cl/PromotionDetail/${hashedId}`;
+    console.log(appLink);
+    return appLink;
+  };
   useEffect(() => {
     if (branches.length) {
       const branchProm = branches.find(branch => branch.branch_id == promotion.branch_id) || null;
