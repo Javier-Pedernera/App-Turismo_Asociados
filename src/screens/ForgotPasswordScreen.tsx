@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert, Image } from 'react-native';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert, Image, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -7,9 +7,10 @@ import Modal from 'react-native-modal';
 import { sendPasswordResetEmail } from '../services/authService';
 import ErrorModal from '../components/ErrorModal';
 import ExitoModal from '../components/ExitoModal';
+import SemicirclesOverlay from '../components/SemicirclesOverlay';
 
 type ForgotPasswordScreenProp = StackNavigationProp<RootStackParamList, 'ForgotPassword'>;
-
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const ForgotPasswordScreen: React.FC = () => {
   const navigation = useNavigation<ForgotPasswordScreenProp>();
   const [email, setEmail] = useState('');
@@ -50,6 +51,7 @@ const ForgotPasswordScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <SemicirclesOverlay />
       <Image source={require('../../assets/logo.png')} style={styles.logoHome} />
       <Text style={styles.title}>Recupera tu contraseña</Text>
       <TextInput
@@ -94,19 +96,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#f7f7f7',
+    backgroundColor: '#fff',
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 25,
-    marginTop: 50,
+    marginTop: 25,
     color: 'rgb(0, 122, 140)',
   },
   logoHome: {
     width: 70,
     height: 70,
-    marginTop: 20
+    marginTop: screenHeight *0.15
   },
   input: {
     height: 48,
@@ -119,10 +121,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     fontSize: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
     shadowRadius: 1,
-    elevation: 2,
+    elevation: 1,
   },
   button: {
     backgroundColor: 'rgb(0, 122, 140)',
