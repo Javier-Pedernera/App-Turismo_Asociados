@@ -22,8 +22,8 @@ export const fetchBranches = (partnerId: number) => {
           Authorization: `Bearer ${token}`,
         }
       });
-      const activeBranches = response.data.filter(branch => branch.status.name !== "deleted");
-      console.log("sucursales activas", activeBranches);
+      const activeBranches = response.data;
+      // console.log("sucursales activas", activeBranches);
       
       dispatch(setBranches(activeBranches));
     } catch (error) {
@@ -36,13 +36,17 @@ export const fetchBranches = (partnerId: number) => {
 export const fetchAllBranches = () => {
   return async (dispatch: Dispatch, getState: () => RootState) => {
     try {
-      // const state = getState();
-      // const token = state.user.accessToken;
+      const state = getState();
+      const token = state.user.accessToken;
 
-      // if (!token) {
-      //   throw new Error('User not authenticated');
-      // }
-      const response = await axios.get<Branch[]>(`${API_URL}/branches`);
+      if (!token) {
+        throw new Error('User not authenticated');
+      }
+      const response = await axios.get<Branch[]>(`${API_URL}/branches`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      });
       
       // console.log(response.data);
       
@@ -125,7 +129,7 @@ export const deleteBranch = (branchId: number, statusId: number | undefined, pro
         status_id: statusId,
       }, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`
         },
       });
 
@@ -162,7 +166,7 @@ export const inactivateBranch = (branchId: number, statusId: number | undefined)
         },
       });
 
-      console.log('Sucursal marcada como inactiva:', branchResponse.data);
+      // console.log('Sucursal marcada como inactiva:', branchResponse.data);
       dispatch(updateBranchSuccess(branchResponse.data));
     } catch (error) {
       console.error('Error al actualizar el estado de la sucursal y promociones:', error);
@@ -174,7 +178,18 @@ export const fetchBranchRatings = (branchId: number) => {
   return async (dispatch: Dispatch, getState: () => RootState) => {
     dispatch(fetchBranchRatingsRequest());
     try {
-      const response = await axios.get<{ ratings: RatingBranch[], average_rating: number }>(`${API_URL}/branches/${branchId}/ratings/all`);
+      const state = getState();
+      const token = state.user.accessToken;
+
+      if (!token) {
+        throw new Error('User not authenticated');
+      }
+
+      const response = await axios.get<{ ratings: RatingBranch[], average_rating: number }>(`${API_URL}/branches/${branchId}/ratings/all`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      });
       dispatch(fetchBranchRatingsSuccess(response.data));
     } catch (error:any) {
       dispatch(fetchBranchRatingsFailure(error.toString()));
@@ -185,7 +200,17 @@ export const fetchBranchRatings = (branchId: number) => {
 export const addRating = (branchId: number, rating: RatingBranch) => {
   return async (dispatch: Dispatch, getState: () => RootState) => {
     try {
-      const response = await axios.post<RatingBranch>(`${API_URL}/branches/${branchId}/ratings`, rating);
+      const state = getState();
+      const token = state.user.accessToken;
+
+      if (!token) {
+        throw new Error('User not authenticated');
+      }
+      const response = await axios.post<RatingBranch>(`${API_URL}/branches/${branchId}/ratings`, rating, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       dispatch(addBranchRating(response.data));
     } catch (error) {
       throw error;
@@ -195,8 +220,19 @@ export const addRating = (branchId: number, rating: RatingBranch) => {
 
 export const editRating = (branchId: number, rating: RatingBranch) => {
   return async (dispatch: Dispatch, getState: () => RootState) => {
+    const state = getState();
+      const token = state.user.accessToken;
+
+      if (!token) {
+        throw new Error('User not authenticated');
+      }
+
     try {
-      const response = await axios.put<RatingBranch>(`${API_URL}/branches/ratings/${branchId}`, rating);
+      const response = await axios.put<RatingBranch>(`${API_URL}/branches/ratings/${branchId}`, rating, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       dispatch(editBranchRating(response.data));
     } catch (error) {
       throw error;
@@ -204,16 +240,7 @@ export const editRating = (branchId: number, rating: RatingBranch) => {
   };
 };
 
-export const deleteRating = (branchId: number, ratingId: number) => {
-  return async (dispatch: Dispatch, getState: () => RootState) => {
-    try {
-      await axios.delete(`${API_URL}/branches/ratings/${branchId}`, { data: { id: ratingId } });
-      dispatch(deleteBranchRating(ratingId));
-    } catch (error) {
-      throw error;
-    }
-  };
-};
+
 export const clearBranchRatingsAction = () => {
   return (dispatch: Dispatch, getState: () => RootState) => {
     dispatch(clearBranchRatings());

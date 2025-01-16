@@ -121,7 +121,10 @@ export const fetchUserFavorites = () => {
       if (!token || !userId) {
         throw new Error('User not authenticated');
       }
-      const response = await axios.get(`${API_URL}/users/${userId}/favorites`);
+      const headers = {
+        Authorization: `Bearer ${token}`
+      }
+      const response = await axios.get(`${API_URL}/users/${userId}/favorites`,{headers});
       // console.log(response);
       
       const favorites = response.data.map((fav: { promotion_id: number }) => fav.promotion_id);
@@ -192,7 +195,8 @@ export const fetchPartnerById = (partnerId: number) => {
     try {
       const state = getState();
       const token = state.user.accessToken;
-
+      console.log("token",token, "id del partner", partnerId, "Tipo id del partner", typeof( partnerId));
+      
       if (!token) {
         throw new Error('User not authenticated');
       }
@@ -202,7 +206,7 @@ export const fetchPartnerById = (partnerId: number) => {
           Authorization: `Bearer ${token}`,
         },
       });
-
+      console.log("respuesta del partner.........",response);
       dispatch(setPartner(response.data));
     } catch (error) {
       console.error('Error fetching partner:', error);
