@@ -12,6 +12,7 @@ import SimpleLineIcons from '@expo/vector-icons/SimpleLineIcons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Branches from './Branches';
+import AllBranchesScreen from './AllBranchesScreen';
 
 const Tab = createBottomTabNavigator();
 const Drawer = createDrawerNavigator();
@@ -31,8 +32,10 @@ const MainTabs = () => {
         return 'ticket-percent-outline';
       case 'Sucursal':
         return 'storefront-outline';
+      case 'Recomendar':
+        return 'paper-plane-outline';
       case 'Perfil':
-        return 'address-card';
+        return 'address-card-o';
       default:
         return 'circle';
     }
@@ -60,6 +63,11 @@ const MainTabs = () => {
             );
           }
           if (route.name === 'Sucursal') {
+            return (
+              <Ionicons name={iconName} size={size} color={isFocused ? 'rgb(0, 122, 140)' : color} />
+            );
+          }
+          if (route.name === 'Recomendar') {
             return (
               <Ionicons name={iconName} size={size} color={isFocused ? 'rgb(0, 122, 140)' : color} />
             );
@@ -112,6 +120,14 @@ const MainTabs = () => {
         options={{ headerShown: false }}
         listeners={{
           tabPress: () => setFocusedTab('Sucursal'),
+        }}
+      />
+      <Tab.Screen
+        name="Recomendar"
+        component={AllBranchesScreen}
+        options={{ headerShown: false }}
+        listeners={{
+          tabPress: () => setFocusedTab('Recomendar'),
         }}
       />
       <Tab.Screen

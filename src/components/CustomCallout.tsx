@@ -6,12 +6,13 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 interface CustomCalloutProps {
   branch: any;
+  setbranch:any
   handleRoutePress: () => void;
   prevSee: boolean;
 }
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
-const CustomCallout: React.FC<CustomCalloutProps> = ({ branch, handleRoutePress, prevSee }) => {
+const CustomCallout: React.FC<CustomCalloutProps> = ({ branch, setbranch, handleRoutePress, prevSee }) => {
   // console.log("punto turistico", branch);
   const imageUrl = branch.branch_id
     ? `${API_URL}${branch.image_url}`
@@ -37,7 +38,8 @@ const CustomCallout: React.FC<CustomCalloutProps> = ({ branch, handleRoutePress,
     return stars;
   };
   const handleDirectionsPress = () => {
-    Alert.alert('Vista previa', 'Esto es solo una vista previa de la promoción');
+    Alert.alert('Vista previa', 'Esa función no está activa desde aquí');
+    setbranch(null)
   };
   return (
     <View style={prevSee? styles.calloutContainerSee: styles.calloutContainer}>
@@ -61,7 +63,7 @@ const CustomCallout: React.FC<CustomCalloutProps> = ({ branch, handleRoutePress,
           <View style={styles.ratingContainer}>
             {/* <Text style={styles.calloutDescription}>{branch.description}</Text> */}
             <View style={styles.starsContainer}>
-              {renderStars(3.5)}
+              {renderStars(branch?.average_rating)}
             </View>
           </View>
           <View style={styles.addressBttn}>

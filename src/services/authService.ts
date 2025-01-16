@@ -14,6 +14,8 @@ export const loginUserAuth = async (email: string, password: string): Promise<Lo
     // if (response.data.token) {
     //   await AsyncStorage.setItem('token', response.data.token);
     // }
+    
+    
     return response.data;
   } catch (error: any) {
     if (error.response && error.response.data) {

@@ -11,6 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Constants from 'expo-constants'; 
 import ErrorModal from '../components/ErrorModal';
 import ExitoModal from '../components/ExitoModal';
+import AppVersionChecker from '../components/checkAppVersion';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const appVersion = Constants.expoConfig?.version;
@@ -144,7 +145,8 @@ const LoginScreen: React.FC = () => {
         </View>
         {loading && <Loader />}
       </View>
-        <Text  style={styles.versionText} >Version {appVersion}</Text>
+      <AppVersionChecker />
+        {/* <Text  style={styles.versionText} >Version {appVersion}</Text> */}
       {/* <Modal isVisible={isModalVisible}>
         <View style={styles.modalContent}>
           <Text style={styles.modalMessage}>{modalMessage}</Text>

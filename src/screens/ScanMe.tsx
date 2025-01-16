@@ -77,8 +77,8 @@ const QRScanButton = () => {
     const expirationDate = new Date(promotion.expiration_date);
     return promotion.status?.name === 'active' && currentDate >= startDate && currentDate <= expirationDate;
   });
-  console.log("filteredPromotions",filteredPromotions);
-  console.log("promocion seleccionada",selectedPromotion);
+  // console.log("filteredPromotions",filteredPromotions);
+  // console.log("promocion seleccionada",selectedPromotion);
   useEffect(() => {
     dispatch(loadData());
     fetchCurrentTerms();
