@@ -3,13 +3,24 @@ import { Dispatch } from 'redux';
 import axios from 'axios';
 import { addPromotion, setConsumedPromotions, setPromotions, setPromotionsError, updateConsumedPromotion, updatePromotion } from '../reducers/promotionReducer';
 import {  PromotionCreate } from '../types/types';
+import { RootState } from '../store/store';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export const fetchPromotions = (partnerId: number) => {
-  return async (dispatch: Dispatch) => {
+   return async (dispatch: Dispatch, getState: () => RootState) => {
+      const state = getState();
+        const token = state.user.accessToken;
+  
+        if (!token) {
+          throw new Error('User not authenticated');
+        }
     try {
-      const response = await axios.get(`${API_URL}/partners/${partnerId}/promotions`);
+      const response = await axios.get(`${API_URL}/partners/${partnerId}/promotions`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const activePromotions = response.data.filter((promotion:any) => promotion.status?.name !== 'deleted');
       // console.log("promociones activaaaaaaaaaas",activePromotions);
       
@@ -26,11 +37,20 @@ export const fetchPromotions = (partnerId: number) => {
 
 
 export const createPromotion = (promotion: PromotionCreate) => {
-  return async (dispatch: Dispatch) => {
-    console.log("promocion en la action", promotion);
+  return async (dispatch: Dispatch, getState: () => RootState) => {
+    const state = getState();
+      const token = state.user.accessToken;
+
+      if (!token) {
+        throw new Error('User not authenticated');
+      }
     try {
       // Enviar datos al backend
-      const response = await axios.post(`${API_URL}/promotions`, promotion);
+      const response = await axios.post(`${API_URL}/promotions`, promotion, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       // Despachar la acción si la solicitud es exitosa
       dispatch(addPromotion(response.data));
@@ -50,13 +70,23 @@ export const modifyPromotion = (
   data: any,
   deletedImageIds: number[]
 ) => {
-  return async (dispatch: Dispatch) => {
+  return async (dispatch: Dispatch, getState: () => RootState) => {
+    const state = getState();
+      const token = state.user.accessToken;
+
+      if (!token) {
+        throw new Error('User not authenticated');
+      }
     try {
       // Eliminar imágenes si es necesario
       if (deletedImageIds.length) {
         const imgDelete = { image_ids: deletedImageIds };
         console.log('Imágenes eliminadas:', imgDelete);
-        await axios.post(`${API_URL}/promotion_images/delete`, imgDelete);
+        await axios.post(`${API_URL}/promotion_images/delete`, imgDelete, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
       }
 
       // Extraer imágenes del resto de los datos
@@ -76,6 +106,10 @@ export const modifyPromotion = (
         
         const imageResponse = await axios.put(`${API_URL}/promotions/${promotionId}`, {
           images: batch,
+        }, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
         console.log('Respuesta de envío de imágenes:', imageResponse.data);
       }
@@ -95,12 +129,22 @@ export const modifyPromotion = (
 };
 
 export const deletePromotion = (promotionId: number, data: any) => {
-  return async (dispatch: Dispatch) => {
+  return async (dispatch: Dispatch, getState: () => RootState) => {
+    const state = getState();
+      const token = state.user.accessToken;
+
+      if (!token) {
+        throw new Error('User not authenticated');
+      }
     try {
       const dataSend = {status_id: data}
       // console.log("imprimo status",dataSend);
       
-      const response = await axios.put(`${API_URL}/promotions/${promotionId}`, dataSend);
+      const response = await axios.put(`${API_URL}/promotions/${promotionId}`, dataSend, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       console.log(response.data);
       
       dispatch(updatePromotion(response.data));
@@ -111,9 +155,19 @@ export const deletePromotion = (promotionId: number, data: any) => {
 };
 
 export const submitConsumption = (data: any) => {
-  return async (dispatch: Dispatch) => {
+  return async (dispatch: Dispatch, getState: () => RootState) => {
+    const state = getState();
+      const token = state.user.accessToken;
+
+      if (!token) {
+        throw new Error('User not authenticated');
+      }
     try {
-      const response = await axios.post(`${API_URL}/promotion_consumeds`, data);
+      const response = await axios.post(`${API_URL}/promotion_consumeds`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       return response
       // Si es necesario, puedes despachar otra acción para actualizar el estado de las promociones
       // dispatch(someAction(response.data));
@@ -130,9 +184,19 @@ export const submitConsumption = (data: any) => {
 };
 
 export const fetchConsumedPromotions = (partnerId: number) => {
-  return async (dispatch: Dispatch) => {
+  return async (dispatch: Dispatch, getState: () => RootState) => {
+    const state = getState();
+      const token = state.user.accessToken;
+
+      if (!token) {
+        throw new Error('User not authenticated');
+      }
     try {
-      const response = await axios.get(`${API_URL}/promotion_consumeds/partner/${partnerId}`);
+      const response = await axios.get(`${API_URL}/promotion_consumeds/partner/${partnerId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       dispatch(setConsumedPromotions(response.data));
     } catch (error: any) {
       console.error('Error fetching consumed promotions:', error.message);
@@ -147,9 +211,19 @@ export const fetchConsumedPromotions = (partnerId: number) => {
 };
 
 export const deletePromotionConsumed = (promconsumedId: number, data:any) => {
-  return async (dispatch: Dispatch) => {
+  return async (dispatch: Dispatch, getState: () => RootState) => {
+    const state = getState();
+      const token = state.user.accessToken;
+
+      if (!token) {
+        throw new Error('User not authenticated');
+      }
     try {
-      const response = await axios.put(`${API_URL}/promotion_consumeds/${promconsumedId}`, data);
+      const response = await axios.put(`${API_URL}/promotion_consumeds/${promconsumedId}`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       dispatch(updateConsumedPromotion(response.data))
       return response 
     } catch (error: any) {

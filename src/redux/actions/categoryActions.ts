@@ -30,7 +30,11 @@ export const fetchUserCategories = (userId: number) => {
         throw new Error('User not authenticated');
       }
 
-      const response = await axios.get(`${API_URL}/partners/${userId}`);
+      const response = await axios.get(`${API_URL}/partners/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       // console.log("response categorias usuario",response.data);
 
       
