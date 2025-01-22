@@ -53,7 +53,7 @@ const ImageCompressor: React.FC<ImageCompressorProps> = ({ onImageCompressed, in
     <View style={styles.container}>
       <TouchableOpacity onPress={pickAndCompressImage} style={styles.imagePickerButton} disabled={!isButtonDisabled}>
         {/* <Text style={styles.imagePickerButtonText}>Seleccionar Imagen</Text> */}
-        { imageUri && initialImageUri !=="https://cobquecurapp-backend.duckdns.orgnull" && initialImageUri !=="https://cobquecurapp-backend.duckdns.org"? 
+        { imageUri && initialImageUri !==`${API_URL}null` && initialImageUri !== API_URL? 
         <Image source={{ uri: imageUri }} style={styles.imagePreview} />:
         <Image source={require('../../assets/noImageAvailable.png')} style={styles.imagePreview} />}
       </TouchableOpacity>

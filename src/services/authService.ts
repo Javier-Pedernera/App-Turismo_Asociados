@@ -3,13 +3,16 @@ import { LoginResponse, UserData } from "../redux/types/types";
 import { clearUserData } from "../utils/storage";
 import { logOut } from "../redux/reducers/userReducer";
 import { Dispatch } from "@reduxjs/toolkit";
+import { Platform } from "react-native";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
   
 export const loginUserAuth = async (email: string, password: string): Promise<LoginResponse> => {
   try {
-    const response = await axios.post<LoginResponse>(`${API_URL}/login`, { email, password });
+    const app_version = process.env.EXPO_PUBLIC_API_VERSION || null;
+    const platform = Platform.OS;
+    const response = await axios.post<LoginResponse>(`${API_URL}/login`, { email, password, platform, app_version });
     // Guardar el token en AsyncStorage
     // if (response.data.token) {
     //   await AsyncStorage.setItem('token', response.data.token);
