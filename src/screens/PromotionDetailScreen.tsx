@@ -20,8 +20,8 @@ import * as Location from 'expo-location';
 import MapSingle from '../components/MapSingle';
 import ErrorModal from '../components/ErrorModal';
 import ExitoModal from '../components/ExitoModal';
-import CryptoES from 'crypto-es';
 import Loader from '../components/Loader';
+import { encryptId } from '../utils/encrypt';
 
 type PromotionDetailScreenRouteProp = RouteProp<RootStackParamList, 'PromotionDetail'>;
 
@@ -162,17 +162,17 @@ const PromotionDetailScreen: React.FC = () => {
     setModalErrorVisible(true);
   };
   // Función para encriptar el ID usando AES y una clave secreta
-const encryptId = (id: any): string => {
-  const secretKey = process.env.EXPO_PUBLIC_API_SECRET_KEY;
-  if (!secretKey) {
-    throw new Error("La clave secreta no está definida en las variables de entorno.");
-  }
-  const idString = id.toString();
-  // Encriptar el ID
-  const encrypted = CryptoES.AES.encrypt(idString, secretKey);
-  // Devolver el resultado en formato string
-  return encrypted.toString();
-};
+// const encryptId = (id: any): string => {
+//   const secretKey = process.env.EXPO_PUBLIC_API_SECRET_KEY;
+//   if (!secretKey) {
+//     throw new Error("La clave secreta no está definida en las variables de entorno.");
+//   }
+//   const idString = id.toString();
+//   // Encriptar el ID
+//   const encrypted = CryptoES.AES.encrypt(idString, secretKey);
+//   // Devolver el resultado en formato string
+//   return encrypted.toString().replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '.');
+// };
   const renderStars = (rating: number) => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {

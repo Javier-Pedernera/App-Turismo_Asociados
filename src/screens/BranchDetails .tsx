@@ -10,8 +10,8 @@ import * as Location from 'expo-location';
 import MapSingle from '../components/MapSingle';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Image } from 'expo-image';
-import CryptoES from 'crypto-es';
 import QRCode from 'react-native-qrcode-svg';
+import { encryptId } from '../utils/encrypt';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -91,15 +91,7 @@ console.log(branch);
     setSelectedBranch(null);
   };
 
-  const encryptId = (id: any): string => {
-    const secretKey = process.env.EXPO_PUBLIC_API_SECRET_KEY;
-    if (!secretKey) {
-      throw new Error("La clave secreta no está definida en las variables de entorno.");
-    }
-    const idString = id.toString();
-    const encrypted = CryptoES.AES.encrypt(idString, secretKey);
-    return encrypted.toString();
-  };
+
 useEffect(() => {
     if(!QRBranch && branch){
       const QRencrypt = generateQRCodeValue(branch.branch_id)
