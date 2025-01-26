@@ -8,6 +8,7 @@ import { sendPasswordResetEmail } from '../services/authService';
 import ErrorModal from '../components/ErrorModal';
 import ExitoModal from '../components/ExitoModal';
 import SemicirclesOverlay from '../components/SemicirclesOverlay';
+import Loader from '../components/Loader';
 
 type ForgotPasswordScreenProp = StackNavigationProp<RootStackParamList, 'ForgotPassword'>;
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -18,6 +19,7 @@ const ForgotPasswordScreen: React.FC = () => {
   const [modalErrorMessage, setModaErrorlMessage] = useState('');
   const [modalSuccessVisible, setModalSuccessVisible] = useState(false);
   const [modalSuccessMessage, setModalSuccessMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const isValidEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -35,6 +37,7 @@ const ForgotPasswordScreen: React.FC = () => {
       setModalErrorVisible(true);
       return;
     }
+    setIsLoading(true);
     try {
       await sendPasswordResetEmail(email);
       setModalSuccessMessage('Se ha enviado un correo de recuperación. Revisa tu bandeja de entrada.');
@@ -46,11 +49,14 @@ const ForgotPasswordScreen: React.FC = () => {
     } catch (error) {
       setModaErrorlMessage('Error al enviar el correo de recuperación.');
       setModalErrorVisible(true);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <View style={styles.container}>
+      {isLoading && <Loader/>}
       <SemicirclesOverlay />
       <Image source={require('../../assets/logo.png')} style={styles.logoHome} />
       <Text style={styles.title}>Recupera tu contraseña</Text>
